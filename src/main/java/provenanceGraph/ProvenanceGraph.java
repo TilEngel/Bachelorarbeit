@@ -44,6 +44,34 @@ public class ProvenanceGraph {
         inEdges.computeIfAbsent(dstId, k-> new ArrayList<>()).add(edge);
     }
 
+
+    /**
+     * Vorwärts Traversierung.
+     * @param hashId id des Knotens
+     * @return Liste mit Edges, die von dem Knoten ausgehen
+     */
+    public List<Edge> getOutEdges(String hashId){
+        if(outEdges.containsKey(hashId)){
+            return outEdges.get(hashId);
+        }
+        System.out.println("[WARN] getOutEdges: ungültiger Knoten. Nutze Fallback");
+        return Collections.emptyList();
+
+    }
+
+    /**
+     * Liefert, welche Kanten, von einem Knoten ausgehen
+     * @param hashId ID des Knotens
+     * @return Liste mit allen ausgehenden Kanten
+     */
+    public List<Edge> getInEdges(String hashId){
+        if (inEdges.containsKey(hashId)){
+            return inEdges.get(hashId);
+        }
+        System.out.println("[WARN] getInEdges: ungültiger Knoten, nutze Fallback");
+        return Collections.emptyList();
+    }
+
     /**
      * Liefert Knoten mit entsprechender id
      * @param hashId ID des gesuchten Knotens
