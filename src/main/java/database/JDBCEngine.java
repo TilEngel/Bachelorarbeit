@@ -41,7 +41,7 @@ public class JDBCEngine {
 
     /**
      * Stellt Verbindung zur Datenbank her
-     * @throws SQLException
+     * @throws SQLException falls Verbindung scheitert
      */
     public void connect() throws SQLException {
         if (connection == null || connection.isClosed()){
