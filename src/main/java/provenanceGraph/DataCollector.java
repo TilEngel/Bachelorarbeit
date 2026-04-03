@@ -15,8 +15,6 @@ import java.util.Map;
 public class DataCollector {
 
     private static JDBCEngine engine;
-    //Mapping Hash_ID->Node-Objekt ermöglicht Zugriff in O(1)
-    private final Map<String, Node> nodeIndex = new HashMap<>();
 
     private final ProvenanceGraph graph = new ProvenanceGraph();
 
@@ -39,7 +37,7 @@ public class DataCollector {
     }
 
     /**
-     * Erstellt Subjekt-Instanzen und legt sie in nodeIndex-Liste ab
+     * Erstellt Subjekt-Instanzen und legt sie in Graphen ab
      */
     private void collectSubjects(){
         int count=0;
@@ -53,7 +51,6 @@ public class DataCollector {
             String hashId = (String) row.get("hash_id");
 
             Subject s = new Subject(uuid, nodeIndex,hashId,path,cmd);
-            this.nodeIndex.put(hashId,s);
             graph.addNode(s);
         }
         System.out.println("[INFO] "+ count+ " Subjects verarbeitet");
@@ -61,7 +58,7 @@ public class DataCollector {
     }
 
     /**
-     * Erstellt File-Instanzen und legt sie in nodeIndex-Liste ab
+     * Erstellt File-Instanzen und legt sie in Graphen ab
      */
     private void collectFiles(){
         List<Map<String, Object>> rows = engine.getAllNodes('2');
@@ -77,7 +74,6 @@ public class DataCollector {
             String hashId = (String) row.get("hash_id");
 
             File f = new File(uuid, nodeIndex,hashId,path);
-            this.nodeIndex.put(hashId,f);
             graph.addNode(f);
         }
         System.out.println("[INFO] "+ count+ " Files verarbeitet");
@@ -85,7 +81,7 @@ public class DataCollector {
     }
 
     /**
-     * Erstellt Netflow-Instanzen und legt sie in nodeIndex-Liste ab
+     * Erstellt Netflow-Instanzen und legt sie in Graphen ab
      */
     private void collectNetflows(){
         List<Map<String, Object>> rows = engine.getAllNodes('3');
@@ -102,7 +98,6 @@ public class DataCollector {
             String hashId = (String) row.get("hash_id");
 
             Netflow n = new Netflow(uuid, nodeIndex, hashId, srcAddr,srcPort,dstAddr,dstPort);
-            this.nodeIndex.put(hashId,n);
             graph.addNode(n);
         }
         System.out.println("[INFO] "+ count + " Netflows verarbeitet");
@@ -122,8 +117,8 @@ public class DataCollector {
             String srcId = (String) row.get("src_node");
             String dstId = (String) row.get("dst_node");
             //jwlg. Knoten-Instanzen aus NodeIndex holen
-            Node srcNode = nodeIndex.get(srcId);
-            Node dstNode = nodeIndex.get(dstId);
+            Node srcNode = graph.getNode(srcId);
+            Node dstNode = graph.getNode(dstId);
 
             // falls einer der Knoten nicht im Zeitfenster liegt
             if(srcNode == null || dstNode == null){
@@ -139,6 +134,14 @@ public class DataCollector {
             graph.addEdge(e);
         }
         System.out.println("[INFO] "+ count + " Edges verarbeitet");
+    }
+
+    public void printEdges(){
+        for (Edge e: graph.getEdges()){
+            String src = e.getSrcNode().getName();
+            String dst = e.getDstNode().getName();
+            System.out.println(src + " ----> "+ dst);
+        }
     }
 
     public void setEngine(JDBCEngine jdbcEngine){
