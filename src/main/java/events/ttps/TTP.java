@@ -14,6 +14,13 @@ public abstract class TTP {
     private List<Prerequisite> prerequisites;
     private String phase;
 
+    /**
+     * Prüft, ob das Geschehen an den Knoten einer Kante zu dem entsprechenden
+     * TTP passt
+     * @param edge Zu untersuchende Kante
+     * @param graph Provenance-Graph
+     * @return true, wenn TTP erkannt wird
+     */
     public abstract boolean matches(Edge edge, ProvenanceGraph graph);
 
 
@@ -49,6 +56,9 @@ public abstract class TTP {
     }
     protected void setSeverity(char severity){
         this.severity = severity;
+    }
+    protected void setPhase(String phase){
+        this.phase = phase;
     }
 
     protected void setPrerequisites(List<Prerequisite> prerequisites){
