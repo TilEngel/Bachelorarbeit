@@ -43,4 +43,9 @@ public class Switch_SU extends TTP{
 
         return true;
     }
+    @Override
+    public String getName(){
+        return "switch_su";
+    }
+
 }

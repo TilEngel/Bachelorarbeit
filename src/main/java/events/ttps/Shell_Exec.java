@@ -51,4 +51,9 @@ public class Shell_Exec extends TTP {
         return true;
     }
 
+    @Override
+    public String getName(){
+        return "shell_exec";
+    }
+
 }

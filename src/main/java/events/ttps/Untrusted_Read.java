@@ -43,7 +43,10 @@ public class Untrusted_Read extends TTP {
         return prerequisitesMet(edge, graph);
     }
 
-
+    @Override
+    public String getName(){
+        return "untrusted_read";
+    }
 
 }
 

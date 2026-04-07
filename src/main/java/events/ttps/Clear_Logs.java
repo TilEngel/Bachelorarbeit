@@ -57,4 +57,10 @@ public class Clear_Logs extends TTP{
         return true;
     }
 
+    @Override
+    public String getName(){
+        return "clear_logs";
+    }
+
+
 }

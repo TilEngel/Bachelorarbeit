@@ -65,4 +65,6 @@ public abstract class TTP {
         this.prerequisites = prerequisites;
     }
 
+    public abstract String getName();
+
 }
