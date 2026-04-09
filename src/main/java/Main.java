@@ -3,6 +3,7 @@ package main.java;
 import main.java.database.JDBCEngine;
 import main.java.database.graph.Edge;
 import main.java.events.ttps.*;
+import main.java.hsg.MatchingEngine;
 import main.java.provenanceGraph.DataCollector;
 import main.java.provenanceGraph.ProvenanceGraph;
 
@@ -27,22 +28,8 @@ public class Main {
             System.err.println("[ERR] Fehler in Main:" +e.getMessage());
         }
         //collector.printEdges();
-        findTTPs();
+        MatchingEngine.matchTTPs(graph);
     }
 
-    public static void findTTPs(){
-        List<TTP> ttps = List.of(
-                new Untrusted_Read(),
-                new Switch_SU(),
-                new Shell_Exec(),
-                new Clear_Logs()
-        );
-        for (Edge e : graph.getEdges()){
-            for(TTP ttp : ttps){
-                if(ttp.matches(e, graph)){
-                    System.out.println("[TTP] Match auf "+ e.getDstNode().getName()+ ": "+ ttp.getName());
-                }
-            }
-        }
-    }
+
 }
