@@ -9,7 +9,7 @@ import java.util.List;
 public class MatchingEngine {
     private static List<TTP> initialCompromise1= List.of(new Untrusted_Read());
     private static List<TTP> initialCompromise2= List.of(new Untrusted_File_Exec());
-    private static List<TTP> establishFoothold= List.of(new Shell_Exec());
+    private static List<TTP> establishFoothold= List.of(new Shell_Exec(), new CnC());
     private static List<TTP> privilegeEscalation = List.of(new Switch_SU());
     private static List<TTP> internalRecon = List.of(new Sensitive_Command());
     private static List<TTP> cleanupTracks = List.of(new Clear_Logs());
