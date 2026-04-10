@@ -12,7 +12,7 @@ public class MatchingEngine {
     private static List<TTP> establishFoothold= List.of(new Shell_Exec(), new CnC());
     private static List<TTP> privilegeEscalation = List.of(new Switch_SU());
     private static List<TTP> internalRecon = List.of(new Sensitive_Command());
-    private static List<TTP> cleanupTracks = List.of(new Clear_Logs());
+    private static List<TTP> cleanupTracks = List.of(new Clear_Logs(), new Sensitive_Temp_RM());
     private static List<List<TTP>> allTTPs = List.of(initialCompromise1, initialCompromise2,
             establishFoothold, privilegeEscalation,internalRecon,cleanupTracks);
 
