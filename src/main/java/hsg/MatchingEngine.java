@@ -30,6 +30,6 @@ public class MatchingEngine {
                 }
             }
         }
-        Logger.log("Count: "+ count);
+        Logger.logResult("Count: "+ count);
     }
 }

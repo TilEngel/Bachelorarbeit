@@ -14,7 +14,7 @@ public class Main {
 
     private static ProvenanceGraph graph;
     public static void main(String[] args){
-        Logger.doDebug(false);
+        Logger.doLogTTPMatches();
         JDBCEngine jdbc = new JDBCEngine();
         DataCollector collector = new DataCollector(jdbc);
         try {
