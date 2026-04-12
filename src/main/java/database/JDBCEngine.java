@@ -1,5 +1,7 @@
 package main.java.database;
 
+import main.java.Logger;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
@@ -46,9 +48,9 @@ public class JDBCEngine {
     public void connect() throws SQLException {
         if (connection == null || connection.isClosed()){
             connection = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASSWD);
-            System.out.println("[INFO] DB-Verbindung hergestellt: "+ JDBC_URL);
+            Logger.log("[INFO] DB-Verbindung hergestellt: "+ JDBC_URL);
         } else {
-            System.out.println("[WARN] Es besteht bereits eine DB-Verbindung");
+            Logger.log("[WARN] Es besteht bereits eine DB-Verbindung");
         }
     }
 
@@ -59,7 +61,7 @@ public class JDBCEngine {
         if (connection != null){
             try {
                 connection.close();
-                System.out.println("[INFO] DB-Verbindung erfolgreich geschlossen");
+                Logger.log("[INFO] DB-Verbindung erfolgreich geschlossen");
             } catch (SQLException e) {
                 System.err.println("[ERR] Fehler beim schließen der DB-Verbindung: "+e.getMessage() );
             }
@@ -83,11 +85,11 @@ public class JDBCEngine {
                 }
                 return null;
             }catch (SQLException e) {
-                System.out.println("[ERR] getAllEvents(): "+ e.getMessage());
+                System.err.println("[ERR] getAllEvents(): "+ e.getMessage());
                 return null;
             }
         }catch (SQLException e){
-            System.out.println("[ERR] "+ e.getMessage());
+            System.err.println("[ERR] "+ e.getMessage());
             return null;
         }
     }
@@ -108,7 +110,7 @@ public class JDBCEngine {
         } else if(nodeType == '3') {
             table = "netflow_node_table";
         } else{
-            System.out.println("[WARN] In ungültiger Tabelle nach Knoten gesucht");
+            Logger.log("[WARN] In ungültiger Tabelle nach Knoten gesucht");
             return null;
         }
         //Query: Alle Subjekte, die an Events vor TIMESTAMP_THRESH beteiligt sind
@@ -138,7 +140,7 @@ public class JDBCEngine {
         } catch (SQLException e) {
             System.err.println("[ERR] getAllSubjectNodes: " + e.getMessage());
         }
-        System.out.println("[INFO] getAllNodes beendet. NodeType: "+nodeType);
+        Logger.log("[INFO] getAllNodes beendet. NodeType: "+nodeType);
         return rows;
     }
 

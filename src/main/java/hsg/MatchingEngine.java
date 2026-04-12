@@ -1,5 +1,6 @@
 package main.java.hsg;
 
+import main.java.Logger;
 import main.java.database.graph.Edge;
 import main.java.events.ttps.*;
 import main.java.provenanceGraph.ProvenanceGraph;
@@ -24,11 +25,11 @@ public class MatchingEngine {
                 for(TTP ttp: phase){
                     if(ttp.matches(e, graph)){
                         count ++;
-                        System.out.println("[TTP] Match auf "+ e.getDstNode().getName()+ ": "+ ttp.getName());
+                        Logger.logTTPMatch(e.getDstNode(), ttp);
                     }
                 }
             }
         }
-        System.out.println("Count: "+ count);
+        Logger.log("Count: "+ count);
     }
 }
