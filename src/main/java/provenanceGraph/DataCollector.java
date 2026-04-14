@@ -1,5 +1,6 @@
 package main.java.provenanceGraph;
 
+import main.java.Logger;
 import main.java.database.JDBCEngine;
 import main.java.database.graph.*;
 
@@ -53,7 +54,7 @@ public class DataCollector {
             Subject s = new Subject(uuid, nodeIndex,hashId,path,cmd);
             graph.addNode(s);
         }
-        System.out.println("[INFO] "+ count+ " Subjects verarbeitet");
+        Logger.log("[INFO] "+ count+ " Subjects verarbeitet");
 
     }
 
@@ -76,7 +77,7 @@ public class DataCollector {
             File f = new File(uuid, nodeIndex,hashId,path);
             graph.addNode(f);
         }
-        System.out.println("[INFO] "+ count+ " Files verarbeitet");
+        Logger.log("[INFO] "+ count+ " Files verarbeitet");
 
     }
 
@@ -100,7 +101,7 @@ public class DataCollector {
             Netflow n = new Netflow(uuid, nodeIndex, hashId, srcAddr,srcPort,dstAddr,dstPort);
             graph.addNode(n);
         }
-        System.out.println("[INFO] "+ count + " Netflows verarbeitet");
+        Logger.log("[INFO] "+ count + " Netflows verarbeitet");
 
     }
 
@@ -133,14 +134,14 @@ public class DataCollector {
 
             graph.addEdge(e);
         }
-        System.out.println("[INFO] "+ count + " Edges verarbeitet");
+        Logger.log("[INFO] "+ count + " Edges verarbeitet");
     }
 
     public void printEdges(){
         for (Edge e: graph.getEdges()){
             String src = e.getSrcNode().getName();
             String dst = e.getDstNode().getName();
-            System.out.println(src + " ----> "+ dst);
+            Logger.log(src + " ----> "+ dst);
         }
     }
 

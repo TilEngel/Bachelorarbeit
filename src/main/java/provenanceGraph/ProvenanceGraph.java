@@ -1,6 +1,7 @@
 package main.java.provenanceGraph;
 
 
+import main.java.Logger;
 import main.java.database.graph.Edge;
 import main.java.database.graph.Node;
 
@@ -54,7 +55,7 @@ public class ProvenanceGraph {
         if(outEdges.containsKey(hashId)){
             return outEdges.get(hashId);
         }
-        System.out.println("[WARN] getOutEdges: ungültiger Knoten. Nutze Fallback");
+        Logger.log("[WARN] getOutEdges: ungültiger Knoten. Nutze Fallback");
         return Collections.emptyList();
 
     }
@@ -68,7 +69,7 @@ public class ProvenanceGraph {
         if (inEdges.containsKey(hashId)){
             return inEdges.get(hashId);
         }
-        System.out.println("[WARN] getInEdges: ungültiger Knoten, nutze Fallback");
+        Logger.log("[WARN] getInEdges: ungültiger Knoten, nutze Fallback");
         return Collections.emptyList();
     }
 
