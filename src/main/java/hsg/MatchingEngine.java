@@ -2,28 +2,77 @@ package main.java.hsg;
 
 import main.java.Logger;
 import main.java.database.graph.Edge;
+import main.java.database.graph.Node;
 import main.java.events.ttps.*;
 import main.java.provenanceGraph.ProvenanceGraph;
 
-import java.util.List;
+import java.util.*;
 
 public class MatchingEngine {
-    //TODO Listen in main auslagern und als Parameter übergeben
 
 
+    public static void matchTTPs(ProvenanceGraph graph, List<List<TTP>> phases) {
+        //Initial_Compromise finden
+        for (Edge e : graph.getEdges()) {
+            for (TTP ttp : phases.get(0)) { //initial_compromise1
+                if (ttp.matches(e, graph)) {
+                    Node match = e.getDstNode();
+                    //Initial_Compromise entdeckt -> neue Kette starten
+                    TTPChain newChain = new TTPChain(ttp.getName(), match.getHashId());
+                    match.addChain(newChain);
+                    match.addTTP(ttp);
+                    Logger.log("[INFO] New Chain " + ttp.getName() + " auf " + match.getName());
 
-    public static void matchTTPs(ProvenanceGraph graph, List<List<TTP>> phases){
-        int count = 0;
-        for(Edge e: graph.getEdges()){
-            for(List<TTP> phase : phases){
-                for(TTP ttp: phase){
-                    if(ttp.matches(e, graph)){
-                        count ++;
-                        Logger.logTTPMatch(e.getDstNode(), ttp);
-                    }
                 }
             }
         }
-        Logger.logResult("Count: "+ count);
+
+        //Kette verfolgen und auf spätere Phasen testen
+        for (Node startNode : graph.getNodes().values()) {
+            if (!startNode.getChains().isEmpty()) {
+                //Vom Startknoten zu erreichende Knoten durchlaufen
+                Queue<String> queue = new LinkedList<>();
+                Map<String, Integer> visitedPF = new HashMap<>();
+                queue.add(startNode.getHashId());
+                visitedPF.put(startNode.getHashId(), 1);
+
+                while (!queue.isEmpty()) {
+                    String currentId = queue.poll();
+                    Node currentNode = graph.getNode(currentId);
+                    int currentPF = visitedPF.get(currentId);
+
+                    for (Edge e : graph.getOutEdges(currentId)) {
+                        Node dstNode = e.getDstNode();
+
+                        //PathFactor berechnen.
+                        //Nur weiter machen wenn PF < Thresh
+
+                        //TTP Matching
+                        for (List<TTP> phase : phases) {
+                            for (TTP ttp : phase) {
+                                if (ttp.matches(e, graph)) {
+
+                                    for (TTPChain chain : currentNode.getChains()) {
+                                        if (!chain.getTtps().contains(ttp.getName())) {
+                                            //Kette erweitern
+                                            TTPChain extend = new TTPChain(chain.getTtps(),ttp.getName(), 2, chain.getOriginId());
+                                            Logger.log("-[CHAIN] TTPChain erweitert");
+                                            dstNode.addChain(extend);
+                                            dstNode.addTTP(ttp);
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        //TODO Auch ohne Match weiter traversieren
+                        // Bis PF > Thresh
+
+                    }
+                }
+
+
+            }
+        }
     }
 }
