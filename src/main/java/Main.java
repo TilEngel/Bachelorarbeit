@@ -12,6 +12,16 @@ import java.util.List;
 
 public class Main {
 
+    //Zu suchende TTP-Typen
+    private static final List<TTP> initialCompromise1= List.of(new Untrusted_Read());
+    private static final List<TTP> initialCompromise2= List.of(new Untrusted_File_Exec(), new Make_Mem_Exec());
+    private static final List<TTP> establishFoothold= List.of(new Shell_Exec(), new CnC());
+    private static final List<TTP> privilegeEscalation = List.of(new Switch_SU());
+    private static final List<TTP> internalRecon = List.of(new Sensitive_Command());
+    private static final List<TTP> cleanupTracks = List.of(new Clear_Logs(), new Sensitive_Temp_RM());
+    private static final List<List<TTP>> phases = List.of(initialCompromise1, initialCompromise2,
+            establishFoothold, privilegeEscalation,internalRecon,cleanupTracks);
+
     private static ProvenanceGraph graph;
     public static void main(String[] args){
         Logger.doLogPriority();
@@ -29,7 +39,7 @@ public class Main {
             System.err.println("[ERR] Fehler in Main:" +e.getMessage());
         }
         //collector.printEdges();
-        MatchingEngine.matchTTPs(graph);
+        MatchingEngine.matchTTPs(graph, phases);
     }
 
 
