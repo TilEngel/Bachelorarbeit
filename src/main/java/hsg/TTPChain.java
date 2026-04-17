@@ -40,6 +40,12 @@ public class TTPChain {
         this.originId = originId;
     }
 
+    /**
+     * Gibt neue, erweiterte Kette zurück
+     * @param ttpName neues TTP
+     * @param newPF neuer PF
+     * @return erweiterte TTPChain
+     */
     public TTPChain extendChain(String ttpName, int newPF){
         return new TTPChain(ttps, ttpName, newPF, originId);
     }

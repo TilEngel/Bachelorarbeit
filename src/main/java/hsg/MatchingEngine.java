@@ -13,9 +13,19 @@ import java.util.*;
 import static main.java.Main.OPTIMIZED_RESULTS;
 import static main.java.Main.PF_THRESHOLD;
 
+/**
+ * Soll Einhaltung der TTPs prüfen und entsprechende Schritte einleiten
+ * Soll TTP.matches(edge) aufrufen und ggf. HSG-Knoten-Erstellung anfordern
+ */
 public class MatchingEngine {
 
 
+    /**
+     * Sucht nach Initial_Compromise.
+     * Verfolgt Kette an zusammenhängenden Ereignissen (unter Berücksichtigung PF).
+     * Hält aufeinanderfolgende TTPs in TTPChains fest
+     * @param phases Zu suchende TTPs jeweils in Listen nach Phase
+     */
     public static void matchTTPs(ProvenanceGraph graph, List<List<TTP>> phases) {
         //Initial_Compromise finden
         for (Edge e : graph.getEdges()) {
@@ -49,6 +59,7 @@ public class MatchingEngine {
                     for (Edge e : graph.getOutEdges(currentId)) {
                         Node dstNode = e.getDstNode();
                         String dstId = dstNode.getHashId();
+                        //Neuen PF bestimmen
                         int newPF = computeNewPF(currentNode,dstNode, currentPF, graph);
                         //Wenn PF>Threshold, wird Kette abgebrochen
                         if(newPF <= PF_THRESHOLD) {
@@ -92,6 +103,13 @@ public class MatchingEngine {
     }
 
 
+    /**
+     * Berechnung einens neuen PF
+     * @param srcNode Ursprungsknoten
+     * @param dstNode Zielknoten
+     * @param currentPF aktueller PF
+     * @return currentPF++, wenn nötig. Sonst currentPF
+     */
     private static int computeNewPF(Node srcNode, Node dstNode, int currentPF, ProvenanceGraph graph){
         if(!(dstNode instanceof Subject)){
             return currentPF;

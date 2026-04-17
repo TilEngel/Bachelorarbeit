@@ -25,6 +25,10 @@ public abstract class Node {
         setHashId(hashId);
     }
 
+    /**
+     * TTP dem Knoten hinzufügen
+     * @param ttp hinzuzufügendes TTP
+     */
     public void addTTP(TTP ttp){
         ttps.add(ttp);
     }
