@@ -10,6 +10,8 @@ import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.util.*;
 
+import static main.java.Main.PF_THRESHOLD;
+
 public class MatchingEngine {
 
 
@@ -45,30 +47,36 @@ public class MatchingEngine {
 
                     for (Edge e : graph.getOutEdges(currentId)) {
                         Node dstNode = e.getDstNode();
+                        String dstId = dstNode.getHashId();
+                        int newPF = computeNewPF(currentNode,dstNode, currentPF, graph);
+                        //Wenn PF>Threshold, wird Kette abgebrochen
+                        if(newPF <= PF_THRESHOLD) {
 
-                        //PathFactor berechnen.
-                        //Nur weiter machen wenn PF < Thresh
+                            //TTP Matching
+                            for (List<TTP> phase : phases) {
+                                for (TTP ttp : phase) {
+                                    if (ttp.matches(e, graph)) {
 
-                        //TTP Matching
-                        for (List<TTP> phase : phases) {
-                            for (TTP ttp : phase) {
-                                if (ttp.matches(e, graph)) {
+                                        for (TTPChain chain : currentNode.getChains()) {
+                                            if (!chain.getTtps().contains(ttp.getName())) {
+                                                //Kette erweitern
+                                                TTPChain extend = chain.extendChain(ttp.getName(), newPF);
+                                                Logger.log("--[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
+                                                dstNode.addChain(extend);
+                                                dstNode.addTTP(ttp);
 
-                                    for (TTPChain chain : currentNode.getChains()) {
-                                        if (!chain.getTtps().contains(ttp.getName())) {
-                                            //Kette erweitern
-                                            TTPChain extend = new TTPChain(chain.getTtps(),ttp.getName(), 2, chain.getOriginId());
-                                            Logger.log("-[CHAIN] TTPChain erweitert");
-                                            dstNode.addChain(extend);
-                                            dstNode.addTTP(ttp);
-
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                        //TODO Auch ohne Match weiter traversieren
-                        // Bis PF > Thresh
+                        //Auch ohne Match weiter traversieren
+                        if(!visitedPF.containsKey(dstId)|| visitedPF.get(dstId) >newPF ){
+
+                            visitedPF.put(dstId,newPF);
+                            queue.add(dstId);
+                        }
 
                     }
                 }
@@ -79,7 +87,7 @@ public class MatchingEngine {
     }
 
 
-    private int computeNewPF(Node srcNode, Node dstNode, int currentPF, ProvenanceGraph graph){
+    private static int computeNewPF(Node srcNode, Node dstNode, int currentPF, ProvenanceGraph graph){
         if(!(dstNode instanceof Subject)){
             return currentPF;
         }

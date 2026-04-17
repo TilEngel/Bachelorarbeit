@@ -33,11 +33,15 @@ public class TTPChain {
      * @param newPF neuer PF
      * @param originId Ursprungsknoten
      */
-    public  TTPChain(List<String> existing, String newTTP, int newPF,String originId){
+    private  TTPChain(List<String> existing, String newTTP, int newPF,String originId){
         this.ttps = new ArrayList<>(existing);
         this.ttps.add(newTTP);
         this.pathFactor= newPF;
         this.originId = originId;
+    }
+
+    public TTPChain extendChain(String ttpName, int newPF){
+        return new TTPChain(ttps, ttpName, newPF, originId);
     }
 
 
@@ -52,4 +56,8 @@ public class TTPChain {
         return originId;
     }
 
+    @Override
+    public String toString(){
+        return ttps + " (PF = "+ pathFactor + ")";
+    }
 }

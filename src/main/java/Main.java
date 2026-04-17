@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class Main {
+    public static final int PF_THRESHOLD = 3;
 
     //Zu suchende TTP-Typen
     private static final List<TTP> initialCompromise1= List.of(new Untrusted_Read());
