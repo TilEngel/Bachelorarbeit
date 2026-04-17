@@ -3,6 +3,8 @@ package main.java.hsg;
 import main.java.Logger;
 import main.java.database.graph.Edge;
 import main.java.database.graph.Node;
+import main.java.database.graph.Subject;
+import main.java.events.EventType;
 import main.java.events.ttps.*;
 import main.java.provenanceGraph.ProvenanceGraph;
 
@@ -74,5 +76,18 @@ public class MatchingEngine {
 
             }
         }
+    }
+
+
+    private int computeNewPF(Node srcNode, Node dstNode, int currentPF, ProvenanceGraph graph){
+        if(!(dstNode instanceof Subject)){
+            return currentPF;
+        }
+        for(Edge e: graph.getInEdges(dstNode.getHashId())){
+            if(e.getOperation().equals(EventType.Type.EVENT_FORK.toString()) && e.getSrcNode().getHashId().equals((srcNode.getHashId()))){
+                return currentPF;
+            }
+        }
+        return currentPF +1;
     }
 }
