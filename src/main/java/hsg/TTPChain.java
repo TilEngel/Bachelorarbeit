@@ -44,6 +44,18 @@ public class TTPChain {
         return new TTPChain(ttps, ttpName, newPF, originId);
     }
 
+    /**
+     * Prüft, ob Chain identisch zu anderer Chain ist
+     * @param other andere Chain
+     * @return true, wenn origId und ttps identisch sind
+     */
+    public boolean isDuplicateOf(TTPChain other){
+        boolean sameOrigin= this.originId.equals(other.originId);
+        boolean sameTTPs = this.ttps.equals(other.ttps);
+
+        return sameOrigin && sameTTPs;
+    }
+
 
     public List<String> getTtps(){
         return Collections.unmodifiableList(ttps);

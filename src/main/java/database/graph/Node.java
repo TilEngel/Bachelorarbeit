@@ -40,6 +40,20 @@ public abstract class Node {
         return Collections.unmodifiableList(chains);
     }
 
+    /**
+     * Prüft, ob identische Chain bereits vorhanden ist
+     * @param chain TTPChain
+     * @return true, wenn bereits vorhanden
+     */
+    public boolean hasChain(TTPChain chain){
+        for(TTPChain c: chains){
+            if(chain.isDuplicateOf(c)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void setUuid(String uuid){
         this.uuid = uuid;
     }

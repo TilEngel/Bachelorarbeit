@@ -10,6 +10,7 @@ import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.util.*;
 
+import static main.java.Main.OPTIMIZED_RESULTS;
 import static main.java.Main.PF_THRESHOLD;
 
 public class MatchingEngine {
@@ -61,9 +62,12 @@ public class MatchingEngine {
                                             if (!chain.getTtps().contains(ttp.getName())) {
                                                 //Kette erweitern
                                                 TTPChain extend = chain.extendChain(ttp.getName(), newPF);
-                                                Logger.log("--[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
-                                                dstNode.addChain(extend);
-                                                dstNode.addTTP(ttp);
+                                                //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
+                                                if(!dstNode.hasChain(extend)) {
+                                                    Logger.log("--[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
+                                                    dstNode.addChain(extend);
+                                                    dstNode.addTTP(ttp);
+                                                }
 
                                             }
                                         }
@@ -71,16 +75,17 @@ public class MatchingEngine {
                                 }
                             }
                         }
-                        //Auch ohne Match weiter traversieren
-                        if(!visitedPF.containsKey(dstId)|| visitedPF.get(dstId) >newPF ){
+                        if (OPTIMIZED_RESULTS) {
+                            //Auch ohne Match weiter traversieren
+                            if (!visitedPF.containsKey(dstId) || visitedPF.get(dstId) > newPF) {
 
-                            visitedPF.put(dstId,newPF);
-                            queue.add(dstId);
+                                visitedPF.put(dstId, newPF);
+                                queue.add(dstId);
+                            }
                         }
 
                     }
                 }
-
 
             }
         }
