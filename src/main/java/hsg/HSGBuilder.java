@@ -1,6 +1,9 @@
 package main.java.hsg;
 
+import main.java.Logger;
+import main.java.database.graph.Edge;
 import main.java.database.graph.Node;
+import main.java.events.ttps.TTP;
 import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.util.*;
@@ -17,13 +20,13 @@ public class HSGBuilder {
      * @param graph Provenance-Graph
      * @return Map, die Ursprungs-Knoten auf Liste abbildet
      */
-    public static Map<String, List<Node>> constructHSG(ProvenanceGraph graph){
+    public static Map<String, List<Edge>> constructHSG(ProvenanceGraph graph){
 
-        Map<String, List<Node>> scenarios = new HashMap<>();
+        Map<String, List<Edge>> scenarios = new HashMap<>();
 
-        for(Node node: graph.getNodes().values()){
+        for(Edge edge: graph.getEdges()){
             //Für jede Kette aller Knoten
-            for(TTPChain chain: node.getChains()){
+            for(TTPChain chain: edge.getDstNode().getChains()){
                 String origin = chain.getOriginId();
                 //Wenn noch kein Szenario mit dem Ursprung existiert
                 if(!scenarios.containsKey(origin)){
@@ -31,11 +34,20 @@ public class HSGBuilder {
                     scenarios.put(origin, new ArrayList<>());
                 }
                 //Wenn Knoten noch nicht in der Liste seines Szenarios enthalten ist
-                if(!scenarios.get(origin).contains(node)){
-                    //Hinzufügen
-                    scenarios.get(origin).add(node);
+                if(!scenarios.get(origin).contains(edge)){
+                    scenarios.get(origin).add(edge);
+
                 }
             }
+        }
+        //Nach dem Einfügen Kanten sortieren (aufsteigend nach TTPChain-Länge).
+        //Damit Kanten in Reihenfolge, wie sie aufgetreten sind
+        for(List<Edge> edges : scenarios.values()){
+            edges.sort((edge1, edge2) ->{
+                int length1 = getMinChainLength(edge1.getDstNode());
+                int length2 = getMinChainLength(edge2.getDstNode());
+                return Integer.compare(length1, length2);
+            });
         }
 
         return scenarios;
@@ -43,29 +55,43 @@ public class HSGBuilder {
 
     /**
      * Gibt alle Szenarien aus
-     * @param scenarios Auszugebene Szenarien
+     * @param scenarios auszugebene Szenarien
      */
-    public static void printScenarios(Map<String,List<Node>> scenarios, ProvenanceGraph graph) {
+    public static void printScenarios(Map<String,List<Edge>> scenarios, ProvenanceGraph graph) {
         int count = 0;
-        for (Map.Entry<String, List<Node>> entry : scenarios.entrySet()) {
+        for (Map.Entry<String, List<Edge>> entry : scenarios.entrySet()) {
             count++;
             Node origin = graph.getNode(entry.getKey());
-            List<Node> involved = entry.getValue();
+            List<Edge> involved = entry.getValue();
 
-            System.out.println("\n Szenario " + count);
-            System.out.println("Ursprung: " + origin.getName());
-            System.out.println("Beteiligte Knoten: " + involved.size());
+            Logger.logResult("\n Szenario " + count);
+            Logger.logResult("Ursprung: " + origin.getName());
+            Logger.logResult("Beteiligte Knoten: " + involved.size());
 
             //TTPs
-            Set<String> allTTPs = new LinkedHashSet<>();
-            for (Node n : involved) {
-                for (TTPChain chain : n.getChains()) {
-                    if (chain.getOriginId().equals(entry.getKey())) {
-                        allTTPs.addAll(chain.getTtps());
+            TTPChain longest= null;
+            for(Edge e: involved){
+                for(TTPChain chain : e.getDstNode().getChains()){
+                    if(longest == null || chain.getTtps().size()> longest.getTtps().size()){
+                        longest= chain;
                     }
                 }
             }
-            System.out.println("TTP-Kette: " + allTTPs);
+            if(longest!= null){
+                Logger.logResult("TTP-Kette: "+ longest.getTtps());
+            }
+
         }
+    }
+
+
+    private static int getMinChainLength(Node node){
+        int min = Integer.MAX_VALUE;
+        for(TTPChain chain: node.getChains()){
+            if(chain.getTtps().size()<min){
+                min = chain.getTtps().size();
+            }
+        }
+        return min;
     }
 }

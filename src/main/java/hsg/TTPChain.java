@@ -64,7 +64,7 @@ public class TTPChain {
 
 
     public List<String> getTtps(){
-        return Collections.unmodifiableList(ttps);
+        return ttps;
     }
 
     public int getPathFactor(){

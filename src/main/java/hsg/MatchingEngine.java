@@ -69,7 +69,9 @@ public class MatchingEngine {
                                 for (TTP ttp : phase) {
                                     if (ttp.matches(e, graph)) {
 
-                                        for (TTPChain chain : currentNode.getChains()) {
+                                        //Kopie, über die iteriert wird, weil dem Knoten in der Schleife Chains hinzugefügt werden können (exception)
+                                        List<TTPChain> copy = new ArrayList<>(currentNode.getChains());
+                                        for (TTPChain chain : copy) {
                                             if (!chain.getTtps().contains(ttp.getName())) {
                                                 //Kette erweitern
                                                 TTPChain extend = chain.extendChain(ttp.getName(), newPF);

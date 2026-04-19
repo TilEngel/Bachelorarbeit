@@ -173,5 +173,86 @@ public class JDBCEngine {
         }
         return rows;
     }
+
+
+
+
+    public List<Map<String, Object>> getAllNodesIn(char nodeType, String minimum, String maximum) {
+        //Richtige Tabelle wählen
+        String table;
+        if(nodeType =='1') {
+            table = "subject_node_table";
+        } else if(nodeType =='2'){
+            table = "file_node_table";
+        } else if(nodeType == '3') {
+            table = "netflow_node_table";
+        } else{
+            Logger.log("[WARN] In ungültiger Tabelle nach Knoten gesucht");
+            return null;
+        }
+        //Query: Alle Subjekte, die an Events vor TIMESTAMP_THRESH beteiligt sind
+        String sql = "SELECT DISTINCT x.* " +
+                "FROM " + table + " x " +
+                "WHERE x.hash_id IN ( " +
+                "SELECT src_node FROM event_table " +
+                "WHERE timestamp_rec BETWEEN " + minimum + " AND " + maximum +
+                " UNION " +
+                "SELECT dst_node FROM event_table " +
+                "WHERE timestamp_rec BETWEEN " + minimum + " AND " + maximum + ")";
+        List<Map<String,Object>> rows = new ArrayList<>();
+
+        try(Statement stmt = getConnection().createStatement()) {
+            try (ResultSet rs = stmt.executeQuery(sql)) {
+                ResultSetMetaData meta = rs.getMetaData();
+                //Ergebnisse als Map speichern
+                int columnCount = meta.getColumnCount();
+                while (rs.next()) {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    for (int i = 1; i <= columnCount; i++) {
+                        row.put(meta.getColumnName(i), rs.getObject(i));
+                    }
+                    //Map zu Liste hinzufügen
+                    rows.add(row);
+                }
+            } catch (SQLException e) {
+                System.err.println("[ERR] getAllSubjectNodes: " + e.getMessage());
+            }
+        } catch (SQLException e) {
+            System.err.println("[ERR] getAllSubjectNodes: " + e.getMessage());
+        }
+        Logger.log("[INFO] getAllNodes beendet. NodeType: "+nodeType);
+        return rows;
+    }
+
+    /**
+     * Liefert alle Kanten im Zeitraum
+     * als Liste an Maps (Format [UUID, Object])
+     * @return Liste aller Events
+     */
+    public List<Map<String,Object>> getAllEventsIn(String minimum, String maximum){
+        String sql= "SELECT * FROM event_table "+
+                "WHERE timestamp_rec BETWEEN "+ minimum+ " AND "+ maximum+
+                " ORDER BY timestamp_rec";
+        List<Map<String,Object>> rows = new ArrayList<>();
+        try(Statement stmt = getConnection().createStatement()){
+            try(ResultSet rs = stmt.executeQuery(sql)){
+                ResultSetMetaData meta = rs.getMetaData();
+                int columnCount = meta.getColumnCount();
+                while(rs.next()){
+                    Map<String,Object> row = new LinkedHashMap<>();
+                    for(int i=1; i<= columnCount; i++){
+                        row.put(meta.getColumnName(i), rs.getObject(i));
+                    }
+                    rows.add(row);
+                }
+            }catch (SQLException e){
+                System.err.println("[ERR] getAllEvents: "+ e.getMessage());
+            }
+        } catch (SQLException e){
+            System.err.println("[ERR] getAllEvents(): "+e.getMessage());
+        }
+        return rows;
+    }
 }
+
 

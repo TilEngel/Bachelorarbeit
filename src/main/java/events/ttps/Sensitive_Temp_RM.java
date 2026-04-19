@@ -4,6 +4,7 @@ import main.java.database.graph.Edge;
 import main.java.database.graph.File;
 import main.java.database.graph.Subject;
 import main.java.events.EventType;
+import main.java.hsg.TTPChain;
 import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.util.List;
@@ -35,7 +36,12 @@ public class Sensitive_Temp_RM extends TTP {
         if(!prerequisitesMet(edge, graph)){
             return false;
         }
-        return true;
+        for(TTPChain chain: edge.getSrcNode().getChains()){
+            if(chain.getTtps().contains("sensitive_command")){
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
