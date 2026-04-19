@@ -49,7 +49,7 @@ public class MatchingEngine {
                 Queue<String> queue = new LinkedList<>();
                 Map<String, Integer> visitedPF = new HashMap<>();
                 queue.add(startNode.getHashId());
-                visitedPF.put(startNode.getHashId(), 1);
+                visitedPF.put(startNode.getHashId(), 1); //PF zu Beginn 1
 
                 while (!queue.isEmpty()) {
                     String currentId = queue.poll();
@@ -74,7 +74,7 @@ public class MatchingEngine {
                                                 //Kette erweitern
                                                 TTPChain extend = chain.extendChain(ttp.getName(), newPF);
                                                 //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
-                                                if(!dstNode.hasChain(extend)) {
+                                                if (!dstNode.hasChain(extend)) {
                                                     Logger.log("--[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
                                                     dstNode.addChain(extend);
                                                     dstNode.addTTP(ttp);
@@ -85,13 +85,15 @@ public class MatchingEngine {
                                     }
                                 }
                             }
-                        }
-                        if (OPTIMIZED_RESULTS) {
-                            //Auch ohne Match weiter traversieren
-                            if (!visitedPF.containsKey(dstId) || visitedPF.get(dstId) > newPF) {
 
-                                visitedPF.put(dstId, newPF);
-                                queue.add(dstId);
+                            if (OPTIMIZED_RESULTS) {
+                                //Auch ohne Match zum nächsten Knoten traversieren
+                                //Knoten werden erneut traversiert, wenn ein kürzerer Pfad gefunden wurde
+                                if (!visitedPF.containsKey(dstId) || visitedPF.get(dstId) > newPF) {
+
+                                    visitedPF.put(dstId, newPF);
+                                    queue.add(dstId);
+                                }
                             }
                         }
 
