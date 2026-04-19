@@ -1,7 +1,6 @@
 package main.java;
 
 import main.java.database.JDBCEngine;
-import main.java.database.graph.Edge;
 import main.java.events.ttps.*;
 import main.java.hsg.HSGBuilder;
 import main.java.hsg.MatchingEngine;
@@ -12,7 +11,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class Main {
-    public static final boolean OPTIMIZED_RESULTS = true;
+    public static final boolean OPTIMIZED_RESULTS = false;
     public static final int PF_THRESHOLD = 3;
 
     //Zu suchende TTP-Typen
@@ -43,7 +42,7 @@ public class Main {
         }
         //collector.printEdges();
         MatchingEngine.matchTTPs(graph, phases);
-        HSGBuilder.constructHSG(graph);
+        HSGBuilder.printScenarios(HSGBuilder.constructHSG(graph), graph);
     }
 
 
