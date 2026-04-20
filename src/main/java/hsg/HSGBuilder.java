@@ -3,10 +3,20 @@ package main.java.hsg;
 import main.java.Logger;
 import main.java.database.graph.Edge;
 import main.java.database.graph.Node;
-import main.java.events.ttps.TTP;
 import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.util.*;
+
+import static main.java.Main.REMOVE_DUPLICATE_SCENARIOS;
+
+
+/**
+ * Problem: Szenarien mit Kanten füllen, weil mehr Informationen, die später evtl. als Graph ausgegeben werden können
+ * ABER Knoten können mehrere eingehende Kanten haben -> mehrere identische HSG-Knoten pro ProvGraph-Knoten
+ *
+ * Lösung: alreadyHasEdge() prüft, ob Knoten bereits durch eine Kante repräsentiert wird
+ */
+
 
 /**
  * Erstellt Listen an Knoten, welche als HSG verstanden
@@ -20,34 +30,63 @@ public class HSGBuilder {
      * @param graph Provenance-Graph
      * @return Map, die Ursprungs-Knoten auf Liste abbildet
      */
-    public static Map<String, List<Edge>> constructHSG(ProvenanceGraph graph){
+    public static Map<String, List<Edge>> constructHSG(ProvenanceGraph graph) {
 
         Map<String, List<Edge>> scenarios = new HashMap<>();
 
-        for(Edge edge: graph.getEdges()){
+        for (Edge edge : graph.getEdges()) {
             //Für jede Kette aller Knoten
-            for(TTPChain chain: edge.getDstNode().getChains()){
+            for (TTPChain chain : edge.getDstNode().getChains()) {
                 String origin = chain.getOriginId();
                 //Wenn noch kein Szenario mit dem Ursprung existiert
-                if(!scenarios.containsKey(origin)){
+                if (!scenarios.containsKey(origin)) {
                     //Neuen Eintrag erstellen
                     scenarios.put(origin, new ArrayList<>());
                 }
                 //Wenn Knoten noch nicht in der Liste seines Szenarios enthalten ist
-                if(!scenarios.get(origin).contains(edge)){
-                    scenarios.get(origin).add(edge);
+                if (!scenarios.get(origin).contains(edge)) {
+                    if (!alreadyHasEdge(scenarios.get(origin), edge)) {
+                        scenarios.get(origin).add(edge);
+                    }
 
                 }
             }
         }
         //Nach dem Einfügen Kanten sortieren (aufsteigend nach TTPChain-Länge).
         //Damit Kanten in Reihenfolge, wie sie aufgetreten sind
-        for(List<Edge> edges : scenarios.values()){
-            edges.sort((edge1, edge2) ->{
+        for (List<Edge> edges : scenarios.values()) {
+            edges.sort((edge1, edge2) -> {
                 int length1 = getMinChainLength(edge1.getDstNode());
                 int length2 = getMinChainLength(edge2.getDstNode());
                 return Integer.compare(length1, length2);
             });
+        }
+
+        if(REMOVE_DUPLICATE_SCENARIOS){
+            //Duplikate entfernen, Szenarien mit identischer Kantenabfolge
+            //Node.hasChain prüft gleichheit auf Knotenebene, trotzdem kommt es zu duplikaten
+            //(vermutlich durch Versionierung der Knoten)#
+            List<String> originIds = new ArrayList<>(scenarios.keySet());
+            Set<String> remove = new HashSet<>();
+            //Jedes Szenario mit jedem anderen vergleichen
+            for (int i = 0; i < originIds.size(); i++) {
+                if (!remove.contains(originIds.get(i))) {
+                    List<Edge> edges1 = scenarios.get(originIds.get(i));
+
+                    for (int j = i + 1; j < originIds.size(); j++) {
+                        if (!remove.contains(originIds.get(j))) {
+                            List<Edge> edges2 = scenarios.get(originIds.get(j));
+                            //Falls Szenarien inhaltlich identisch sind
+                            if (isSameScenario(edges1, edges2)) {
+                                remove.add(originIds.get(j));
+                            }
+                        }
+                    }
+                }
+            }
+            for (String id : remove) {
+                scenarios.remove(id);
+            }
         }
 
         return scenarios;
@@ -66,7 +105,7 @@ public class HSGBuilder {
 
             Logger.logResult("\n Szenario " + count);
             Logger.logResult("Ursprung: " + origin.getName());
-            Logger.logResult("Beteiligte Knoten: " + involved.size());
+            Logger.logResult("Beteiligte Kanten: " + involved.size());
 
             //TTPs
             TTPChain longest= null;
@@ -81,10 +120,51 @@ public class HSGBuilder {
                 Logger.logResult("TTP-Kette: "+ longest.getTtps());
             }
 
+            //HSG-Knoten ausgeben
+            Map<String, List<Edge>> ttpEdges = new LinkedHashMap<>();
+
+            for(Edge e : involved){
+                for(TTPChain chain: e.getDstNode().getChains()){
+                    if(chain.getOriginId().equals(entry.getKey())){
+                        String lastTTP = chain.getLastTTP();
+                        if(!ttpEdges.containsKey(lastTTP)){
+                            ttpEdges.put(lastTTP,new ArrayList<>());
+                        }
+                        if(!ttpEdges.get(lastTTP).contains(e)){
+                            if(!e.getDstNode().getTTPs().isEmpty()) {
+                                ttpEdges.get(lastTTP).add(e);
+                            }
+                        }
+                    }
+                }
+
+            }
+            StringBuilder sb = new StringBuilder();
+            boolean first = true;
+            for(Map.Entry<String, List<Edge>> ttpEntry : ttpEdges.entrySet()){
+                String ttpName = ttpEntry.getKey();
+                List<Edge> ttpMatches = ttpEntry.getValue();
+
+                for(Edge e : ttpMatches){
+                    if(!first){
+                        sb.append("\n             |\n            \\/\n");
+                    }
+                    sb.append("["+ e.getSrcNode().getName()+ "]---")
+                            .append(ttpName)
+                            .append("---["+ e.getDstNode().getName()+ "]");
+                    first = false;
+                }
+            }
+            Logger.logResult(sb.toString());
         }
     }
 
 
+    /**
+     * Hilfsmethode, um die Länge der kleinsten Kette auf einem Knoten zu finden
+     * @param node zu untersuchender Knoten
+     * @return Anzahl TTPs in der kürzesten Kette auf dem Knoten
+     */
     private static int getMinChainLength(Node node){
         int min = Integer.MAX_VALUE;
         for(TTPChain chain: node.getChains()){
@@ -93,5 +173,45 @@ public class HSGBuilder {
             }
         }
         return min;
+    }
+
+    /**
+     * Prüft, ob ein Knoten bereits durch eine andere eingehende Kante vertreten ist,
+     * um mehrfach-Matches zu vermeiden
+     * @param scenario aktuelles Szenario
+     * @param edge aktuelle eingehende Kante
+     * @return true, wenn Kante auf einen Knoten führt, der bereits durch eine andere Kante vertreten ist
+     */
+    private static boolean alreadyHasEdge(List<Edge> scenario,Edge edge){
+        for(Edge e: scenario){
+            Node n = e.getDstNode();
+            if(n.equals(edge.getDstNode())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Schaut, ob zwei Szenarien die gleiche Länge haben und die Kanten aus den gleichen Knoten bestehen
+     * @param edges1 erstes Szenario
+     * @param edges2 zweites Szenario
+     * @return true, wenn Anzahl und Namen der Knoten identisch sind
+     */
+    private static boolean isSameScenario(List<Edge> edges1, List<Edge> edges2){
+        if(edges1.size() != edges2.size()){
+            return false;
+        }
+        Set<String> nodeNames1 = new HashSet<>();
+        Set<String> nodeNames2 = new HashSet<>();
+
+        for(Edge e: edges1){
+            nodeNames1.add(e.getSrcNode().getName()+e.getDstNode().getName());
+
+        }
+        for (Edge e: edges2){
+            nodeNames2.add(e.getSrcNode().getName()+e.getDstNode().getName());
+        }
+        return nodeNames1.equals(nodeNames2);
     }
 }

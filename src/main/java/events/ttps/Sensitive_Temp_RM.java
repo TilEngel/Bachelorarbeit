@@ -36,6 +36,7 @@ public class Sensitive_Temp_RM extends TTP {
         if(!prerequisitesMet(edge, graph)){
             return false;
         }
+        //Prüfen, ob vorher ein sensitive_command stattgefunden hat
         for(TTPChain chain: edge.getSrcNode().getChains()){
             if(chain.getTtps().contains("sensitive_command")){
                 return true;

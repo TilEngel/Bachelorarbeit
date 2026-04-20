@@ -12,6 +12,7 @@ import java.util.List;
 
 public class Main {
     public static final boolean OPTIMIZED_RESULTS = true;
+    public static final boolean REMOVE_DUPLICATE_SCENARIOS = true;
     public static final int PF_THRESHOLD = 3;
 
     //Zu suchende TTP-Typen
@@ -40,7 +41,6 @@ public class Main {
         }catch (SQLException e){
             System.err.println("[ERR] Fehler in Main:" +e.getMessage());
         }
-        //collector.printEdges();
         MatchingEngine.matchTTPs(graph, phases);
         HSGBuilder.printScenarios(HSGBuilder.constructHSG(graph), graph);
     }

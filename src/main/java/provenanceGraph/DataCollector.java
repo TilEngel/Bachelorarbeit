@@ -114,7 +114,7 @@ public class DataCollector {
      * legt diese in edges-Liste ab
      */
     private void collectEvents(){
-       // List<Map<String,Object>> rows = engine.getAllEvents();
+        //List<Map<String,Object>> rows = engine.getAllEvents();
         List<Map<String, Object>> rows = engine.getAllEventsIn( TIME_MINIMUM,TIME_MAXIMUM);
         int count =0;
 

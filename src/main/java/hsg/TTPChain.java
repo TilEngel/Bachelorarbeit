@@ -78,4 +78,8 @@ public class TTPChain {
     public String toString(){
         return ttps + " (PF = "+ pathFactor + ")";
     }
+
+    public String getLastTTP(){
+        return ttps.get(ttps.size()-1);
+    }
 }
