@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
+import static main.java.Main.TIMESTAMP_MAX;
+import static main.java.Main.TIMESTAMP_MIN;
+
 /**
  * Engine, um Daten aus den Tabellen der Datenbank zu holen
  * Daten müssen später zu Objekten verarbeitet werden
@@ -177,7 +180,7 @@ public class JDBCEngine {
 
 
 
-    public List<Map<String, Object>> getAllNodesIn(char nodeType, String minimum, String maximum) {
+    public List<Map<String, Object>> getAllNodesIn(char nodeType) {
         //Richtige Tabelle wählen
         String table;
         if(nodeType =='1') {
@@ -195,10 +198,10 @@ public class JDBCEngine {
                 "FROM " + table + " x " +
                 "WHERE x.hash_id IN ( " +
                 "SELECT src_node FROM event_table " +
-                "WHERE timestamp_rec BETWEEN " + minimum + " AND " + maximum +
+                "WHERE timestamp_rec BETWEEN " + TIMESTAMP_MIN + " AND " + TIMESTAMP_MAX +
                 " UNION " +
                 "SELECT dst_node FROM event_table " +
-                "WHERE timestamp_rec BETWEEN " + minimum + " AND " + maximum + ")";
+                "WHERE timestamp_rec BETWEEN " + TIMESTAMP_MIN + " AND " + TIMESTAMP_MAX + ")";
         List<Map<String,Object>> rows = new ArrayList<>();
 
         try(Statement stmt = getConnection().createStatement()) {
@@ -229,9 +232,9 @@ public class JDBCEngine {
      * als Liste an Maps (Format [UUID, Object])
      * @return Liste aller Events
      */
-    public List<Map<String,Object>> getAllEventsIn(String minimum, String maximum){
+    public List<Map<String,Object>> getAllEventsIn(){
         String sql= "SELECT * FROM event_table "+
-                "WHERE timestamp_rec BETWEEN "+ minimum+ " AND "+ maximum+
+                "WHERE timestamp_rec BETWEEN "+ TIMESTAMP_MIN+ " AND "+ TIMESTAMP_MAX+
                 " ORDER BY timestamp_rec";
         List<Map<String,Object>> rows = new ArrayList<>();
         try(Statement stmt = getConnection().createStatement()){

@@ -13,8 +13,6 @@ import java.util.Map;
  * und gibt sie der Klasse ProvenanceGraph
  */
 public class DataCollector {
-    private final String TIME_MINIMUM = "1523000000000000000";
-    private final String TIME_MAXIMUM = "1523040000000000000";
 
     private static JDBCEngine engine;
 
@@ -44,7 +42,7 @@ public class DataCollector {
     private void collectSubjects(){
         int count=0;
         //List<Map<String, Object>> rows = engine.getAllNodes('1');
-        List<Map<String, Object>> rows = engine.getAllNodesIn('1', TIME_MINIMUM,TIME_MAXIMUM);
+        List<Map<String, Object>> rows = engine.getAllNodesIn('1');
         for(Map<String,Object> row : rows) {
             count++;
             String uuid = (String) row.get("node_uuid");
@@ -65,7 +63,7 @@ public class DataCollector {
      */
     private void collectFiles(){
         //List<Map<String, Object>> rows = engine.getAllNodes('2');
-        List<Map<String, Object>> rows = engine.getAllNodesIn('2', TIME_MINIMUM,TIME_MAXIMUM);
+        List<Map<String, Object>> rows = engine.getAllNodesIn('2');
         int count = 0;
         for(Map<String,Object> row : rows) {
             count++;
@@ -89,7 +87,7 @@ public class DataCollector {
      */
     private void collectNetflows(){
         //List<Map<String, Object>> rows = engine.getAllNodes('3');
-        List<Map<String, Object>> rows = engine.getAllNodesIn('3', TIME_MINIMUM,TIME_MAXIMUM);
+        List<Map<String, Object>> rows = engine.getAllNodesIn('3');
         int count=0;
         for(Map<String,Object> row : rows) {
 
@@ -115,7 +113,7 @@ public class DataCollector {
      */
     private void collectEvents(){
         //List<Map<String,Object>> rows = engine.getAllEvents();
-        List<Map<String, Object>> rows = engine.getAllEventsIn( TIME_MINIMUM,TIME_MAXIMUM);
+        List<Map<String, Object>> rows = engine.getAllEventsIn();
         int count =0;
 
         for (Map<String,Object> row:rows ){
