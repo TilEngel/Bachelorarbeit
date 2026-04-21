@@ -41,8 +41,7 @@ public class DataCollector {
      */
     private void collectSubjects(){
         int count=0;
-        //List<Map<String, Object>> rows = engine.getAllNodes('1');
-        List<Map<String, Object>> rows = engine.getAllNodesIn('1');
+        List<Map<String, Object>> rows = engine.getAllNodes('1');
         for(Map<String,Object> row : rows) {
             count++;
             String uuid = (String) row.get("node_uuid");
@@ -62,8 +61,7 @@ public class DataCollector {
      * Erstellt File-Instanzen und legt sie in Graphen ab
      */
     private void collectFiles(){
-        //List<Map<String, Object>> rows = engine.getAllNodes('2');
-        List<Map<String, Object>> rows = engine.getAllNodesIn('2');
+        List<Map<String, Object>> rows = engine.getAllNodes('2');
         int count = 0;
         for(Map<String,Object> row : rows) {
             count++;
@@ -86,8 +84,7 @@ public class DataCollector {
      * Erstellt Netflow-Instanzen und legt sie in Graphen ab
      */
     private void collectNetflows(){
-        //List<Map<String, Object>> rows = engine.getAllNodes('3');
-        List<Map<String, Object>> rows = engine.getAllNodesIn('3');
+        List<Map<String, Object>> rows = engine.getAllNodes('3');
         int count=0;
         for(Map<String,Object> row : rows) {
 
@@ -112,8 +109,7 @@ public class DataCollector {
      * legt diese in edges-Liste ab
      */
     private void collectEvents(){
-        //List<Map<String,Object>> rows = engine.getAllEvents();
-        List<Map<String, Object>> rows = engine.getAllEventsIn();
+        List<Map<String, Object>> rows = engine.getAllEvents();
         int count =0;
 
         for (Map<String,Object> row:rows ){
