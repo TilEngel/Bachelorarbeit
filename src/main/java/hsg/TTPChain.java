@@ -1,0 +1,85 @@
+package main.java.hsg;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Repräsentiert eine Liste an verketteten TTP-Instanzen.
+ * Essenzieller Schritt bei Szenario-Erstellung.
+ * TTPChain wird von einem Knoten an alle Nachfahren weitergegeben und evtl. erweitert
+ */
+public class TTPChain {
+    private final List<String> ttps;
+    private final int pathFactor;
+    private final String originId;
+
+    /**
+     * Startet eine neue Kette, beim ersten TTP-Match
+     * @param ttpName Name des TTPs
+     * @param originId Ursprungsknoten
+     */
+    public TTPChain(String ttpName, String originId){
+        this.ttps= new ArrayList<>();
+        this.ttps.add(ttpName);
+        this.pathFactor=1;
+        this.originId = originId;
+    }
+
+    /**
+     * Erweitert eine bestehende Kette
+     * @param existing vorherige TTPs
+     * @param newTTP neues TTP
+     * @param newPF neuer PF
+     * @param originId Ursprungsknoten
+     */
+    private  TTPChain(List<String> existing, String newTTP, int newPF,String originId){
+        this.ttps = new ArrayList<>(existing);
+        this.ttps.add(newTTP);
+        this.pathFactor= newPF;
+        this.originId = originId;
+    }
+
+    /**
+     * Gibt neue, erweiterte Kette zurück
+     * @param ttpName neues TTP
+     * @param newPF neuer PF
+     * @return erweiterte TTPChain
+     */
+    public TTPChain extendChain(String ttpName, int newPF){
+        return new TTPChain(ttps, ttpName, newPF, originId);
+    }
+
+    /**
+     * Prüft, ob Chain identisch zu anderer Chain ist
+     * @param other andere Chain
+     * @return true, wenn origId und ttps identisch sind
+     */
+    public boolean isDuplicateOf(TTPChain other){
+        boolean sameOrigin= this.originId.equals(other.originId);
+        boolean sameTTPs = this.ttps.equals(other.ttps);
+
+        return sameOrigin && sameTTPs;
+    }
+
+
+    public List<String> getTtps(){
+        return ttps;
+    }
+
+    public int getPathFactor(){
+        return pathFactor;
+    }
+    public String getOriginId(){
+        return originId;
+    }
+
+    @Override
+    public String toString(){
+        return ttps + " (PF = "+ pathFactor + ")";
+    }
+
+    public String getLastTTP(){
+        return ttps.get(ttps.size()-1);
+    }
+}
