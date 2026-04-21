@@ -11,14 +11,6 @@ import static main.java.Main.REMOVE_DUPLICATE_SCENARIOS;
 
 
 /**
- * Problem: Szenarien mit Kanten füllen, weil mehr Informationen, die später evtl. als Graph ausgegeben werden können
- * ABER Knoten können mehrere eingehende Kanten haben -> mehrere identische HSG-Knoten pro ProvGraph-Knoten
- *
- * Lösung: alreadyHasEdge() prüft, ob Knoten bereits durch eine Kante repräsentiert wird
- */
-
-
-/**
  * Erstellt Listen an Knoten, welche als HSG verstanden
  * werden können.
  */
@@ -52,14 +44,10 @@ public class HSGBuilder {
                 }
             }
         }
-        //Nach dem Einfügen Kanten sortieren (aufsteigend nach TTPChain-Länge).
+        //Nach dem Einfügen Kanten sortieren (aufsteigend nach Timestamp).
         //Damit Kanten in Reihenfolge, wie sie aufgetreten sind
-        for (List<Edge> edges : scenarios.values()) {
-            edges.sort((edge1, edge2) -> {
-                int length1 = getMinChainLength(edge1.getDstNode());
-                int length2 = getMinChainLength(edge2.getDstNode());
-                return Integer.compare(length1, length2);
-            });
+        for(List<Edge> edges : scenarios.values()){
+            edges.sort((edge1, edge2)->Long.compare(Long.parseLong(edge1.getTimestampRec()), Long.parseLong(edge2.getTimestampRec())));
         }
 
         if(REMOVE_DUPLICATE_SCENARIOS){
@@ -160,20 +148,6 @@ public class HSGBuilder {
     }
 
 
-    /**
-     * Hilfsmethode, um die Länge der kleinsten Kette auf einem Knoten zu finden
-     * @param node zu untersuchender Knoten
-     * @return Anzahl TTPs in der kürzesten Kette auf dem Knoten
-     */
-    private static int getMinChainLength(Node node){
-        int min = Integer.MAX_VALUE;
-        for(TTPChain chain: node.getChains()){
-            if(chain.getTtps().size()<min){
-                min = chain.getTtps().size();
-            }
-        }
-        return min;
-    }
 
     /**
      * Prüft, ob ein Knoten bereits durch eine andere eingehende Kante vertreten ist,
