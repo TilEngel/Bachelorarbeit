@@ -11,7 +11,7 @@ import static main.java.Main.TIMESTAMP_MAX;
 import static main.java.Main.TIMESTAMP_MIN;
 
 /**
- * Engine, um Daten aus den Tabellen der Datenbank zu holen
+ * Engine, um Daten aus den Tabellen der Datenbank zu holen,
  * Daten müssen später zu Objekten verarbeitet werden
  */
 public class JDBCEngine {
@@ -98,7 +98,7 @@ public class JDBCEngine {
     }
 
     /**
-     * Liefert alle Entitäten im Zeitraum(ohne Dopplung)
+     * Liefert alle Entitäten im Zeitraum (ohne Dopplung)
      * als Liste an Maps (Format [UUID, Objekt])
      * @param nodeType Tabelle aus der alle Knoten geliefert werden sollen (Wertebereich [1,3])
      * @return Liste aller relevanten Entitäten
