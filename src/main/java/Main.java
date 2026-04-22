@@ -11,9 +11,12 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class Main {
-    public static final boolean OPTIMIZED_RESULTS = true;
-    public static final boolean REMOVE_DUPLICATE_SCENARIOS = true;
-    public static final int PF_THRESHOLD = 3;
+    public static final boolean OPTIMIZED_RESULTS = true; //Erkennt Szenarien zuverlässiger
+    public static final boolean REMOVE_DUPLICATE_SCENARIOS = true; //Entfernt inhaltlich identische Szenarien
+    public static final int PF_THRESHOLD = 3; //Path-Factor Schwellenwert
+
+    public static final String TIMESTAMP_MIN = "1523000000000000000";
+    public static final String TIMESTAMP_MAX = "1523040000000000000";
 
     //Zu suchende TTP-Typen
     private static final List<TTP> initialCompromise1= List.of(new Untrusted_Read());
