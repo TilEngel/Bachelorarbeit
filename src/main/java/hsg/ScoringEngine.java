@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Math.pow;
 import static main.java.Main.ALARM_THRESHOLD;
 
 public class ScoringEngine {
@@ -22,12 +23,18 @@ public class ScoringEngine {
     public static List<Map.Entry<Double, List<Edge>>> scoreSzenarios(Map<String, List<Edge>> scenarios){
         List<Map.Entry<Double, List<Edge>>> rankedScenarios = new ArrayList<>();
 
+        int count =0;
         for (Map.Entry<String, List<Edge> > entry : scenarios.entrySet()) {
+
+            //TODO gleiche TTPs nicht doppelt berechnen
+            // aus jeder Phase nur ein TTP
+            count++;
             List<Edge> involved = entry.getValue();
-            double score= 1.0; // BERECHNUNG
+            double score= computeScore(involved);
 
             rankedScenarios.add(Map.entry(score, involved));
-            Logger.logResult("[RESULT] Szenario Score: " + score);
+            score = Math.round(score*10.0) / 10.0;
+            Logger.logResult("[RESULT] Szenario "+ count+ " Score: " + score);
             if(score >= ALARM_THRESHOLD){
                 Logger.logResult("\n[ALARM] GRENZWERT ÜBERSCHRITTEN!!\n ");
             }
@@ -39,13 +46,37 @@ public class ScoringEngine {
     }
 
 
+    private static double computeScore(List<Edge> involved){
+        double score = 1.0;
+        for(int i= 0; i< involved.size(); i++){
+            double weight = (10.0 + i+1) / 10.0;
+            Node node = involved.get(i).getDstNode();
+            double severity = getHighestSeverityValue(node);
+            score *= pow(severity, weight);
+        }
+        return  score;
+    }
+
+
+
+    private static int getHighestSeverityValue(Node node){
+        int highest = 0;
+        for(TTP ttp : node.getTTPs()){
+            int temp = getSeverityValue(ttp);
+            if(temp> highest){
+                highest = temp;
+            }
+        }
+        return highest;
+    }
+
     /**
      * Liefert numerischen Wert für Severities
      * (über so eine Methode, damit Werte zentral änderbar sind)
      * @param ttp entsprechendes TTP
      * @return Severity-Wert
      */
-    private int getSeverityValue(TTP ttp){
+    private static int getSeverityValue(TTP ttp){
         char severity = ttp.getSeverity();
 
         if(severity == 'L'){
