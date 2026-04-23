@@ -6,6 +6,7 @@ import main.java.database.graph.Node;
 import main.java.events.ttps.TTP;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,8 +27,6 @@ public class ScoringEngine {
         int count =0;
         for (Map.Entry<String, List<Edge> > entry : scenarios.entrySet()) {
 
-            //TODO gleiche TTPs nicht doppelt berechnen
-            // aus jeder Phase nur ein TTP
             count++;
             List<Edge> involved = entry.getValue();
             double score= computeScore(involved);
@@ -48,27 +47,30 @@ public class ScoringEngine {
 
     private static double computeScore(List<Edge> involved){
         double score = 1.0;
+        Map<String, Integer> phases = new HashMap<>(); //Kill-Chain-Phase -> höchster Score
         for(int i= 0; i< involved.size(); i++){
             double weight = (10.0 + i+1) / 10.0;
             Node node = involved.get(i).getDstNode();
-            double severity = getHighestSeverityValue(node);
+
+            //Wert für diesen Knoten bestimmen
+            int highest = 1;
+            for(TTP ttp : node.getTTPs()){
+                int temp = getSeverityValue(ttp);
+                // Nur das kritischste TTP pro Phase
+                if(!phases.containsKey(ttp.getPhase()) || phases.get(ttp.getPhase())< temp) {
+                    if (temp > highest) {
+                        highest = temp;
+                        phases.put(ttp.getPhase(), temp);
+                    }
+                }
+            }
+            double severity= highest;
+
             score *= pow(severity, weight);
         }
         return  score;
     }
 
-
-
-    private static int getHighestSeverityValue(Node node){
-        int highest = 0;
-        for(TTP ttp : node.getTTPs()){
-            int temp = getSeverityValue(ttp);
-            if(temp> highest){
-                highest = temp;
-            }
-        }
-        return highest;
-    }
 
     /**
      * Liefert numerischen Wert für Severities
