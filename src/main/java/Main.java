@@ -51,9 +51,9 @@ public class Main {
         }
         MatchingEngine.matchTTPs(graph, phases);
         Map<String,List<Edge>> scenarios = HSGBuilder.constructHSG(graph);
-        HSGBuilder.printScenarios(scenarios, graph);
+        //HSGBuilder.printScenarios(scenarios, graph);
 
-        ScoringEngine.scoreSzenarios(scenarios);
+        ScoringEngine.printRankedScenarios(ScoringEngine.scoreSzenarios(scenarios));
     }
 
 

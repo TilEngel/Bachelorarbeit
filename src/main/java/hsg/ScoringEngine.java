@@ -5,10 +5,7 @@ import main.java.database.graph.Edge;
 import main.java.database.graph.Node;
 import main.java.events.ttps.TTP;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Math.pow;
 import static main.java.Main.ALARM_THRESHOLD;
@@ -79,6 +76,35 @@ public class ScoringEngine {
         return  score;
     }
 
+
+    public static void printRankedScenarios(List<Map.Entry<Double,List<Edge>>> rankedScenarios){
+        System.out.println("\n++Szenarien (Sortiert absteigend nach Bedrohlichkeit)++ \n");
+        int count = 0;
+        for (Map.Entry<Double, List<Edge>> entry : rankedScenarios) {
+            count++;
+            List<Edge> involved = entry.getValue();
+            double score = entry.getKey();
+            String origin = involved.get(0).getDstNode().getChains().get(0).getOriginId();
+
+            System.out.println("\n Szenario " + count);
+            System.out.println("Threat-Score: " + score);
+            if(score >= ALARM_THRESHOLD){
+                System.out.println("\nGEFAHR\n");
+            }
+            System.out.println("Beteiligte Knoten: " + involved.size());
+
+            //TTPs des Szenarios sammeln
+            Set<String> allTTPs = new LinkedHashSet<>();
+            for (Edge n : involved) {
+                for (TTPChain chain : n.getDstNode().getChains()) {
+                    if (chain.getOriginId().equals(origin)) {
+                        allTTPs.addAll(chain.getTtps());
+                    }
+                }
+            }
+            System.out.println("TTP-Kette: " + allTTPs);
+        }
+    }
 
     /**
      * Liefert numerischen Wert für Severities
