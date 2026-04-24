@@ -17,6 +17,7 @@ import java.util.Map;
 public class Main {
     public static final boolean OPTIMIZED_RESULTS = true; //Erkennt Szenarien zuverlässiger
     public static final boolean REMOVE_DUPLICATE_SCENARIOS = true; //Entfernt inhaltlich identische Szenarien
+    public static final boolean ROUND_THREAT_SCORES = true;
     public static final int PF_THRESHOLD = 3; //Path-Factor Schwellenwert
     public static final int ALARM_THRESHOLD = 120; //Bedrohungspunktzahl, ab der Alarm gemeldet wird
 

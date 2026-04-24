@@ -9,6 +9,7 @@ import java.util.*;
 
 import static java.lang.Math.pow;
 import static main.java.Main.ALARM_THRESHOLD;
+import static main.java.Main.ROUND_THREAT_SCORES;
 
 public class ScoringEngine {
 
@@ -26,8 +27,11 @@ public class ScoringEngine {
 
             count++;
             List<Edge> involved = entry.getValue();
+
             double score= computeScore(involved);
-            score = Math.round(score*10.0) / 10.0;
+            if(ROUND_THREAT_SCORES) { //Wert auf eine Nachkommastelle runden
+                score = Math.round(score * 10.0) / 10.0;
+            }
 
             rankedScenarios.add(Map.entry(score, involved));
             Logger.logResult("[RESULT] Szenario "+ count+ " Score: " + score);
@@ -77,6 +81,10 @@ public class ScoringEngine {
     }
 
 
+    /**
+     * Gibt die Szenarien sortiert nach Threat-Score mit Threat-Score aus
+     * @param rankedScenarios Bewertete Szenarien (durch ScoringEngine.scoreScenarios)
+     */
     public static void printRankedScenarios(List<Map.Entry<Double,List<Edge>>> rankedScenarios){
         System.out.println("\n++Szenarien (Sortiert absteigend nach Bedrohlichkeit)++ \n");
         int count = 0;
