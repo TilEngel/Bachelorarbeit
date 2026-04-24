@@ -2,7 +2,6 @@ package main.java;
 
 import main.java.database.JDBCEngine;
 import main.java.database.graph.Edge;
-import main.java.database.graph.Node;
 import main.java.events.ttps.*;
 import main.java.hsg.HSGBuilder;
 import main.java.hsg.MatchingEngine;
