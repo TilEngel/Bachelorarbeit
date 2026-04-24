@@ -30,28 +30,36 @@ public class ScoringEngine {
             count++;
             List<Edge> involved = entry.getValue();
             double score= computeScore(involved);
+            score = Math.round(score*10.0) / 10.0;
 
             rankedScenarios.add(Map.entry(score, involved));
-            score = Math.round(score*10.0) / 10.0;
             Logger.logResult("[RESULT] Szenario "+ count+ " Score: " + score);
             if(score >= ALARM_THRESHOLD){
                 Logger.logResult("\n[ALARM] GRENZWERT ÜBERSCHRITTEN!!\n ");
             }
         }
 
-        //Szenarien sortieren
+        //Szenarien nach Score absteigend sortieren
+        rankedScenarios.sort((a,b) -> Double.compare(b.getKey(),a.getKey() ));
 
         return  rankedScenarios;
     }
 
 
+    /**
+     * Berechnet den Score für ein Szenario.
+     * Beachtet dabei, den kritischsten TTP-Typ pro Phase zu verwenden
+     * @param involved zu bewertendes Szenario
+     * @return Bedrohungspunktzahl
+     */
     private static double computeScore(List<Edge> involved){
         double score = 1.0;
         Map<String, Integer> phases = new HashMap<>(); //Kill-Chain-Phase -> höchster Score
         for(int i= 0; i< involved.size(); i++){
+            //Gewichtung aus dem Paper
             double weight = (10.0 + i+1) / 10.0;
-            Node node = involved.get(i).getDstNode();
 
+            Node node = involved.get(i).getDstNode();
             //Wert für diesen Knoten bestimmen
             int highest = 1;
             for(TTP ttp : node.getTTPs()){
