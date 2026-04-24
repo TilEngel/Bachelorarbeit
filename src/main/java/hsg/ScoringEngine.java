@@ -86,7 +86,7 @@ public class ScoringEngine {
      * @param rankedScenarios Bewertete Szenarien (durch ScoringEngine.scoreScenarios)
      */
     public static void printRankedScenarios(List<Map.Entry<Double,List<Edge>>> rankedScenarios){
-        System.out.println("\n++Szenarien (Sortiert absteigend nach Bedrohlichkeit)++ \n");
+        Logger.logPriority("\n++Szenarien (Sortiert absteigend nach Bedrohlichkeit)++ \n");
         int count = 0;
         for (Map.Entry<Double, List<Edge>> entry : rankedScenarios) {
             count++;
@@ -94,12 +94,12 @@ public class ScoringEngine {
             double score = entry.getKey();
             String origin = involved.get(0).getDstNode().getChains().get(0).getOriginId();
 
-            System.out.println("\n Szenario " + count);
-            System.out.println("Threat-Score: " + score);
+            Logger.logSemiResult("\n Szenario " + count);
+            Logger.logSemiResult("Threat-Score: " + score);
             if(score >= ALARM_THRESHOLD){
-                System.out.println("\nGEFAHR\n");
+                Logger.logSemiResult("\nGEFAHR\n");
             }
-            System.out.println("Beteiligte Knoten: " + involved.size());
+            Logger.logSemiResult("Beteiligte Knoten: " + involved.size());
 
             //TTPs des Szenarios sammeln
             Set<String> allTTPs = new LinkedHashSet<>();
@@ -110,7 +110,7 @@ public class ScoringEngine {
                     }
                 }
             }
-            System.out.println("TTP-Kette: " + allTTPs);
+            Logger.logSemiResult("TTP-Kette: " + allTTPs);
         }
     }
 

@@ -91,9 +91,9 @@ public class HSGBuilder {
             Node origin = graph.getNode(entry.getKey());
             List<Edge> involved = entry.getValue();
 
-            Logger.logResult("\n Szenario " + count);
-            Logger.logResult("Ursprung: " + origin.getName());
-            Logger.logResult("Beteiligte Kanten: " + involved.size());
+            Logger.logSemiResult("\n Szenario " + count);
+            Logger.logSemiResult("Ursprung: " + origin.getName());
+            Logger.logSemiResult("Beteiligte Kanten: " + involved.size());
 
             //TTPs
             TTPChain longest= null;
@@ -105,7 +105,7 @@ public class HSGBuilder {
                 }
             }
             if(longest!= null){
-                Logger.logResult("TTP-Kette: "+ longest.getTtps());
+                Logger.logSemiResult("TTP-Kette: "+ longest.getTtps());
             }
 
             //HSG-Knoten ausgeben
@@ -143,7 +143,7 @@ public class HSGBuilder {
                     first = false;
                 }
             }
-            Logger.logResult(sb.toString());
+            Logger.logSemiResult(sb.toString());
         }
     }
 

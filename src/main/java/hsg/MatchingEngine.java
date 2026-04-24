@@ -77,7 +77,7 @@ public class MatchingEngine {
                                                 TTPChain extend = chain.extendChain(ttp.getName(), newPF);
                                                 //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
                                                 if (!dstNode.hasChain(extend)) {
-                                                    Logger.log("--[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
+                                                    Logger.log("----[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
                                                     dstNode.addChain(extend);
                                                     dstNode.addTTP(ttp);
                                                 }
