@@ -51,6 +51,10 @@ public class Logger {
         }
     }
 
+    /**
+     * Gibt etwas wichtigere Meldungen aus
+     * @param message Nachricht
+     */
     public static void logPriority(String message){
         if(doDebugMessages<'2'){
             System.out.println(message);
@@ -67,12 +71,20 @@ public class Logger {
         }
     }
 
+    /**
+     * Gibt Zwischenergebnis aus
+     * @param message Nachricht
+     */
     public static void logSemiResult(String message){
         if(doDebugMessages < '3'){
             System.out.println(message);
         }
     }
 
+    /**
+     * Gibt Fehlermeldung aus mit [ERR] Präfix
+     * @param message Meldung
+     */
     public static void logError(String message){
         System.err.println("[ERR] "+ message);
     }
