@@ -53,7 +53,7 @@ public class JDBCEngine {
             connection = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASSWD);
             Logger.log("[INFO] DB-Verbindung hergestellt: "+ JDBC_URL);
         } else {
-            Logger.log("[WARN] Es besteht bereits eine DB-Verbindung");
+            Logger.logPriority("[WARN] Es besteht bereits eine DB-Verbindung");
         }
     }
 
@@ -66,7 +66,7 @@ public class JDBCEngine {
                 connection.close();
                 Logger.log("[INFO] DB-Verbindung erfolgreich geschlossen");
             } catch (SQLException e) {
-                System.err.println("[ERR] Fehler beim schließen der DB-Verbindung: "+e.getMessage() );
+                Logger.logError("Fehler beim schließen der DB-Verbindung: "+e.getMessage() );
             }
         }
     }
@@ -88,11 +88,11 @@ public class JDBCEngine {
                 }
                 return null;
             }catch (SQLException e) {
-                System.err.println("[ERR] getAllEvents(): "+ e.getMessage());
+                Logger.logError("getAllEvents(): "+ e.getMessage());
                 return null;
             }
         }catch (SQLException e){
-            System.err.println("[ERR] "+ e.getMessage());
+            Logger.logError( e.getMessage());
             return null;
         }
     }
@@ -141,10 +141,10 @@ public class JDBCEngine {
                     rows.add(row);
                 }
             } catch (SQLException e) {
-                System.err.println("[ERR] getAllSubjectNodes: " + e.getMessage());
+                Logger.logError("getAllSubjectNodes: " + e.getMessage());
             }
         } catch (SQLException e) {
-            System.err.println("[ERR] getAllSubjectNodes: " + e.getMessage());
+            Logger.logError("getAllSubjectNodes: " + e.getMessage());
         }
         Logger.log("[INFO] getAllNodes beendet. NodeType: "+nodeType);
         return rows;
@@ -172,10 +172,10 @@ public class JDBCEngine {
                     rows.add(row);
                 }
             }catch (SQLException e){
-                System.err.println("[ERR] getAllEvents: "+ e.getMessage());
+                Logger.logError("getAllEvents: "+ e.getMessage());
             }
         } catch (SQLException e){
-            System.err.println("[ERR] getAllEvents(): "+e.getMessage());
+            Logger.logError("getAllEvents(): "+e.getMessage());
         }
         return rows;
     }

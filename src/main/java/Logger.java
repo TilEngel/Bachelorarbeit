@@ -4,7 +4,7 @@ import main.java.database.graph.Node;
 import main.java.events.ttps.TTP;
 
 public class Logger {
-    private static char doDebugMessages = '0'; //0 = Alles, 1=Kein Debug, 2= Nur Ergebnisse
+    private static char doDebugMessages = '0'; //0 = Alles, 1=Kein Debug, 2= (Zwischen)ergebnisse 3= Nur Ergebnisse
 
     /**
      * Logger gibt jede Nachricht aus
@@ -21,11 +21,13 @@ public class Logger {
         doDebugMessages = '1';
     }
 
+    public static void doLogSemiResults(){ doDebugMessages = '2'; }
+
     /**
      * Logger gibt nur Ergebnisse aus
      */
     public static void doLogResultOnly(){
-        doDebugMessages = '2';
+        doDebugMessages = '3';
     }
 
     /**
@@ -50,6 +52,16 @@ public class Logger {
     }
 
     /**
+     * Gibt etwas wichtigere Meldungen aus
+     * @param message Nachricht
+     */
+    public static void logPriority(String message){
+        if(doDebugMessages<'2'){
+            System.out.println(message);
+        }
+    }
+
+    /**
      * Logger gibt Ergebnis unverändert aus
      * @param message Nachricht
      */
@@ -57,5 +69,23 @@ public class Logger {
         if(doDebugMessages < '8'){
             System.out.println(message);
         }
+    }
+
+    /**
+     * Gibt Zwischenergebnis aus
+     * @param message Nachricht
+     */
+    public static void logSemiResult(String message){
+        if(doDebugMessages < '3'){
+            System.out.println(message);
+        }
+    }
+
+    /**
+     * Gibt Fehlermeldung aus mit [ERR] Präfix
+     * @param message Meldung
+     */
+    public static void logError(String message){
+        System.err.println("[ERR] "+ message);
     }
 }

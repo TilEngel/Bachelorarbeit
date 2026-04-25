@@ -47,7 +47,7 @@ public class Main {
             jdbc.disconnect();
 
         }catch (SQLException e){
-            System.err.println("[ERR] Fehler in Main:" +e.getMessage());
+            Logger.logError("Fehler in Main:" +e.getMessage());
         }
         MatchingEngine.matchTTPs(graph, phases);
         Map<String,List<Edge>> scenarios = HSGBuilder.constructHSG(graph);
