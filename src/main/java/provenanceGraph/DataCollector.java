@@ -44,13 +44,10 @@ public class DataCollector {
         List<Map<String, Object>> rows = engine.getAllNodes('1');
         for(Map<String,Object> row : rows) {
             count++;
-            String uuid = (String) row.get("node_uuid");
-            long nodeIndex = toLong(row.get("index_id"));
-            String path = (String) row.get("path");
             String cmd = (String) row.get("cmd");
             String hashId = (String) row.get("hash_id");
 
-            Subject s = new Subject(uuid, nodeIndex,hashId,path,cmd);
+            Subject s = new Subject(hashId,cmd);
             graph.addNode(s);
         }
         Logger.log("[INFO] "+ count+ " Subjects verarbeitet");
@@ -65,15 +62,13 @@ public class DataCollector {
         int count = 0;
         for(Map<String,Object> row : rows) {
             count++;
-            String uuid = (String) row.get("node_uuid");
-            long nodeIndex = toLong(row.get("index_id"));
             String path = (String) row.get("path");
             if(path == null){
                 path = "[unknown]";
             }
             String hashId = (String) row.get("hash_id");
 
-            File f = new File(uuid, nodeIndex,hashId,path);
+            File f = new File(hashId,path);
             graph.addNode(f);
         }
         Logger.log("[INFO] "+ count+ " Files verarbeitet");
@@ -89,15 +84,11 @@ public class DataCollector {
         for(Map<String,Object> row : rows) {
 
             count++;
-            String uuid = (String) row.get("node_uuid");
-            long nodeIndex = toLong(row.get("index_id"));
             String srcAddr = (String) row.get("src_addr");
-            String srcPort = (String) row.get("src_port");
             String dstAddr = (String) row.get("dst_addr");
-            String dstPort = (String)row.get("dst_port");
             String hashId = (String) row.get("hash_id");
 
-            Netflow n = new Netflow(uuid, nodeIndex, hashId, srcAddr,srcPort,dstAddr,dstPort);
+            Netflow n = new Netflow(hashId, srcAddr,dstAddr);
             graph.addNode(n);
         }
         Logger.log("[INFO] "+ count + " Netflows verarbeitet");
@@ -124,12 +115,10 @@ public class DataCollector {
             if(srcNode == null || dstNode == null){
                 continue;
             }
-            String eventUuid = (String) row.get("event_uuid");
             String operation = (String) row.get("operation");
             String timestamp = String.valueOf(row.get("timestamp_rec"));
-            long id = toLong(row.get("_id"));
 
-            Edge e = new Edge(srcNode,operation,dstNode,eventUuid,timestamp,id);
+            Edge e = new Edge(srcNode,operation,dstNode,timestamp);
 
             graph.addEdge(e);
         }
@@ -141,15 +130,6 @@ public class DataCollector {
         engine = jdbcEngine;
     }
 
-    /*
-    Hilfsmethode, um Object zu long zu konvertieren
-     */
-    private long toLong(Object obj){
-        if(obj instanceof Long) return (Long) obj;
-        if(obj instanceof Integer) return ((Integer)obj).longValue();
-        if(obj instanceof String) return Long.parseLong((String)obj);
-        throw new IllegalArgumentException("[ERR] toLong nicht möglich: "+obj);
-    }
 
     public ProvenanceGraph getGraph( ){
         return graph;
