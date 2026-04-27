@@ -17,7 +17,6 @@ public class Sensitive_Temp_RM extends TTP {
     public Sensitive_Temp_RM(){
         setPhase("cleanup_tracks");
         setSeverity('M');
-        setType(EventType.Type.EVENT_UNLINK);
         setPrerequisites(List.of(
                 //SrcNode muss Prozess sein
                 (edge, graph) -> edge.getSrcNode() instanceof Subject,

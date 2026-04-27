@@ -19,7 +19,6 @@ public class Switch_SU extends TTP{
     public Switch_SU(){
         setPhase("privilege_escalation");
         setSeverity('H');
-        setType(EventType.Type.EVENT_CHANGE_PRINCIPAL);
         setPrerequisites(List.of(
                 //Zielknoten muss Prozess sein
                 (edge, graph) -> edge.getDstNode() instanceof Subject,

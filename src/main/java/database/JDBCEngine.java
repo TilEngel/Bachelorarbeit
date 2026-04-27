@@ -41,8 +41,7 @@ public class JDBCEngine {
 
     private Connection connection;
 
-    //private static final String TIMESTAMP_THRESH = "1522707048083354249"; //5000 Kanten
-    private static final String TIMESTAMP_THRESH = "1522725000000000000"; // 675.000 Kanten
+    //private static final String TIMESTAMP_THRESH = "1522725000000000000"; // 675.000 Kanten
 
     /**
      * Stellt Verbindung zur Datenbank her
@@ -75,27 +74,6 @@ public class JDBCEngine {
         return connection;
     }
 
-    //Test-Ausgabe aller Kanten
-    public ResultSet getAllEventsTest() {
-        String sql = "SELECT * FROM event_table WHERE timestamp_rec <= "+ TIMESTAMP_THRESH;
-        try(Statement stmt = getConnection().createStatement()){
-            try(ResultSet rs = stmt.executeQuery(sql)){
-                while(rs.next()) {
-                    String src = rs.getString("src_index_id");
-                    String dst = rs.getString("dst_index_id");
-                    String operation = rs.getString("operation");
-                    System.out.println("| "+src+ " |---"+operation+"-->| "+dst+" |");
-                }
-                return null;
-            }catch (SQLException e) {
-                Logger.logError("getAllEvents(): "+ e.getMessage());
-                return null;
-            }
-        }catch (SQLException e){
-            Logger.logError( e.getMessage());
-            return null;
-        }
-    }
 
     /**
      * Liefert alle Entitäten im Zeitraum (ohne Dopplung)
