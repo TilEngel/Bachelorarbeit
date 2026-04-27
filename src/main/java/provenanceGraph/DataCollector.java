@@ -107,7 +107,7 @@ public class DataCollector {
             count++;
             String srcId = (String) row.get("src_node");
             String dstId = (String) row.get("dst_node");
-            //jwlg. Knoten-Instanzen aus NodeIndex holen
+            //jeweilige Knoten-Instanzen aus NodeIndex holen
             Node srcNode = graph.getNode(srcId);
             Node dstNode = graph.getNode(dstId);
 

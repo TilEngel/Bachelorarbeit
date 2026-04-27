@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Repräsentiert eine Liste an verketteten TTP-Instanzen.
  * Essenzieller Schritt bei Szenario-Erstellung.
- * TTPChain wird von einem Knoten an alle Nachfahren weitergegeben und evtl. erweitert
+ * TTPChain wird von einem Knoten an alle Nachfahren weitergegeben und eventuell. erweitert
  */
 public class TTPChain {
     private final List<String> ttps;
@@ -66,9 +66,6 @@ public class TTPChain {
         return ttps;
     }
 
-    public int getPathFactor(){
-        return pathFactor;
-    }
     public String getOriginId(){
         return originId;
     }
