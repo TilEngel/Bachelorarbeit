@@ -82,38 +82,16 @@ public class HSGBuilder {
 
     /**
      * Gibt alle Szenarien aus
-     * @param scenarios auszugebene Szenarien
+     * @param scenario Szenario
      */
-    public static void printScenarios(Map<String,List<Edge>> scenarios, ProvenanceGraph graph) {
-        int count = 0;
-        for (Map.Entry<String, List<Edge>> entry : scenarios.entrySet()) {
-            count++;
-            Node origin = graph.getNode(entry.getKey());
-            List<Edge> involved = entry.getValue();
-
-            Logger.logSemiResult("\n Szenario " + count);
-            Logger.logSemiResult("Ursprung: " + origin.getName());
-            Logger.logSemiResult("Beteiligte Kanten: " + involved.size());
-
-            //TTPs
-            TTPChain longest= null;
-            for(Edge e: involved){
-                for(TTPChain chain : e.getDstNode().getChains()){
-                    if(longest == null || chain.getTtps().size()> longest.getTtps().size()){
-                        longest= chain;
-                    }
-                }
-            }
-            if(longest!= null){
-                Logger.logSemiResult("TTP-Kette: "+ longest.getTtps());
-            }
+    public static void printScenario(List<Edge> scenario) {
 
             //HSG-Knoten ausgeben
             Map<String, List<Edge>> ttpEdges = new LinkedHashMap<>();
 
-            for(Edge e : involved){
+            for(Edge e : scenario){
                 for(TTPChain chain: e.getDstNode().getChains()){
-                    if(chain.getOriginId().equals(entry.getKey())){
+                    if(chain.getOriginId().equals(scenario.get(0).getDstNode().getHashId())){
                         String lastTTP = chain.getLastTTP();
                         if(!ttpEdges.containsKey(lastTTP)){
                             ttpEdges.put(lastTTP,new ArrayList<>());
@@ -144,7 +122,7 @@ public class HSGBuilder {
                 }
             }
             Logger.logSemiResult(sb.toString());
-        }
+
     }
 
 
