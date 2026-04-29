@@ -22,7 +22,6 @@ public class Sensitive_Command extends TTP {
     public Sensitive_Command(){
         setPhase("internal_recon");
         setSeverity('H');
-        setType(EventType.Type.EVENT_FORK);
         setPrerequisites(List.of(
                 //Quellknoten muss Prozess sein
                 (edge,graph) -> edge.getSrcNode() instanceof Subject,

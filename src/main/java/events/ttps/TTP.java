@@ -1,7 +1,6 @@
 package main.java.events.ttps;
 
 import main.java.database.graph.Edge;
-import main.java.events.EventType;
 import main.java.events.Prerequisite;
 import main.java.provenanceGraph.ProvenanceGraph;
 
@@ -9,7 +8,6 @@ import java.util.List;
 
 public abstract class TTP {
     private char severity;
-    private EventType.Type type;
 
     private List<Prerequisite> prerequisites;
     private String phase;
@@ -44,16 +42,10 @@ public abstract class TTP {
         return phase;
     }
 
-    EventType.Type getType(){
-        return type;
-    }
     public char getSeverity(){
         return severity;
     }
 
-    protected void setType(EventType.Type type){
-        this.type= type;
-    }
     protected void setSeverity(char severity){
         this.severity = severity;
     }

@@ -26,7 +26,6 @@ public class Clear_Logs extends TTP{
     public Clear_Logs(){
         setPhase("cleanup_tracks");
         setSeverity('H');
-        setType(EventType.Type.EVENT_UNLINK);
         setPrerequisites(List.of(
                 //SrcKnoten muss Prozess sein
                 (edge, graph) -> edge.getSrcNode() instanceof Subject,

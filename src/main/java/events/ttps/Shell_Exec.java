@@ -26,7 +26,6 @@ public class Shell_Exec extends TTP {
     public Shell_Exec(){
         setPhase("establish_foothold");
         setSeverity('M');
-        setType(EventType.Type.EVENT_EXECUTE);
         setPrerequisites(List.of(
                 //Zielknoten muss Prozess sein
                 (edge, graph) -> edge.getDstNode() instanceof Subject,

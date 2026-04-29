@@ -24,7 +24,6 @@ public class Untrusted_Read extends TTP {
     public Untrusted_Read(){
         setPhase("initial_compromise");
         setSeverity('L');
-        setType(EventType.Type.EVENT_RECVFROM);
         setPrerequisites(List.of(
                 //Quellknoten muss untrusted IP haben
                 (edge, graph) -> {

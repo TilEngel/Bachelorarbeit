@@ -18,7 +18,6 @@ public class CnC extends TTP{
     public CnC(){
         setPhase("establish_foothold");
         setSeverity('H');
-        setType(EventType.Type.EVENT_SENDTO);
         setPrerequisites(List.of(
                 //Quellknoten ist Prozess
                 (edge, graph) -> edge.getSrcNode() instanceof Subject,

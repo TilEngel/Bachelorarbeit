@@ -16,7 +16,6 @@ public class Untrusted_File_Exec extends TTP{
     public Untrusted_File_Exec(){
         setPhase("initial_compromise");
         setSeverity('C');
-        setType(EventType.Type.EVENT_EXECUTE);
         setPrerequisites(List.of(
                 //Quellknoten ist Datei
                 (edge, graph) -> edge.getSrcNode() instanceof File,

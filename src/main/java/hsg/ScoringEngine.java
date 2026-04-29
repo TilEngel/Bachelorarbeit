@@ -8,8 +8,7 @@ import main.java.events.ttps.TTP;
 import java.util.*;
 
 import static java.lang.Math.pow;
-import static main.java.Main.ALARM_THRESHOLD;
-import static main.java.Main.ROUND_THREAT_SCORES;
+import static main.java.Main.*;
 
 public class ScoringEngine {
 
@@ -92,25 +91,29 @@ public class ScoringEngine {
             count++;
             List<Edge> involved = entry.getValue();
             double score = entry.getKey();
-            String origin = involved.get(0).getDstNode().getChains().get(0).getOriginId();
+            if (score >= MENTION_SCENARIO_THRESHOLD) {
+                String origin = involved.get(0).getDstNode().getChains().get(0).getOriginId();
 
-            Logger.logSemiResult("\n Szenario " + count);
-            Logger.logSemiResult("Threat-Score: " + score);
-            if(score >= ALARM_THRESHOLD){
-                Logger.logSemiResult("\nGEFAHR\n");
-            }
-            Logger.logSemiResult("Beteiligte Knoten: " + involved.size());
+                Logger.logSemiResult("\n Szenario " + count);
+                Logger.logSemiResult("Threat-Score: " + score);
+                Logger.logSemiResult("Beteiligte Knoten: " + involved.size());
+                if (score >= ALARM_THRESHOLD) {
+                    Logger.logSemiResult("\nGEFAHR\n");
+                    HSGBuilder.printScenario(involved);
+                }
 
-            //TTPs des Szenarios sammeln
-            Set<String> allTTPs = new LinkedHashSet<>();
-            for (Edge n : involved) {
-                for (TTPChain chain : n.getDstNode().getChains()) {
-                    if (chain.getOriginId().equals(origin)) {
-                        allTTPs.addAll(chain.getTtps());
+
+                //TTPs des Szenarios sammeln
+                Set<String> allTTPs = new LinkedHashSet<>();
+                for (Edge n : involved) {
+                    for (TTPChain chain : n.getDstNode().getChains()) {
+                        if (chain.getOriginId().equals(origin)) {
+                            allTTPs.addAll(chain.getTtps());
+                        }
                     }
                 }
+                Logger.logSemiResult("TTP-Kette: " + allTTPs);
             }
-            Logger.logSemiResult("TTP-Kette: " + allTTPs);
         }
     }
 

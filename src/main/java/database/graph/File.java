@@ -8,8 +8,8 @@ public class File extends Node{
 
     private String path;
 
-    public File(String uuid, long nodeIndex,String hashId, String path){
-        super(uuid,nodeIndex,hashId);
+    public File(String hashId, String path){
+        super(hashId);
         setPath(path);
     }
 

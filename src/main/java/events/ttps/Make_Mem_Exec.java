@@ -16,7 +16,6 @@ public class Make_Mem_Exec extends TTP {
     public Make_Mem_Exec(){
         setPhase("initial_compromise");
         setSeverity('M');
-        setType(EventType.Type.EVENT_MODIFY_PROCESS);
         //Zielknoten muss Prozess sein
         setPrerequisites(List.of((edge, graph) -> edge.getDstNode() instanceof Subject));
     }

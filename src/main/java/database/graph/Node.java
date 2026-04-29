@@ -11,17 +11,13 @@ import java.util.*;
  * Knoten besitzen alle Attribute aus der Datenbank
  */
 public abstract class Node {
-    private String uuid;
-    private long nodeIndex;
 
     private String hashId;
 
     private final Set<TTP> ttps  = new HashSet<>();
     private final List<TTPChain> chains = new ArrayList<>();
 
-    public Node(String uuid, long nodeIndex, String hashId) {
-        setNodeIndex(nodeIndex);
-        setUuid(uuid);
+    public Node(String hashId) {
         setHashId(hashId);
     }
 
@@ -56,20 +52,6 @@ public abstract class Node {
             }
         }
         return false;
-    }
-
-    public void setUuid(String uuid){
-        this.uuid = uuid;
-    }
-    public void setNodeIndex(long nodeIndex) {
-        this.nodeIndex = nodeIndex;
-    }
-    public String getUuid() {
-        return uuid;
-    }
-
-    public long getNodeIndex() {
-        return nodeIndex;
     }
 
     public void setHashId(String hashId){
