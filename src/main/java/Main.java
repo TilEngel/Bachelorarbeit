@@ -4,6 +4,7 @@ import main.java.database.JDBCEngine;
 import main.java.database.graph.Edge;
 import main.java.events.ttps.*;
 import main.java.hsg.HSGBuilder;
+import main.java.hsg.HSGConverter;
 import main.java.hsg.MatchingEngine;
 import main.java.hsg.ScoringEngine;
 import main.java.provenanceGraph.DataCollector;
@@ -53,6 +54,7 @@ public class Main {
         MatchingEngine.matchTTPs(graph, phases);
         Map<String,List<Edge>> scenarios = HSGBuilder.constructHSG(graph);
         //HSGBuilder.printScenarios(scenarios, graph);
+        HSGConverter.exportToDOT(scenarios,graph);
 
         ScoringEngine.printRankedScenarios(ScoringEngine.scoreSzenarios(scenarios));
     }

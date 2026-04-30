@@ -1,12 +1,16 @@
 package main.java.hsg;
 
+import main.java.Logger;
 import main.java.database.graph.Edge;
 import main.java.provenanceGraph.ProvenanceGraph;
 
+import javax.imageio.IIOException;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.io.FileWriter;
 
 public class HSGConverter {
 
@@ -52,6 +56,11 @@ public class HSGConverter {
             dot.append("}\n");
 
             //in Datei schreiben
+            try (FileWriter fw = new FileWriter("szenario"+count+".dot")){
+                fw.write(dot.toString());
+            }catch (IOException e){
+                Logger.logError("DOT-Export Fehler: "+e.getMessage());
+            }
         }
     }
 }
