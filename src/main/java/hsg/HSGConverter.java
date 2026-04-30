@@ -21,7 +21,7 @@ public class HSGConverter {
             StringBuilder dot = new StringBuilder();
 
             //Header
-            dot.append("diagraph Szenario").append(count).append("{\n");
+            dot.append("digraph Szenario").append(count).append("{\n");
             dot.append("    rankdir=LR;\n");
             dot.append("    node [shape=box];\n");
 
@@ -47,7 +47,7 @@ public class HSGConverter {
                         usedEdges.add(edgeName);
 
                         dot.append("    \"").append(src).append("\"")
-                                .append("->\"")
+                                .append(" -> \"")
                                 .append(dst).append("\"");
                     }
                 }
