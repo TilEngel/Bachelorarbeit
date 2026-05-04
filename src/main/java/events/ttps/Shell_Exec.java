@@ -1,5 +1,6 @@
 package main.java.events.ttps;
 
+import main.java.TTPConfig;
 import main.java.database.graph.Edge;
 import main.java.database.graph.File;
 import main.java.database.graph.Subject;
@@ -14,14 +15,7 @@ import java.util.Set;
  * Nach Initial_Compromise wird Shell verwendet
  */
 public class Shell_Exec extends TTP {
-    private static final Set<String> SHELL_PATHS = Set.of(
-            "/bin/bash",
-            "/bin/sh",
-            "/bin/dash",
-            "/bin/zsh",
-            "cmd.exe",
-            "powershell.exe"
-    );
+    private static final Set<String> SHELL_PATHS = TTPConfig.getProperties("shell_exec.shell_paths");
 
     public Shell_Exec(){
         setPhase("establish_foothold");
