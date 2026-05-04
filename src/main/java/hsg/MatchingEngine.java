@@ -33,7 +33,7 @@ public class MatchingEngine {
                 if (ttp.matches(e, graph)) {
                     Node match = e.getDstNode();
                     //Initial_Compromise entdeckt -> neue Kette starten
-                    TTPChain newChain = new TTPChain(ttp.getName(), match.getHashId());
+                    TTPChain newChain = new TTPChain(ttp.getName(), match);
                     match.addChain(newChain);
                     match.addTTP(ttp);
                     Logger.log("[INFO] New Chain " + ttp.getName() + " auf " + match.getName());

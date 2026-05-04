@@ -17,10 +17,10 @@ import java.util.Map;
 public class Main {
     public static final boolean OPTIMIZED_RESULTS = true; //Erkennt Szenarien zuverlässiger
     public static final boolean REMOVE_DUPLICATE_SCENARIOS = true; //Entfernt inhaltlich identische Szenarien
-    public static final boolean ROUND_THREAT_SCORES = true;
+    public static final boolean ROUND_THREAT_SCORES = true; //Bedrohungspunktzahl auf eine Nachkommastelle runden
     public static final int PF_THRESHOLD = 3; //Path-Factor Schwellenwert
     public static final int ALARM_THRESHOLD = 80; //Bedrohungspunktzahl, ab der Alarm gemeldet wird
-    public static final int MENTION_SCENARIO_THRESHOLD = 30; //Szenarien unter diesen Wert, werden nicht erwähnt
+    public static final int MENTION_SCENARIO_THRESHOLD = 0; //Szenarien unter diesen Wert, werden nicht erwähnt
 
     public static final String TIMESTAMP_MIN = "1523000000000000000";
     public static final String TIMESTAMP_MAX = "1523040000000000000";
@@ -53,10 +53,11 @@ public class Main {
         }
         MatchingEngine.matchTTPs(graph, phases);
         Map<String,List<Edge>> scenarios = HSGBuilder.constructHSG(graph);
+        List<Map.Entry<Double, List<Edge>>> scoredScenarios = ScoringEngine.scoreSzenarios(scenarios);
         //HSGBuilder.printScenarios(scenarios, graph);
-        HSGConverter.exportToDOT(scenarios,graph);
+        HSGConverter.exportToDOT(scoredScenarios);
 
-        ScoringEngine.printRankedScenarios(ScoringEngine.scoreSzenarios(scenarios));
+        ScoringEngine.printRankedScenarios(scoredScenarios);
     }
 
 
