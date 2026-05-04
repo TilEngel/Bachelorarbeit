@@ -1,5 +1,7 @@
 package main.java.hsg;
 
+import main.java.database.graph.Node;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,18 +13,18 @@ import java.util.List;
 public class TTPChain {
     private final List<String> ttps;
     private final int pathFactor;
-    private final String originId;
+    private final Node origin;
 
     /**
      * Startet eine neue Kette, beim ersten TTP-Match
      * @param ttpName Name des TTPs
-     * @param originId Ursprungsknoten
+     * @param origin Ursprungsknoten
      */
-    public TTPChain(String ttpName, String originId){
+    public TTPChain(String ttpName, Node origin){
         this.ttps= new ArrayList<>();
         this.ttps.add(ttpName);
         this.pathFactor=1;
-        this.originId = originId;
+        this.origin = origin;
     }
 
     /**
@@ -30,13 +32,13 @@ public class TTPChain {
      * @param existing vorherige TTPs
      * @param newTTP neues TTP
      * @param newPF neuer PF
-     * @param originId Ursprungsknoten
+     * @param origin Ursprungsknoten
      */
-    private  TTPChain(List<String> existing, String newTTP, int newPF,String originId){
+    private  TTPChain(List<String> existing, String newTTP, int newPF,Node origin){
         this.ttps = new ArrayList<>(existing);
         this.ttps.add(newTTP);
         this.pathFactor= newPF;
-        this.originId = originId;
+        this.origin = origin;
     }
 
     /**
@@ -46,7 +48,7 @@ public class TTPChain {
      * @return erweiterte TTPChain
      */
     public TTPChain extendChain(String ttpName, int newPF){
-        return new TTPChain(ttps, ttpName, newPF, originId);
+        return new TTPChain(ttps, ttpName, newPF, origin);
     }
 
     /**
@@ -55,7 +57,7 @@ public class TTPChain {
      * @return true, wenn origId und ttps identisch sind
      */
     public boolean isDuplicateOf(TTPChain other){
-        boolean sameOrigin= this.originId.equals(other.originId);
+        boolean sameOrigin= this.origin.getHashId().equals(other.origin.getHashId());
         boolean sameTTPs = this.ttps.equals(other.ttps);
 
         return sameOrigin && sameTTPs;
@@ -67,7 +69,7 @@ public class TTPChain {
     }
 
     public String getOriginId(){
-        return originId;
+        return origin.getHashId();
     }
 
     @Override

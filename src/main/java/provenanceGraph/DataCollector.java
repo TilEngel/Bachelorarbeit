@@ -116,6 +116,7 @@ public class DataCollector {
                 continue;
             }
             String operation = (String) row.get("operation");
+
             String timestamp = String.valueOf(row.get("timestamp_rec"));
 
             Edge e = new Edge(srcNode,operation,dstNode,timestamp);
