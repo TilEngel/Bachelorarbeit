@@ -3,6 +3,7 @@ package main.java.hsg;
 import main.java.Logger;
 import main.java.database.graph.Edge;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +17,11 @@ import java.io.FileWriter;
 public class HSGConverter {
 
     public static void exportToDOT(List<Map.Entry<Double, List<Edge>>> scenarios){
+
+        File outDir = new File("hsg_output");
+        if(!outDir.exists()){
+            outDir.mkdir();
+        }
         int count =0;
         for(Map.Entry<Double, List<Edge>> entry : scenarios){
             count++;
@@ -65,9 +71,9 @@ public class HSGConverter {
             dot.append("}\n");
 
             //in Datei schreiben
-            try (FileWriter fw = new FileWriter("szenario"+count+".dot")){
+            try (FileWriter fw = new FileWriter("hsg_output/szenario"+count+".dot")){
                 fw.write(dot.toString());
-                Runtime.getRuntime().exec("dot -Tpng szenario"+ count+".dot -o szenario"+count+".png");
+                Runtime.getRuntime().exec("dot -Tpng hsg_output/szenario"+ count+".dot -o hsg_output/szenario"+count+".png");
             }catch (IOException e){
                 Logger.logError("DOT-Export Fehler: "+e.getMessage());
             }
