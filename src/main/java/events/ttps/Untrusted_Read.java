@@ -17,9 +17,7 @@ import java.util.Set;
  */
 public class Untrusted_Read extends TTP {
 
-    private static final Set<String> TRUSTED_IPS = Set.of(
-            "128.55.12.10" //häufigste IP in Datensatz
-    );
+    private static final Set<String> TRUSTED_IPS = TTPConfig.getProperties("untrusted_read.trusted_ips");
 
     public Untrusted_Read(){
         setPhase("initial_compromise");
