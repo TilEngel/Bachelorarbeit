@@ -1,4 +1,4 @@
-package main.java;
+package main.java.events.ttps;
 
 import java.io.FileInputStream;
 import java.io.IOException;

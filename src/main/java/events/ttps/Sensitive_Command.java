@@ -13,11 +13,7 @@ import java.util.List;
  * Nach Initial_Compromise wird ein potentiell gefährlicher Command verwendet
  */
 public class Sensitive_Command extends TTP {
-    private static final Set<String> SENSITIVE_COMMANDS = Set.of(
-            "whoami", "hostname", "ifconfig", "netstat", "uname",
-            //nicht explizit genannt aber auch sinnvoll
-            "id", "ps", "w", "who", "last", "find", "locate"
-    );
+    private static final Set<String> SENSITIVE_COMMANDS = TTPConfig.getProperties("sensitive_command.sensitive_commands");
 
     public Sensitive_Command(){
         setPhase("internal_recon");

@@ -15,13 +15,7 @@ import java.util.Set;
  */
 public class Clear_Logs extends TTP{
 
-    private static final Set<String> LOG_PATHS = Set.of(
-            //Typische Log-Pfade
-            "/var/log/",
-            "/usr/log/",
-            "/var/adm/",
-            "/var/run/"
-    );
+    private static final Set<String> LOG_PATHS = TTPConfig.getProperties("clear_logs.log_paths");
 
     public Clear_Logs(){
         setPhase("cleanup_tracks");

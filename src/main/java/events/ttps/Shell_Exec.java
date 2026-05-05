@@ -1,6 +1,5 @@
 package main.java.events.ttps;
 
-import main.java.TTPConfig;
 import main.java.database.graph.Edge;
 import main.java.database.graph.File;
 import main.java.database.graph.Subject;
