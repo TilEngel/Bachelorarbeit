@@ -42,28 +42,30 @@ public class HSGConverter {
             List<Edge> involved = entry.getValue();
             Set<String> usedEdges = new HashSet<>();
 
+            //Graph erstellen
             for(Edge e:involved) {
                 if(!e.getDstNode().getTTPs().isEmpty()) {
                     //TTP-Namen der Kante
-                    String ttpName = "";
+                    Set<String> ttpNames = new HashSet<>();
                     for (TTPChain chain : e.getDstNode().getChains()) {
                         if (chain.getOriginId().equals(originId)) {
-                            ttpName = chain.getLastTTP();
-                            break;
+                            ttpNames.add(chain.getLastTTP());
                         }
                     }
 
                     //Src --ttp--> Dst
                     String src = e.getSrcNode().getName();
                     String dst = e.getDstNode().getName();
-                    String edgeName = src + "->"+ dst +ttpName;
-                    if(!usedEdges.contains(edgeName)){
-                        usedEdges.add(edgeName);
+                    for(String ttpName : ttpNames ){
+                        String edgeName = src + "->"+ dst +ttpName;
+                        if(!usedEdges.contains(edgeName)) {
+                            usedEdges.add(edgeName);
 
-                        dot.append("    \"").append(src).append("\"")
-                                .append(" -> \"")
-                                .append(dst).append("\"")
-                                .append(" [label=\"").append(ttpName).append("\"];\n");
+                            dot.append("    \"").append(src).append("\"")
+                                    .append(" -> \"")
+                                    .append(dst).append("\"")
+                                    .append(" [label=\"").append(ttpName).append("\"];\n");
+                        }
                     }
                 }
 

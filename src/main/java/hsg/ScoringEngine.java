@@ -54,29 +54,36 @@ public class ScoringEngine {
      */
     private static double computeScore(List<Edge> involved){
         double score = 1.0;
-        Map<String, Integer> phases = new HashMap<>(); //Kill-Chain-Phase -> höchster Score
-        for(int i= 0; i< involved.size(); i++){
-            //Gewichtung aus dem Paper
-            double weight = (10.0 + i+1) / 10.0;
-
-            Node node = involved.get(i).getDstNode();
-            //Wert für diesen Knoten bestimmen
-            int highest = 1;
-            for(TTP ttp : node.getTTPs()){
-                int temp = getSeverityValue(ttp);
-                // Nur das kritischste TTP pro Phase
-                if(!phases.containsKey(ttp.getPhase()) || phases.get(ttp.getPhase())< temp) {
-                    if (temp > highest) {
-                        highest = temp;
-                        phases.put(ttp.getPhase(), temp);
-                    }
-                }
-            }
-            double severity= highest;
-
-            score *= pow(severity, weight);
+        Map<String, Integer> ps = findRelevantScores(involved);
+        int i = 0;
+        for(Integer severity: ps.values()){
+            i++;
+            double weight = (10 + i)/10.0;
+            score *= pow(severity,weight);
         }
         return  score;
+    }
+
+    /**
+     * Findet aus einer Liste an Kanten die höchsten Scores
+     * der Phasen. Nur ein Score pro Phase
+     * @param involved Liste an Kanten in einem Szenario
+     * @return Map <Phase -> höchster score>
+     */
+    private static Map<String ,Integer> findRelevantScores(List<Edge> involved){
+        Map<String, Integer> phases = new HashMap<>();
+        for (Edge e : involved){
+            Node n = e.getDstNode();
+            for(TTP ttp:n.getTTPs()){
+                int severity = getSeverityValue(ttp);
+                //höchster Wert für die Phase
+                if(!phases.containsKey(ttp.getPhase()) || phases.get(ttp.getPhase()) < severity){
+                    phases.put(ttp.getPhase(),severity);
+                }
+
+            }
+        }
+        return phases;
     }
 
 
