@@ -18,19 +18,19 @@ public class Untrusted_File_Exec extends TTP{
         setSeverity('C');
         setPrerequisites(List.of(
                 //Quellknoten ist Datei
-                (edge, graph) -> edge.getSrcNode() instanceof File,
+                (edge) -> edge.getSrcNode() instanceof File,
                 //Zielknoten ist Prozess
-                (edge, graph) -> edge.getDstNode() instanceof Subject
+                (edge) -> edge.getDstNode() instanceof Subject
         ));
 
     }
 
     @Override
-    public boolean matches(Edge edge, ProvenanceGraph graph){
+    public boolean matches(Edge edge){
         if(!edge.getOperation().equals(EventType.Type.EVENT_EXECUTE.toString())){
             return false;
         }
-        if(!prerequisitesMet(edge,graph)){
+        if(!prerequisitesMet(edge)){
             return false;
         }
         return true;

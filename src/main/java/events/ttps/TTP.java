@@ -16,22 +16,20 @@ public abstract class TTP {
      * Prüft, ob das Geschehen an den Knoten einer Kante zu dem entsprechenden
      * TTP passt
      * @param edge Zu untersuchende Kante
-     * @param graph Provenance-Graph
      * @return true, wenn TTP erkannt wird
      */
-    public abstract boolean matches(Edge edge, ProvenanceGraph graph);
+    public abstract boolean matches(Edge edge);
 
 
     /**
      * Prüft für alle Prärekonditionen des entsprechenden
      * TTPs, ob sie eingehalten werden
      * @param edge Die Kante dessen Knoten geprüft wird
-     * @param graph Provenance-Graph
      * @return true, wenn alle Bedingungen eingehalten werden, sonst false
      */
-    protected boolean prerequisitesMet(Edge edge, ProvenanceGraph graph ){
+    protected boolean prerequisitesMet(Edge edge ){
         for(Prerequisite p : prerequisites){
-            if(!p.evaluate(edge, graph)){
+            if(!p.evaluate(edge)){
                 return false;
             }
         }

@@ -20,11 +20,11 @@ public class Sensitive_Command extends TTP {
         setSeverity('H');
         setPrerequisites(List.of(
                 //Quellknoten muss Prozess sein
-                (edge,graph) -> edge.getSrcNode() instanceof Subject,
+                (edge) -> edge.getSrcNode() instanceof Subject,
                 //Zielknoten muss Prozess sein
-                (edge, graph) -> edge.getDstNode() instanceof Subject,
+                (edge) -> edge.getDstNode() instanceof Subject,
                 //Zielknoten muss sensitiver Befehl sein
-                (edge, graph) -> {
+                (edge) -> {
                     if(!(edge.getDstNode() instanceof Subject)) return  false;
                     Subject s = (Subject) edge.getDstNode();
                     return SENSITIVE_COMMANDS.contains(s.getCmd());
@@ -35,11 +35,11 @@ public class Sensitive_Command extends TTP {
 
 
     @Override
-    public boolean matches(Edge edge, ProvenanceGraph graph){
+    public boolean matches(Edge edge){
         if(!edge.getOperation().equals(EventType.Type.EVENT_FORK.toString())){
             return false;
         }
-        if(!prerequisitesMet(edge,graph)){
+        if(!prerequisitesMet(edge)){
             return false;
         }
 

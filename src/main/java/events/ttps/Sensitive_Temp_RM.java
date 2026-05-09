@@ -19,20 +19,20 @@ public class Sensitive_Temp_RM extends TTP {
         setSeverity('M');
         setPrerequisites(List.of(
                 //SrcNode muss Prozess sein
-                (edge, graph) -> edge.getSrcNode() instanceof Subject,
+                (edge) -> edge.getSrcNode() instanceof Subject,
                 //Zielknoten muss Datei sein
-                (edge,graph) -> edge.getDstNode() instanceof File
+                (edge) -> edge.getDstNode() instanceof File
         ));
     }
 
 
 
     @Override
-    public  boolean matches(Edge edge, ProvenanceGraph graph){
+    public  boolean matches(Edge edge){
         if(!edge.getOperation().equals(EventType.Type.EVENT_UNLINK.toString())){
             return false;
         }
-        if(!prerequisitesMet(edge, graph)){
+        if(!prerequisitesMet(edge)){
             return false;
         }
         //Prüfen, ob vorher ein sensitive_command stattgefunden hat

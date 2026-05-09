@@ -17,19 +17,19 @@ public class Make_Mem_Exec extends TTP {
         setPhase("initial_compromise");
         setSeverity('M');
         //Zielknoten muss Prozess sein
-        setPrerequisites(List.of((edge, graph) -> edge.getDstNode() instanceof Subject));
+        setPrerequisites(List.of((edge) -> edge.getDstNode() instanceof Subject));
     }
 
 
     @Override
-    public boolean matches(Edge edge, ProvenanceGraph graph){
+    public boolean matches(Edge edge){
 
         //Event muss MODIFY_PROCESS sein
         if(!edge.getOperation().equals(EventType.Type.EVENT_MODIFY_PROCESS.toString())){
             return false;
         }
         //Prüfen, ob Zielknoten Prozess
-        if(!prerequisitesMet(edge, graph)){
+        if(!prerequisitesMet(edge)){
             return false;
         }
 
