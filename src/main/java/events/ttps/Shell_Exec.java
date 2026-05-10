@@ -21,8 +21,8 @@ public class Shell_Exec extends TTP {
         setSeverity('M');
         setPrerequisites(List.of(
                 //Zielknoten muss Prozess sein
-                (edge, graph) -> edge.getDstNode() instanceof Subject,
-                (edge, graph) -> {
+                (edge) -> edge.getDstNode() instanceof Subject,
+                (edge) -> {
                     //Quellknoten muss bekannte Shell sein
                     if(!(edge.getSrcNode() instanceof File)) return false;
                     File f = (File) edge.getSrcNode();
@@ -33,11 +33,11 @@ public class Shell_Exec extends TTP {
 
 
     @Override
-    public boolean matches(Edge edge, ProvenanceGraph graph){
+    public boolean matches(Edge edge){
         if(!edge.getOperation().equals(EventType.Type.EVENT_EXECUTE.toString())){
             return false;
         }
-        if(!prerequisitesMet(edge, graph)){
+        if(!prerequisitesMet(edge)){
             return false;
         }
         return true;

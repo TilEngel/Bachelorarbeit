@@ -22,10 +22,10 @@ public class Clear_Logs extends TTP{
         setSeverity('H');
         setPrerequisites(List.of(
                 //SrcKnoten muss Prozess sein
-                (edge, graph) -> edge.getSrcNode() instanceof Subject,
+                (edge) -> edge.getSrcNode() instanceof Subject,
                 //Zielknoten muss Datei sein
-                (edge, graph) -> edge.getDstNode() instanceof File,
-                (edge,graph)->{
+                (edge) -> edge.getDstNode() instanceof File,
+                (edge)->{
                     //Zugriff auf Datei aus "Log-Pfad"
                     if(!(edge.getDstNode() instanceof  File)) return false;
                     File f= (File) edge.getDstNode();
@@ -40,11 +40,11 @@ public class Clear_Logs extends TTP{
     }
 
     @Override
-    public boolean matches(Edge edge, ProvenanceGraph graph){
+    public boolean matches(Edge edge){
         if(!edge.getOperation().equals(EventType.Type.EVENT_UNLINK.toString())){
             return false;
         }
-        if(! prerequisitesMet(edge,graph)){
+        if(! prerequisitesMet(edge)){
             return false;
         }
         return true;

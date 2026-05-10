@@ -21,9 +21,9 @@ public class Switch_SU extends TTP{
         setSeverity('H');
         setPrerequisites(List.of(
                 //Zielknoten muss Prozess sein
-                (edge, graph) -> edge.getDstNode() instanceof Subject,
+                (edge) -> edge.getDstNode() instanceof Subject,
                 //Prozessname ist Priv-Escalation-Tool
-                ((edge, graph) -> {
+                ((edge) -> {
                     if(!(edge.getDstNode() instanceof Subject)) return false;
                     Subject s =(Subject) edge.getDstNode();
                     return SUPERUSER_TOOLS.contains(s.getCmd());
@@ -32,11 +32,11 @@ public class Switch_SU extends TTP{
     }
 
     @Override
-    public boolean matches(Edge edge, ProvenanceGraph graph){
+    public boolean matches(Edge edge){
         if(!edge.getOperation().equals(EventType.Type.EVENT_CHANGE_PRINCIPAL.toString())){
             return false;
         }
-        if(!prerequisitesMet(edge, graph)){
+        if(!prerequisitesMet(edge)){
             return false;
         }
 

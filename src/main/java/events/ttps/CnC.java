@@ -20,19 +20,19 @@ public class CnC extends TTP{
         setSeverity('H');
         setPrerequisites(List.of(
                 //Quellknoten ist Prozess
-                (edge, graph) -> edge.getSrcNode() instanceof Subject,
+                (edge) -> edge.getSrcNode() instanceof Subject,
                 //Zielknoten ist Netflow
-                (edge, graph)-> edge.getDstNode() instanceof Netflow
+                (edge)-> edge.getDstNode() instanceof Netflow
         ));
     }
 
 
     @Override
-    public boolean matches(Edge edge, ProvenanceGraph graph){
+    public boolean matches(Edge edge){
         if(!edge.getOperation().equals(EventType.Type.EVENT_SENDTO.toString())){
             return false;
         }
-        if(!prerequisitesMet(edge,graph)){
+        if(!prerequisitesMet(edge)){
             return false;
         }
 

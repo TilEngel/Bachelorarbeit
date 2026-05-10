@@ -30,7 +30,7 @@ public class MatchingEngine {
         //Initial_Compromise finden
         for (Edge e : graph.getEdges()) {
             for (TTP ttp : phases.get(0)) { //initial_compromise1
-                if (ttp.matches(e, graph)) {
+                if (ttp.matches(e)) {
                     Node match = e.getDstNode();
                     //Initial_Compromise entdeckt -> neue Kette starten
                     TTPChain newChain = new TTPChain(ttp.getName(), match);
@@ -67,7 +67,7 @@ public class MatchingEngine {
                             //TTP Matching
                             for (List<TTP> phase : phases) {
                                 for (TTP ttp : phase) {
-                                    if (ttp.matches(e, graph)) {
+                                    if (ttp.matches(e)) {
 
                                         //Kopie, über die iteriert wird, weil dem Knoten in der Schleife Chains hinzugefügt werden können (exception)
                                         List<TTPChain> copy = new ArrayList<>(currentNode.getChains());

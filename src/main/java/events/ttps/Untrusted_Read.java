@@ -24,7 +24,7 @@ public class Untrusted_Read extends TTP {
         setSeverity('L');
         setPrerequisites(List.of(
                 //Quellknoten muss untrusted IP haben
-                (edge, graph) -> {
+                (edge) -> {
                     if(!(edge.getSrcNode() instanceof Netflow)) return false;
                     Netflow n = (Netflow) edge.getSrcNode();
                     return !TRUSTED_IPS.contains(n.getDstAddr());
@@ -33,11 +33,11 @@ public class Untrusted_Read extends TTP {
     }
 
     @Override
-    public boolean matches(Edge edge, ProvenanceGraph graph){
+    public boolean matches(Edge edge){
         if(!edge.getOperation().equals(EventType.Type.EVENT_RECVFROM.toString())){
             return false;
         }
-        return prerequisitesMet(edge, graph);
+        return prerequisitesMet(edge);
     }
 
     @Override
