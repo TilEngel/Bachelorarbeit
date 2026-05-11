@@ -27,24 +27,30 @@ public class MatchingEngine {
      * @param phases Zu suchende TTPs jeweils in Listen nach Phase
      */
     public static void matchTTPs(ProvenanceGraph graph, List<List<TTP>> phases) {
+        Set<String> startNodes = new HashSet<>();
         //Initial_Compromise finden
         for (Edge e : graph.getEdges()) {
             for (TTP ttp : phases.get(0)) { //initial_compromise1
                 if (ttp.matches(e)) {
                     Node match = e.getDstNode();
-                    //Initial_Compromise entdeckt -> neue Kette starten
-                    TTPChain newChain = new TTPChain(ttp.getName(), match);
-                    match.addChain(newChain);
-                    match.addTTP(ttp);
-                    Logger.log("[INFO] New Chain " + ttp.getName() + " auf " + match.getName());
+                    //Könnte schon durch andere Kante Instanz haben
+                    if(match.getChains().isEmpty()) {
+                        //Initial_Compromise entdeckt -> neue Kette starten
+                        TTPChain newChain = new TTPChain(ttp.getName(), match);
+                        match.addChain(newChain);
+                        match.addTTP(ttp);
+                        startNodes.add(match.getHashId());
+                        Logger.log("[INFO] New Chain " + ttp.getName() + " auf " + match.getName());
 
+                    }
                 }
             }
         }
 
         //Kette verfolgen und auf spätere Phasen testen
 
-            for (Node startNode : graph.getNodes().values()) {
+            for (String startId : startNodes) {
+                Node startNode = graph.getNode(startId);
                 if (!startNode.getChains().isEmpty()) {
                     //Vom Startknoten zu erreichende Knoten durchlaufen
                     Queue<String> queue = new LinkedList<>();
@@ -60,6 +66,7 @@ public class MatchingEngine {
                         for (Edge e : graph.getOutEdges(currentId)) {
                             Node dstNode = e.getDstNode();
                             String dstId = dstNode.getHashId();
+                            if(startNodes.contains(dstId)) continue;
                             //Neuen PF bestimmen
                             int newPF = computeNewPF(currentNode, dstNode, currentPF, graph);
                             //Wenn PF>Threshold, wird Kette abgebrochen

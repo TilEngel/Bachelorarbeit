@@ -67,9 +67,20 @@ public class TTPChain {
      * @return true, wenn origId und ttps identisch sind
      */
     public boolean isDuplicateOf(TTPChain other){
-        boolean sameOrigin= this.origin.getHashId().equals(other.origin.getHashId());
-        boolean sameTTPs = this.ttps.equals(other.ttps);
-        return  sameTTPs;
+        boolean sameOrigin= this.origin.getName().equals(other.origin.getName());
+        boolean sameTTPs =true;
+        if(ttps.size() != other.ttps.size()){
+            sameTTPs = false;
+        }else{
+            for(String ttp: ttps){
+                if(!other.ttps.contains(ttp)){
+                    sameTTPs = false;
+                    break;
+                }
+            }
+        }
+
+        return  sameOrigin && sameTTPs;
     }
 
 
@@ -78,7 +89,7 @@ public class TTPChain {
     }
 
     public String getOriginId(){
-        return origin.getHashId();
+        return origin.getName();
     }
 
     @Override
