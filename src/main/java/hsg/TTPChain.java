@@ -41,6 +41,12 @@ public class TTPChain {
         this.origin = origin;
     }
 
+    private  TTPChain(List<String> existing, int newPF,Node origin){
+        this.ttps = new ArrayList<>(existing);
+        this.pathFactor= newPF;
+        this.origin = origin;
+    }
+
     /**
      * Gibt neue, erweiterte Kette zurück
      * @param ttpName neues TTP
@@ -51,6 +57,10 @@ public class TTPChain {
         return new TTPChain(ttps, ttpName, newPF, origin);
     }
 
+    public TTPChain updatePF(int newPF){
+        return new TTPChain(ttps,newPF,origin);
+    }
+
     /**
      * Prüft, ob Chain identisch zu anderer Chain ist
      * @param other andere Chain
@@ -59,8 +69,7 @@ public class TTPChain {
     public boolean isDuplicateOf(TTPChain other){
         boolean sameOrigin= this.origin.getHashId().equals(other.origin.getHashId());
         boolean sameTTPs = this.ttps.equals(other.ttps);
-
-        return sameOrigin && sameTTPs;
+        return  sameTTPs;
     }
 
 

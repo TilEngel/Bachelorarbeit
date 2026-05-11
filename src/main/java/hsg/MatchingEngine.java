@@ -43,65 +43,81 @@ public class MatchingEngine {
         }
 
         //Kette verfolgen und auf spätere Phasen testen
-        for (Node startNode : graph.getNodes().values()) {
-            if (!startNode.getChains().isEmpty()) {
-                //Vom Startknoten zu erreichende Knoten durchlaufen
-                Queue<String> queue = new LinkedList<>();
-                Map<String, Integer> visitedPF = new HashMap<>();
-                queue.add(startNode.getHashId());
-                visitedPF.put(startNode.getHashId(), 1); //PF zu Beginn 1
 
-                while (!queue.isEmpty()) {
-                    String currentId = queue.poll();
-                    Node currentNode = graph.getNode(currentId);
-                    int currentPF = visitedPF.get(currentId);
+            for (Node startNode : graph.getNodes().values()) {
+                if (!startNode.getChains().isEmpty()) {
+                    //Vom Startknoten zu erreichende Knoten durchlaufen
+                    Queue<String> queue = new LinkedList<>();
+                    Map<String, Integer> visitedPF = new HashMap<>();
+                    queue.add(startNode.getHashId());
+                    visitedPF.put(startNode.getHashId(), 1); //PF zu Beginn 1
 
-                    for (Edge e : graph.getOutEdges(currentId)) {
-                        Node dstNode = e.getDstNode();
-                        String dstId = dstNode.getHashId();
-                        //Neuen PF bestimmen
-                        int newPF = computeNewPF(currentNode,dstNode, currentPF, graph);
-                        //Wenn PF>Threshold, wird Kette abgebrochen
-                        if(newPF <= PF_THRESHOLD) {
+                    while (!queue.isEmpty()) {
+                        String currentId = queue.poll();
+                        Node currentNode = graph.getNode(currentId);
+                        int currentPF = visitedPF.get(currentId);
 
-                            //TTP Matching
-                            for (List<TTP> phase : phases) {
-                                for (TTP ttp : phase) {
-                                    if (ttp.matches(e)) {
+                        for (Edge e : graph.getOutEdges(currentId)) {
+                            Node dstNode = e.getDstNode();
+                            String dstId = dstNode.getHashId();
+                            //Neuen PF bestimmen
+                            int newPF = computeNewPF(currentNode, dstNode, currentPF, graph);
+                            //Wenn PF>Threshold, wird Kette abgebrochen
+                            if (newPF <= PF_THRESHOLD) {
+                                List<TTPChain> changedChains = new ArrayList<>();
+                                //TTP Matching
+                                //Kopie, über die iteriert wird, weil dem Knoten in der Schleife Chains hinzugefügt werden können (exception)
+                                List<TTPChain> copy = new ArrayList<>(currentNode.getChains());
+                                for (TTPChain chain : copy) {
 
-                                        //Kopie, über die iteriert wird, weil dem Knoten in der Schleife Chains hinzugefügt werden können (exception)
-                                        List<TTPChain> copy = new ArrayList<>(currentNode.getChains());
-                                        for (TTPChain chain : copy) {
+                                    for (List<TTP> phase : phases) {
+                                        for (TTP ttp : phase) {
                                             if (!chain.getTtps().contains(ttp.getName())) {
-                                                //Kette erweitern
-                                                TTPChain extend = chain.extendChain(ttp.getName(), newPF);
-                                                //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
-                                                if (!dstNode.hasChain(extend)) {
-                                                    Logger.log("----[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
-                                                    dstNode.addChain(extend);
-                                                    dstNode.addTTP(ttp);
-                                                }
+                                                if (ttp.matches(e)) {
+                                                    //Kette erweitern
+                                                    TTPChain extend = chain.extendChain(ttp.getName(), newPF);
+                                                    //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
+                                                    if (!dstNode.hasChain(extend)) {
+                                                        Logger.log("----[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
+                                                        dstNode.addChain(extend);
+                                                        changedChains.add(chain); //Damit nicht weitergegeben
+                                                        dstNode.addTTP(ttp);
+                                                    }
 
+
+                                                }
                                             }
+
+                                        }
+
+                                    }
+                                }
+
+                                for (TTPChain chain : currentNode.getChains()) {
+                                    if (!changedChains.contains(chain)) {
+                                        TTPChain ex = chain.updatePF(newPF);
+                                        if (!dstNode.hasChain(ex)) {
+                                            dstNode.addChain(ex);
+
                                         }
                                     }
                                 }
-                            }
 
-                            if (OPTIMIZED_RESULTS) {
+
                                 //Auch ohne Match zum nächsten Knoten traversieren
                                 //Knoten werden erneut traversiert, wenn ein kürzerer Pfad gefunden wurde
-                                if (!visitedPF.containsKey(dstId) || visitedPF.get(dstId) > newPF) {
+                                if (!visitedPF.containsKey(dstId) || visitedPF.get(dstId) > newPF ) {
 
                                     visitedPF.put(dstId, newPF);
                                     queue.add(dstId);
                                 }
+
                             }
+
                         }
 
-                    }
-                }
 
+                }
             }
         }
     }
