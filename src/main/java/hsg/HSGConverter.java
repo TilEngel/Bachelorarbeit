@@ -49,7 +49,10 @@ public class HSGConverter {
                     Set<String> ttpNames = new HashSet<>();
                     for (TTPChain chain : e.getDstNode().getChains()) {
                         if (chain.getOriginId().equals(originId)) {
-                            ttpNames.add(chain.getLastTTP());
+                            String ttp = chain.getTTPForNode(e.getDstNode());
+                            if(ttp!=null){
+                                ttpNames.add(ttp);
+                            }
                         }
                     }
 

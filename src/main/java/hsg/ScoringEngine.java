@@ -53,13 +53,21 @@ public class ScoringEngine {
      * @return Bedrohungspunktzahl
      */
     private static double computeScore(List<Edge> involved){
+
+        List<String> phaseOrder = List.of(
+                "initial_compromise", "establish_foothold",
+                "privilege_escalation", "internal_recon", "cleanup_tracks"
+        );
+
         double score = 1.0;
         Map<String, Integer> ps = findRelevantScores(involved);
         int i = 0;
-        for(Integer severity: ps.values()){
-            i++;
-            double weight = (10 + i)/10.0;
-            score *= pow(severity,weight);
+        for(String phase : phaseOrder){
+            if(ps.containsKey(phase)) {
+                i++;
+                double weight = (10 + i) / 10.0;
+                score *= pow(ps.get(phase), weight);
+            }
         }
         return  score;
     }
@@ -99,7 +107,13 @@ public class ScoringEngine {
             List<Edge> involved = entry.getValue();
             double score = entry.getKey();
             if (score >= MENTION_SCENARIO_THRESHOLD) {
-                String origin = involved.get(0).getDstNode().getChains().get(0).getOriginId();
+                String origin = null;
+                for (Edge e : involved) {
+                    if (!e.getDstNode().getChains().isEmpty()) {
+                        origin = e.getDstNode().getChains().get(0).getOriginId();
+                        break;
+                    }
+                }
 
                 Logger.logSemiResult("\n Szenario " + count);
                 Logger.logSemiResult("Threat-Score: " + score);
@@ -115,7 +129,7 @@ public class ScoringEngine {
                 for (Edge n : involved) {
                     for (TTPChain chain : n.getDstNode().getChains()) {
                         if (chain.getOriginId().equals(origin)) {
-                            allTTPs.addAll(chain.getTtps());
+                            allTTPs.addAll(chain.getTtps().keySet());
                         }
                     }
                 }

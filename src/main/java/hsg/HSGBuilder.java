@@ -35,11 +35,17 @@ public class HSGBuilder {
                     //Neuen Eintrag erstellen
                     scenarios.put(origin, new ArrayList<>());
                 }
+                boolean isMatchingEdge= chain.getTTPForNode(edge.getDstNode()) != null;
                 //Wenn Knoten noch nicht in der Liste seines Szenarios enthalten ist
-                if (!scenarios.get(origin).contains(edge)) {
-                    if (!alreadyHasEdge(scenarios.get(origin), edge)) {
-                        scenarios.get(origin).add(edge);
-                    }
+                if (isMatchingEdge && !scenarios.get(origin).contains(edge)) {
+
+                            if(Long.parseLong(edge.getTimestampRec()) >= Long.parseLong(chain.getOriginTimestamp())) {
+                                //Startknoten nicht mehrfach einfügen
+
+                                scenarios.get(origin).add(edge);
+                            }
+
+
 
                 }
             }
@@ -92,15 +98,14 @@ public class HSGBuilder {
             for(Edge e : scenario){
                 for(TTPChain chain: e.getDstNode().getChains()){
                     if(chain.getOriginId().equals(scenario.get(0).getDstNode().getHashId())){
-                        String lastTTP = chain.getLastTTP();
-                        if(!ttpEdges.containsKey(lastTTP)){
-                            ttpEdges.put(lastTTP,new ArrayList<>());
-                        }
-                        if(!ttpEdges.get(lastTTP).contains(e)){
-                            if(!e.getDstNode().getTTPs().isEmpty()) {
-                                ttpEdges.get(lastTTP).add(e);
+                        String ttp = chain.getTTPForNode(e.getDstNode());
+                        if(ttp != null){
+                            ttpEdges.computeIfAbsent(ttp, k->new ArrayList<>());
+                            if(!ttpEdges.get(ttp).contains(e)){
+                                ttpEdges.get(ttp).add(e);
                             }
                         }
+
                     }
                 }
 

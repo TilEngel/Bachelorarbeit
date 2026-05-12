@@ -10,7 +10,6 @@ import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.util.*;
 
-import static main.java.Main.OPTIMIZED_RESULTS;
 import static main.java.Main.PF_THRESHOLD;
 
 /**
@@ -36,7 +35,7 @@ public class MatchingEngine {
                     //Könnte schon durch andere Kante Instanz haben
                     if(match.getChains().isEmpty()) {
                         //Initial_Compromise entdeckt -> neue Kette starten
-                        TTPChain newChain = new TTPChain(ttp.getName(), match);
+                        TTPChain newChain = new TTPChain(ttp.getName(), match, e.getTimestampRec());
                         match.addChain(newChain);
                         match.addTTP(ttp);
                         startNodes.add(match.getHashId());
@@ -79,16 +78,20 @@ public class MatchingEngine {
 
                                     for (List<TTP> phase : phases) {
                                         for (TTP ttp : phase) {
-                                            if (!chain.getTtps().contains(ttp.getName())) {
+                                            if (!chain.getTtps().containsKey(ttp.getName())) {
                                                 if (ttp.matches(e)) {
-                                                    //Kette erweitern
-                                                    TTPChain extend = chain.extendChain(ttp.getName(), newPF);
-                                                    //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
-                                                    if (!dstNode.hasChain(extend)) {
-                                                        Logger.log("----[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
-                                                        dstNode.addChain(extend);
-                                                        changedChains.add(chain); //Damit nicht weitergegeben
-                                                        dstNode.addTTP(ttp);
+                                                    if(Long.parseLong(e.getTimestampRec()) > Long.parseLong(chain.getOriginTimestamp())){
+                                                        if (!e.getSrcNode().getName().equals(e.getDstNode().getName())) {// Zuletzt
+                                                            //Kette erweitern
+                                                            TTPChain extend = chain.extendChain(ttp.getName(), newPF, dstNode);
+                                                            //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
+                                                            if (!dstNode.hasChain(extend)) {
+                                                                Logger.log("----[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
+                                                                dstNode.addChain(extend);
+                                                                changedChains.add(chain); //Damit nicht weitergegeben
+                                                                dstNode.addTTP(ttp);
+                                                            }
+                                                        }
                                                     }
 
 
