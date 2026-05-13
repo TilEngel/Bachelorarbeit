@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.io.FileWriter;
 
+import static main.java.Main.INDIRECT_EDGES_BOTH_WAYS;
+
 /**
  * Erstellt aus den im HSGBuilder erstellten Szenarien Graphen im DOT-Format
  */
@@ -23,7 +25,7 @@ public class HSGConverter {
             outDir.mkdir();
         }
         int count =0;
-        for(Map.Entry<Double, List<Edge>> entry : scenarios){
+        for(Map.Entry<Double, List<Edge>> entry : scenarios) {
             count++;
             String originId = entry.getValue().get(0).getDstNode().getHashId();
 
@@ -40,62 +42,111 @@ public class HSGConverter {
             dot.append("    fontsize=16;\n");
 
             List<Edge> involved = entry.getValue();
-            Set<String> usedEdges = new HashSet<>();
+
 
             //Graph erstellen
-            for(Edge e:involved) {
+            Set<String> usefulNodes = new HashSet<>();
+            for (Edge e : involved) {
 
-                    //TTP-Namen der Kante
-                    Set<String> ttpNames = new HashSet<>();
-                    for (TTPChain chain : e.getDstNode().getChains()) {
-                        if (chain.getOriginId().equals(originId)) {
-                            String ttp = chain.getTTPForNode(e.getDstNode());
-                            if(ttp!=null){
-                                ttpNames.add(ttp);
-                            }
-                        }
-                    }
-
-                    //Src --ttp--> Dst
-                    String src = e.getSrcNode().getName();
-                    String dst = e.getDstNode().getName();
-
-                    if (!ttpNames.isEmpty()) {
-                        for (String ttpName : ttpNames) {
-                            String edgeName = src + "->" + dst + ttpName;
-                            if (!usedEdges.contains(edgeName)) {
-                                usedEdges.add(edgeName);
-
-                                dot.append("    \"").append(src).append("\"")
-                                        .append(" -> \"")
-                                        .append(dst).append("\"")
-                                        .append(" [label=\"").append(ttpName).append("\"];\n");
-                            }
-                        }
-                    } else {
-                        //Verbindungskante
-                        String edgeKey = src + "->" +dst;
-                        if(!usedEdges.contains(edgeKey)){
-                            usedEdges.add(edgeKey);
-                            dot.append("    \"").append(src).append("\"")
-                                    .append("->\"").append(dst).append("\"")
-                                    .append(" [style=dashed, color=gray];\n");
-                        }
-                    }
-
-
+                //TTP-Namen der Kante
+                Set<String> ttpNames = getTTPNames(e, originId);
+                //Nützliche Knoten bestimmen
+                if (!ttpNames.isEmpty()) {
+                    usefulNodes.add(e.getSrcNode().getHashId());
+                    usefulNodes.add(e.getDstNode().getHashId());
+                }
             }
-            dot.append("}\n");
 
-            //in Datei schreiben
-            try (FileWriter fw = new FileWriter("hsg_output/szenario"+count+".dot")){
-                fw.write(dot.toString());
-                Runtime.getRuntime().exec("dot -Tpng hsg_output/szenario"+ count+".dot -o hsg_output/szenario"+count+".png");
-            }catch (IOException e){
-                Logger.logError("DOT-Export Fehler: "+e.getMessage());
+            //Rückwärts propagieren
+            boolean changed = true;
+            while (changed) {
+                changed = false;
+                for (Edge edge : involved) {
+                    if (usefulNodes.contains(edge.getDstNode().getHashId())
+                            && usefulNodes.add(edge.getSrcNode().getHashId())) {
+                        changed = true;
+
+                    }
+                }
+            }
+            drawGraph(involved, usefulNodes, originId,dot,count);
+
+
+        }
+    }
+
+    private static void drawGraph(List<Edge> involved, Set<String> usefulNodes, String originId, StringBuilder dot, int count){
+        Set<String> usedEdges = new HashSet<>();
+        for (Edge e : involved) {
+            if(!usefulNodes.contains(e.getDstNode().getHashId())) continue;
+
+            Set<String> ttpNames = getTTPNames(e, originId);
+            //Src --ttp--> Dst
+            String src = e.getSrcNode().getName();
+            String dst = e.getDstNode().getName();
+
+            if (!ttpNames.isEmpty()) {
+                for (String ttpName : ttpNames) {
+                    String edgeName = src + "->" + dst + ttpName;
+                    if (!usedEdges.contains(edgeName)) {
+                        usedEdges.add(edgeName);
+
+                        //untrusted_read hervorheben
+                        //Vorlage von Claude.ai
+                        String attrs = ttpName.equals("untrusted_read")
+                                ? "[label=\"" + ttpName + "\", color=blue, penwidth=2.5, fontcolor=blue, fontsize=13]"
+                                : "[label=\"" + ttpName + "\"]";
+                        //Kante einzeichnen
+                        dot.append("    \"").append(src).append("\"")
+                                .append(" -> \"").append(dst).append("\"")
+                                .append(" ").append(attrs).append(";\n");
+                    }
+                }
+            } else {
+                //Verbindungskante
+                String edgeKey = src + "->" + dst;
+                String reverseKey = dst+"->"+src;
+
+                boolean addEdge =!usedEdges.contains(edgeKey);
+                if(!INDIRECT_EDGES_BOTH_WAYS){
+                    //gestrichelte Kanten gehen nur in eine Richtung
+                    addEdge = addEdge&& !usedEdges.contains(reverseKey);
+                }
+                if (addEdge){
+
+                    usedEdges.add(edgeKey);
+                    dot.append("    \"").append(src).append("\"")
+                            .append("->\"").append(dst).append("\"")
+                            .append(" [style=dashed, color=gray];\n");
+
+                }
             }
 
 
         }
+        dot.append("}\n");
+
+
+        //in Datei schreiben
+        try (FileWriter fw = new FileWriter("hsg_output/szenario"+count+".dot")){
+            fw.write(dot.toString());
+            Runtime.getRuntime().exec("dot -Tpng hsg_output/szenario"+ count+".dot -o hsg_output/szenario"+count+".png");
+        }catch (IOException e){
+            Logger.logError("DOT-Export Fehler: "+e.getMessage());
+        }
+    }
+
+    private static Set<String> getTTPNames(Edge e, String originId){
+        Set<String> ttpNames = new HashSet<>();
+
+        for (TTPChain chain : e.getDstNode().getChains()) {
+            if (chain.getOriginId().equals(originId)) {
+                String ttp = chain.getTTPForNode(e.getDstNode());
+                if (ttp != null) {
+                    ttpNames.add(ttp);
+                }
+            }
+        }
+        return ttpNames;
     }
 }

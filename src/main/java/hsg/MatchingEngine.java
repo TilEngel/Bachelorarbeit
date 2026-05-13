@@ -115,16 +115,17 @@ public class MatchingEngine {
                                 for (TTPChain chain : currentNode.getChains()) {
                                     if (!changedChains.contains(chain)) {
                                         TTPChain ex = chain.updatePF(newPF);
-                                        if (!dstNode.hasChain(ex)) {
-                                            dstNode.addChain(ex);
                                             //Verbindungskante
                                             String oid = chain.getOriginId();
-                                            if(scenarios.containsKey(oid) && !scenarios.get(oid).contains(e)){
-                                                if(Long.parseLong(e.getTimestampRec()) >= Long.parseLong(chain.getOriginTimestamp())) {
+                                            if(scenarios.containsKey(oid) && !scenarios.get(oid).contains(e)
+                                                    &&!e.getSrcNode().getName().equals(e.getDstNode().getName())
+                                                    &&Long.parseLong(e.getTimestampRec()) >= Long.parseLong(chain.getOriginTimestamp())){
 
-                                                    scenarios.get(oid).add(e);
-                                                }
+                                                scenarios.get(oid).add(e);
+
                                             }
+                                        if (!dstNode.hasChain(ex)) {
+                                            dstNode.addChain(ex);
                                         }
                                     }
                                 }
