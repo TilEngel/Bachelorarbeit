@@ -17,7 +17,7 @@ public class CnC extends TTP{
 
     public CnC(){
         setPhase("establish_foothold");
-        setSeverity('H');
+        setSeverity('L');
         setPrerequisites(List.of(
                 //Quellknoten ist Prozess
                 (edge) -> edge.getSrcNode() instanceof Subject,
