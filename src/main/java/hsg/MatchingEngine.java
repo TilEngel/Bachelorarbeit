@@ -11,6 +11,7 @@ import main.java.provenanceGraph.ProvenanceGraph;
 import java.util.*;
 
 import static main.java.Main.PF_THRESHOLD;
+import static main.java.Main.REMOVE_DUPLICATE_SCENARIOS;
 
 /**
  * Soll Einhaltung der TTPs prüfen und entsprechende Schritte einleiten
@@ -25,7 +26,10 @@ public class MatchingEngine {
      * Hält aufeinanderfolgende TTPs in TTPChains fest
      * @param phases Zu suchende TTPs jeweils in Listen nach Phase
      */
-    public static void matchTTPs(ProvenanceGraph graph, List<List<TTP>> phases) {
+    public static Map<String,List<Edge>> matchTTPs(ProvenanceGraph graph, List<List<TTP>> phases) {
+
+        Map<String, List<Edge>> scenarios = new HashMap<>();
+
         Set<String> startNodes = new HashSet<>();
         //Initial_Compromise finden
         for (Edge e : graph.getEdges()) {
@@ -39,6 +43,8 @@ public class MatchingEngine {
                         match.addChain(newChain);
                         match.addTTP(ttp);
                         startNodes.add(match.getHashId());
+                        scenarios.put(match.getHashId(), new ArrayList<>());
+                        scenarios.get(match.getHashId()).add(e);
                         Logger.log("[INFO] New Chain " + ttp.getName() + " auf " + match.getName());
 
                     }
@@ -90,6 +96,9 @@ public class MatchingEngine {
                                                                 dstNode.addChain(extend);
                                                                 changedChains.add(chain); //Damit nicht weitergegeben
                                                                 dstNode.addTTP(ttp);
+
+                                                                scenarios.get(extend.getOriginId()).add(e);
+
                                                             }
                                                         }
                                                     }
@@ -108,7 +117,14 @@ public class MatchingEngine {
                                         TTPChain ex = chain.updatePF(newPF);
                                         if (!dstNode.hasChain(ex)) {
                                             dstNode.addChain(ex);
+                                            //Verbindungskante
+                                            String oid = chain.getOriginId();
+                                            if(scenarios.containsKey(oid) && !scenarios.get(oid).contains(e)){
+                                                if(Long.parseLong(e.getTimestampRec()) >= Long.parseLong(chain.getOriginTimestamp())) {
 
+                                                    scenarios.get(oid).add(e);
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -130,6 +146,59 @@ public class MatchingEngine {
                 }
             }
         }
+
+        //Nach dem Einfügen Kanten sortieren (aufsteigend nach Timestamp).
+        //Damit Kanten in Reihenfolge, wie sie aufgetreten sind
+        for(List<Edge> edges : scenarios.values()){
+
+            edges.sort((edge1, edge2) -> Long.compare(Long.parseLong(edge1.getTimestampRec()), Long.parseLong(edge2.getTimestampRec())));
+
+        }
+
+        if(REMOVE_DUPLICATE_SCENARIOS){
+            //Duplikate entfernen, Szenarien mit identischer Kantenabfolge
+            //Node.hasChain prüft gleichheit auf Knotenebene, trotzdem kommt es zu duplikaten
+            //(vermutlich durch Versionierung der Knoten)#
+            List<String> originIds = new ArrayList<>(scenarios.keySet());
+            Set<String> remove = new HashSet<>();
+            //Jedes Szenario mit jedem anderen vergleichen
+            for (int i = 0; i < originIds.size(); i++) {
+                if (!remove.contains(originIds.get(i))) {
+                    List<Edge> edges1 = scenarios.get(originIds.get(i));
+
+                    for (int j = i + 1; j < originIds.size(); j++) {
+                        if (!remove.contains(originIds.get(j))) {
+                            List<Edge> edges2 = scenarios.get(originIds.get(j));
+                            //Falls Szenarien inhaltlich identisch sind
+                            if (isSameScenario(edges1, edges2)) {
+                                remove.add(originIds.get(j));
+                            }
+                        }
+                    }
+                }
+            }
+            for (String id : remove) {
+                scenarios.remove(id);
+            }
+        }
+
+        return scenarios;
+    }
+    private static boolean isSameScenario(List<Edge> edges1, List<Edge> edges2){
+        if(edges1.size() != edges2.size()){
+            return false;
+        }
+        Set<String> nodeNames1 = new HashSet<>();
+        Set<String> nodeNames2 = new HashSet<>();
+
+        for(Edge e: edges1){
+            nodeNames1.add(e.getSrcNode().getName()+e.getDstNode().getName());
+
+        }
+        for (Edge e: edges2){
+            nodeNames2.add(e.getSrcNode().getName()+e.getDstNode().getName());
+        }
+        return nodeNames1.equals(nodeNames2);
     }
 
 

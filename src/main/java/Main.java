@@ -56,8 +56,8 @@ public class Main {
         }catch (SQLException e){
             Logger.logError("Fehler in Main:" +e.getMessage());
         }
-        MatchingEngine.matchTTPs(graph, phases);
-        Map<String,List<Edge>> scenarios = HSGBuilder.constructHSG(graph);
+        Map<String,List<Edge>> scenarios = MatchingEngine.matchTTPs(graph, phases);
+        //Map<String,List<Edge>> scenarios = HSGBuilder.constructHSG(graph);
         List<Map.Entry<Double, List<Edge>>> scoredScenarios = ScoringEngine.scoreSzenarios(scenarios);
         //HSGBuilder.printScenarios(scenarios, graph);
         HSGConverter.exportToDOT(scoredScenarios);

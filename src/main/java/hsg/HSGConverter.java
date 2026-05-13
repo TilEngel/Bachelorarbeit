@@ -26,8 +26,8 @@ public class HSGConverter {
         for(Map.Entry<Double, List<Edge>> entry : scenarios){
             count++;
             String originId = entry.getValue().get(0).getDstNode().getHashId();
-            StringBuilder dot = new StringBuilder();
 
+            StringBuilder dot = new StringBuilder();
             //Header
             dot.append("digraph Szenario").append(count).append("{\n");
             dot.append("    rankdir=LR;\n");
@@ -44,7 +44,7 @@ public class HSGConverter {
 
             //Graph erstellen
             for(Edge e:involved) {
-                if(!e.getDstNode().getTTPs().isEmpty()) {
+
                     //TTP-Namen der Kante
                     Set<String> ttpNames = new HashSet<>();
                     for (TTPChain chain : e.getDstNode().getChains()) {
@@ -59,18 +59,30 @@ public class HSGConverter {
                     //Src --ttp--> Dst
                     String src = e.getSrcNode().getName();
                     String dst = e.getDstNode().getName();
-                    for(String ttpName : ttpNames ){
-                        String edgeName = src + "->"+ dst +ttpName;
-                        if(!usedEdges.contains(edgeName)) {
-                            usedEdges.add(edgeName);
 
+                    if (!ttpNames.isEmpty()) {
+                        for (String ttpName : ttpNames) {
+                            String edgeName = src + "->" + dst + ttpName;
+                            if (!usedEdges.contains(edgeName)) {
+                                usedEdges.add(edgeName);
+
+                                dot.append("    \"").append(src).append("\"")
+                                        .append(" -> \"")
+                                        .append(dst).append("\"")
+                                        .append(" [label=\"").append(ttpName).append("\"];\n");
+                            }
+                        }
+                    } else {
+                        //Verbindungskante
+                        String edgeKey = src + "->" +dst;
+                        if(!usedEdges.contains(edgeKey)){
+                            usedEdges.add(edgeKey);
                             dot.append("    \"").append(src).append("\"")
-                                    .append(" -> \"")
-                                    .append(dst).append("\"")
-                                    .append(" [label=\"").append(ttpName).append("\"];\n");
+                                    .append("->\"").append(dst).append("\"")
+                                    .append(" [style=dashed, color=gray];\n");
                         }
                     }
-                }
+
 
             }
             dot.append("}\n");

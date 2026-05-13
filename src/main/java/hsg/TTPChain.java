@@ -86,7 +86,7 @@ public class TTPChain {
             }
         }
 
-        return  sameTTPs;
+        return sameTTPs;
     }
 
 
