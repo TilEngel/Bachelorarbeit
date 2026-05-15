@@ -111,8 +111,8 @@ public class MatchingEngine {
 
                                     }
                                 }
-
-                                for (TTPChain chain : currentNode.getChains()) {
+                                List<TTPChain> copyNew = new ArrayList<>(currentNode.getChains());
+                                for (TTPChain chain : copyNew) {
                                     if (!changedChains.contains(chain)) {
                                         TTPChain ex = chain.updatePF(newPF);
                                             //Verbindungskante

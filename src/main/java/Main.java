@@ -3,7 +3,6 @@ package main.java;
 import main.java.database.JDBCEngine;
 import main.java.database.graph.Edge;
 import main.java.events.ttps.*;
-import main.java.hsg.HSGBuilder;
 import main.java.hsg.HSGConverter;
 import main.java.hsg.MatchingEngine;
 import main.java.hsg.ScoringEngine;
@@ -57,9 +56,8 @@ public class Main {
             Logger.logError("Fehler in Main:" +e.getMessage());
         }
         Map<String,List<Edge>> scenarios = MatchingEngine.matchTTPs(graph, phases);
-        //Map<String,List<Edge>> scenarios = HSGBuilder.constructHSG(graph);
         List<Map.Entry<Double, List<Edge>>> scoredScenarios = ScoringEngine.scoreSzenarios(scenarios);
-        //HSGBuilder.printScenarios(scenarios, graph);
+
         HSGConverter.exportToDOT(scoredScenarios);
 
         ScoringEngine.printRankedScenarios(scoredScenarios);

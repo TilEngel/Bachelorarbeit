@@ -2,9 +2,7 @@ package main.java.hsg;
 
 import main.java.database.graph.Node;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -73,7 +71,7 @@ public class TTPChain {
      * @return true, wenn origId und ttps identisch sind
      */
     public boolean isDuplicateOf(TTPChain other){
-        boolean sameOrigin= this.getOriginId().equals(other.getOriginId());
+        boolean sameOrigin= this.getOriginName().equals(other.getOriginName());
         boolean sameTTPs =true;
         if(ttps.size() != other.ttps.size()){
             sameTTPs = false;
@@ -96,6 +94,9 @@ public class TTPChain {
 
     public String getOriginId(){
         return origin.getHashId();
+    }
+    private String getOriginName(){
+        return origin.getName();
     }
 
     @Override
