@@ -104,6 +104,11 @@ public class TTPChain {
         return ttps + " (PF = "+ pathFactor + ")";
     }
 
+    /**
+     * gibt TTP dieser Chain aus, das auf Node gefunden wurde
+     * @param node Knoten
+     * @return Name des TTPs oder null falls kein TTP auf dem Knoten für die Chain
+     */
     public String getTTPForNode(Node node){
         for(Map.Entry<String, Node> entry: ttps.entrySet()){
             if(entry.getValue().getHashId().equals(node.getHashId())){

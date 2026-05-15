@@ -3,8 +3,8 @@ package main.java;
 import main.java.database.JDBCEngine;
 import main.java.database.graph.Edge;
 import main.java.events.ttps.*;
+import main.java.hsg.HSGBuilder;
 import main.java.hsg.HSGConverter;
-import main.java.hsg.MatchingEngine;
 import main.java.hsg.ScoringEngine;
 import main.java.provenanceGraph.DataCollector;
 import main.java.provenanceGraph.ProvenanceGraph;
@@ -55,7 +55,9 @@ public class Main {
         }catch (SQLException e){
             Logger.logError("Fehler in Main:" +e.getMessage());
         }
-        Map<String,List<Edge>> scenarios = MatchingEngine.matchTTPs(graph, phases);
+
+        Map<String,List<Edge>> scenarios = HSGBuilder.matchTTPs(graph, phases);
+
         List<Map.Entry<Double, List<Edge>>> scoredScenarios = ScoringEngine.scoreSzenarios(scenarios);
 
         HSGConverter.exportToDOT(scoredScenarios);

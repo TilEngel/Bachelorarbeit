@@ -54,9 +54,10 @@ public class ScoringEngine {
      */
     private static double computeScore(List<Edge> involved,String originId){
 
-        List<String> phaseOrder = List.of(
+        List<String> phaseOrder = List.of( //Reihenfolge der Phasen
                 "initial_compromise", "establish_foothold",
-                "privilege_escalation", "internal_recon", "cleanup_tracks"
+                "privilege_escalation", "internal_recon","move_laterally",
+                "maintain_presence", "cleanup_tracks"
         );
 
         double score = 1.0;
@@ -65,7 +66,9 @@ public class ScoringEngine {
         for(String phase : phaseOrder){
             if(ps.containsKey(phase)) {
                 i++;
+                //Gewichtung wie im Paper
                 double weight = (10 + i) / 10.0;
+
                 score *= pow(ps.get(phase), weight);
             }
         }
