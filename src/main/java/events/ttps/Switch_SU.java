@@ -13,8 +13,7 @@ import java.util.Set;
  * Nach Initial_Compromise werden superuser-tools verwendet
  */
 public class Switch_SU extends TTP{
-    private static final Set<String> SUPERUSER_TOOLS = Set.of(
-            "sudo", "su", "doas");
+    private static final Set<String> SUPERUSER_TOOLS = TTPConfig.getProperties("switch_su.superuser_tools");
 
     public Switch_SU(){
         setPhase("privilege_escalation");

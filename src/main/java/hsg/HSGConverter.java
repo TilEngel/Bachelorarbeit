@@ -46,6 +46,7 @@ public class HSGConverter {
 
             //Graph erstellen
             Set<String> usefulNodes = new HashSet<>();
+            Set<String> forwardEdges = new HashSet<>();
             for (Edge e : involved) {
 
                 //TTP-Namen der Kante
@@ -55,13 +56,22 @@ public class HSGConverter {
                     usefulNodes.add(e.getSrcNode().getHashId());
                     usefulNodes.add(e.getDstNode().getHashId());
                 }
+                //Vorbestimmen, welche Kanten gezeichnet werden
+                String fwd = e.getSrcNode().getName() + "->" + e.getDstNode().getName();
+                String rev = e.getDstNode().getName()+ "->" + e.getSrcNode().getName();
+                //Kanten nur in eine Richtung
+                if(!INDIRECT_EDGES_BOTH_WAYS && forwardEdges.contains(rev)) continue;
+                forwardEdges.add(fwd);
+
             }
 
-            //Rückwärts propagieren
+            //Rückwärts propagieren, um irrelevante Knoten zu eleminieren
             boolean changed = true;
             while (changed) {
                 changed = false;
                 for (Edge edge : involved) {
+                    String fwd = edge.getSrcNode().getName() + "->" + edge.getDstNode().getName();
+                    if(!forwardEdges.contains(fwd)) continue; //Rückwärts-Kanten überspringen
                     if (usefulNodes.contains(edge.getDstNode().getHashId())
                             && usefulNodes.add(edge.getSrcNode().getHashId())) {
                         changed = true;

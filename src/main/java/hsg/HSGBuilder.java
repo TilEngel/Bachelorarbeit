@@ -72,7 +72,7 @@ public class HSGBuilder {
                     for (Edge e : graph.getOutEdges(currentId)) {
                         Node dstNode = e.getDstNode();
                         String dstId = dstNode.getHashId();
-                        if(startNodes.contains(dstId)) continue;
+                        //if(startNodes.contains(dstId)) continue;
                         //Neuen PF bestimmen
                         int newPF = computeNewPF(currentNode, dstNode, currentPF, graph);
                         //Wenn PF>Threshold, wird Kette abgebrochen
