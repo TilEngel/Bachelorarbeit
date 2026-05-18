@@ -3,51 +3,160 @@ package main.java.hsg;
 import main.java.Logger;
 import main.java.database.graph.Edge;
 import main.java.database.graph.Node;
+import main.java.database.graph.Subject;
+import main.java.events.EventType;
+import main.java.events.ttps.*;
 import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.util.*;
 
+import static main.java.Main.PF_THRESHOLD;
 import static main.java.Main.REMOVE_DUPLICATE_SCENARIOS;
 
-
 /**
- * Erstellt Listen an Knoten, welche als HSG verstanden
- * werden können.
+ * Soll Einhaltung der TTPs prüfen und entsprechende Schritte einleiten
+ * Soll TTP.matches(edge) aufrufen, PathFactor berechnen und Szenarien erstellen
  */
 public class HSGBuilder {
 
+
     /**
-     * Sammelt alle Knoten, deren TTPChain auf den gleichen Ursprung
-     * verweisen in einer Liste, die ein Angriffsszenario repräsentiert
-     * @param graph Provenance-Graph
-     * @return Map, die Ursprungs-Knoten auf Liste abbildet
+     * Sucht nach Initial_Compromise.
+     * Verfolgt Kette an zusammenhängenden Ereignissen (unter Berücksichtigung PF).
+     * Hält aufeinanderfolgende TTPs in TTPChains fest
+     * @param phases Zu suchende TTPs jeweils in Listen nach Phase
+     * @return Szenarien mit Startknoten
      */
-    public static Map<String, List<Edge>> constructHSG(ProvenanceGraph graph) {
+    public static Map<String,List<Edge>> matchTTPs(ProvenanceGraph graph, List<List<TTP>> phases) {
 
         Map<String, List<Edge>> scenarios = new HashMap<>();
+        Set<String> startNodes = new HashSet<>();
 
-        for (Edge edge : graph.getEdges()) {
-            //Für jede Kette aller Knoten
-            for (TTPChain chain : edge.getDstNode().getChains()) {
-                String origin = chain.getOriginId();
-                //Wenn noch kein Szenario mit dem Ursprung existiert
-                if (!scenarios.containsKey(origin)) {
-                    //Neuen Eintrag erstellen
-                    scenarios.put(origin, new ArrayList<>());
-                }
-                //Wenn Knoten noch nicht in der Liste seines Szenarios enthalten ist
-                if (!scenarios.get(origin).contains(edge)) {
-                    if (!alreadyHasEdge(scenarios.get(origin), edge)) {
-                        scenarios.get(origin).add(edge);
+        //Initial_Compromise finden
+        for (Edge e : graph.getEdges()) {
+            for (TTP ttp : phases.get(0)) { //initial_compromise1
+                if (ttp.matches(e)) {
+                    Node match = e.getDstNode();
+                    //Könnte schon durch andere Kante Instanz haben
+                    if(match.getChains().isEmpty()) {
+                        //Initial_Compromise entdeckt -> neue Kette starten
+                        TTPChain newChain = new TTPChain(ttp.getName(), match, e.getTimestampRec());
+                        match.addChain(newChain);
+                        match.addTTP(ttp);
+                        startNodes.add(match.getHashId());
+                        scenarios.put(match.getHashId(), new ArrayList<>());
+                        scenarios.get(match.getHashId()).add(e);
+                        Logger.log("[INFO] New Chain " + ttp.getName() + " auf " + match.getName());
+
                     }
+                }
+            }
+        }
+
+        //Kette verfolgen und auf spätere Phasen testen
+
+        for (String startId : startNodes) {
+            Node startNode = graph.getNode(startId);
+            if (!startNode.getChains().isEmpty()) {
+                //Vom Startknoten zu erreichende Knoten durchlaufen
+                Queue<String> queue = new LinkedList<>();
+                Map<String, Integer> visitedPF = new HashMap<>();
+                queue.add(startNode.getHashId());
+                visitedPF.put(startNode.getHashId(), 1); //PF zu Beginn 1
+
+                while (!queue.isEmpty()) { //BFS
+                    String currentId = queue.poll();
+                    Node currentNode = graph.getNode(currentId);
+                    int currentPF = visitedPF.get(currentId);
+
+                    for (Edge e : graph.getOutEdges(currentId)) {
+                        Node dstNode = e.getDstNode();
+                        String dstId = dstNode.getHashId();
+                        //if(startNodes.contains(dstId)) continue;
+                        //Neuen PF bestimmen
+                        int newPF = computeNewPF(currentNode, dstNode, currentPF, graph);
+                        //Wenn PF>Threshold, wird Kette abgebrochen
+                        if (newPF <= PF_THRESHOLD) {
+                            List<TTPChain> changedChains = new ArrayList<>();
+                            //TTP Matching
+                            //Kopie, über die iteriert wird, weil dem Knoten in der Schleife Chains hinzugefügt werden können (exception)
+                            List<TTPChain> copy = new ArrayList<>(currentNode.getChains());
+                            for (TTPChain chain : copy) {
+
+                                for (List<TTP> phase : phases) {
+                                    for (TTP ttp : phase) {
+                                        if (!chain.getTtps().containsKey(ttp.getName())) {
+                                            if (ttp.matches(e)) {
+                                                //Zeitliche Reihenfolge beachten
+                                                if(Long.parseLong(e.getTimestampRec()) > Long.parseLong(chain.getOriginTimestamp())){
+                                                    if (!e.getSrcNode().getName().equals(e.getDstNode().getName())) {
+                                                        //Kette erweitern
+                                                        TTPChain extend = chain.extendChain(ttp.getName(), newPF, dstNode);
+                                                        //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
+                                                        if (!dstNode.hasChain(extend)) {
+                                                            Logger.log("----[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
+                                                            dstNode.addChain(extend);
+                                                            changedChains.add(chain); //Damit nicht weitergegeben
+                                                            dstNode.addTTP(ttp);
+
+                                                            scenarios.get(extend.getOriginId()).add(e);
+
+                                                        }
+                                                    }
+                                                }
+
+
+                                            }
+                                        }
+
+                                    }
+
+                                }
+                            }
+                            //Ketten an Nachfolger weitergeben, wenn durch Matching noch nicht geschehen
+                            List<TTPChain> copyNew = new ArrayList<>(currentNode.getChains());
+                            for (TTPChain chain : copyNew) {
+                                if (!changedChains.contains(chain)) {
+                                    TTPChain ex = chain.updatePF(newPF);
+                                    //Verbindungskante (gestrichelte Linien im Graphen)
+                                    String oid = chain.getOriginId();
+                                    if(scenarios.containsKey(oid) && !scenarios.get(oid).contains(e)
+                                            &&!e.getSrcNode().getName().equals(e.getDstNode().getName())
+                                            &&Long.parseLong(e.getTimestampRec()) >= Long.parseLong(chain.getOriginTimestamp())){
+
+                                        scenarios.get(oid).add(e);
+
+                                    }
+                                    if (!dstNode.hasChain(ex)) {
+                                        dstNode.addChain(ex);
+                                    }
+                                }
+                            }
+
+
+                            //Auch ohne Match zum nächsten Knoten traversieren
+                            //Knoten werden erneut traversiert, wenn ein kürzerer Pfad gefunden wurde
+                            if (!visitedPF.containsKey(dstId) || visitedPF.get(dstId) > newPF ) {
+
+                                visitedPF.put(dstId, newPF);
+                                queue.add(dstId);
+                            }
+
+                        }
+
+                    }
+
 
                 }
             }
         }
+
         //Nach dem Einfügen Kanten sortieren (aufsteigend nach Timestamp).
         //Damit Kanten in Reihenfolge, wie sie aufgetreten sind
         for(List<Edge> edges : scenarios.values()){
-            edges.sort((edge1, edge2)->Long.compare(Long.parseLong(edge1.getTimestampRec()), Long.parseLong(edge2.getTimestampRec())));
+
+            edges.sort((edge1, edge2) -> Long.compare(Long.parseLong(edge1.getTimestampRec()), Long.parseLong(edge2.getTimestampRec())));
+
         }
 
         if(REMOVE_DUPLICATE_SCENARIOS){
@@ -80,69 +189,72 @@ public class HSGBuilder {
         return scenarios;
     }
 
+
     /**
-     * Gibt alle Szenarien aus
+     * Berechnung einens neuen PF
+     * @param srcNode Ursprungsknoten
+     * @param dstNode Zielknoten
+     * @param currentPF aktueller PF
+     * @return currentPF++, wenn nötig. Sonst currentPF
+     */
+    private static int computeNewPF(Node srcNode, Node dstNode, int currentPF, ProvenanceGraph graph){
+        if(!(dstNode instanceof Subject)){
+            return currentPF;
+        }
+        for(Edge e: graph.getInEdges(dstNode.getHashId())){
+            if(e.getOperation().equals(EventType.Type.EVENT_FORK.toString()) && e.getSrcNode().getHashId().equals((srcNode.getHashId()))){
+                return currentPF;
+            }
+        }
+        return currentPF +1;
+    }
+
+
+    /**
+     * Gibt Szenario aus
      * @param scenario Szenario
      */
     public static void printScenario(List<Edge> scenario) {
 
-            //HSG-Knoten ausgeben
-            Map<String, List<Edge>> ttpEdges = new LinkedHashMap<>();
+        //HSG-Knoten ausgeben
+        Map<String, List<Edge>> ttpEdges = new LinkedHashMap<>();
 
-            for(Edge e : scenario){
-                for(TTPChain chain: e.getDstNode().getChains()){
-                    if(chain.getOriginId().equals(scenario.get(0).getDstNode().getHashId())){
-                        String lastTTP = chain.getLastTTP();
-                        if(!ttpEdges.containsKey(lastTTP)){
-                            ttpEdges.put(lastTTP,new ArrayList<>());
-                        }
-                        if(!ttpEdges.get(lastTTP).contains(e)){
-                            if(!e.getDstNode().getTTPs().isEmpty()) {
-                                ttpEdges.get(lastTTP).add(e);
-                            }
+        for(Edge e : scenario){
+            for(TTPChain chain: e.getDstNode().getChains()){
+                if(chain.getOriginId().equals(scenario.get(0).getDstNode().getHashId())){
+                    String ttp = chain.getTTPForNode(e.getDstNode());
+                    if(ttp != null){
+                        ttpEdges.computeIfAbsent(ttp, k->new ArrayList<>());
+                        if(!ttpEdges.get(ttp).contains(e)){
+                            ttpEdges.get(ttp).add(e);
                         }
                     }
-                }
 
-            }
-            StringBuilder sb = new StringBuilder();
-            boolean first = true;
-            for(Map.Entry<String, List<Edge>> ttpEntry : ttpEdges.entrySet()){
-                String ttpName = ttpEntry.getKey();
-                List<Edge> ttpMatches = ttpEntry.getValue();
-
-                for(Edge e : ttpMatches){
-                    if(!first){
-                        sb.append("\n             |\n            \\/\n");
-                    }
-                    sb.append("["+ e.getSrcNode().getName()+ "]---")
-                            .append(ttpName)
-                            .append("---["+ e.getDstNode().getName()+ "]");
-                    first = false;
                 }
             }
-            Logger.logSemiResult(sb.toString());
 
-    }
+        }
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for(Map.Entry<String, List<Edge>> ttpEntry : ttpEdges.entrySet()){
+            String ttpName = ttpEntry.getKey();
+            List<Edge> ttpMatches = ttpEntry.getValue();
 
-
-
-    /**
-     * Prüft, ob ein Knoten bereits durch eine andere eingehende Kante vertreten ist,
-     * um mehrfach-Matches zu vermeiden
-     * @param scenario aktuelles Szenario
-     * @param edge aktuelle eingehende Kante
-     * @return true, wenn Kante auf einen Knoten führt, der bereits durch eine andere Kante vertreten ist
-     */
-    private static boolean alreadyHasEdge(List<Edge> scenario,Edge edge){
-        for(Edge e: scenario){
-            Node n = e.getDstNode();
-            if(n.equals(edge.getDstNode())){
-                return true;
+            for(Edge e : ttpMatches){
+                if(!first){
+                    sb.append("\n             |\n            \\/\n");
+                }
+                sb.append("["+ e.getSrcNode().getName()+ "]---")
+                        .append(ttpName)
+                        .append("---["+ e.getDstNode().getName()+ "]");
+                first = false;
             }
         }
-        return false;
+        Logger.logSemiResult(sb.toString());
+
     }
+
+
 
     /**
      * Schaut, ob zwei Szenarien die gleiche Länge haben und die Kanten aus den gleichen Knoten bestehen

@@ -5,7 +5,6 @@ import main.java.database.graph.File;
 import main.java.database.graph.Subject;
 import main.java.events.EventType;
 import main.java.hsg.TTPChain;
-import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.util.List;
 
@@ -37,7 +36,7 @@ public class Sensitive_Temp_RM extends TTP {
         }
         //Prüfen, ob vorher ein sensitive_command stattgefunden hat
         for(TTPChain chain: edge.getSrcNode().getChains()){
-            if(chain.getTtps().contains("sensitive_command")){
+            if(chain.getTtps().containsKey("sensitive_command")){
                 return true;
             }
         }

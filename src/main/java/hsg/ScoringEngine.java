@@ -23,11 +23,11 @@ public class ScoringEngine {
 
         int count =0;
         for (Map.Entry<String, List<Edge> > entry : scenarios.entrySet()) {
-
+            String originId = entry.getKey();
             count++;
             List<Edge> involved = entry.getValue();
 
-            double score= computeScore(involved);
+            double score= computeScore(involved, originId);
             if(ROUND_THREAT_SCORES) { //Wert auf eine Nachkommastelle runden
                 score = Math.round(score * 10.0) / 10.0;
             }
@@ -52,14 +52,25 @@ public class ScoringEngine {
      * @param involved zu bewertendes Szenario
      * @return Bedrohungspunktzahl
      */
-    private static double computeScore(List<Edge> involved){
+    private static double computeScore(List<Edge> involved,String originId){
+
+        List<String> phaseOrder = List.of( //Reihenfolge der Phasen
+                "initial_compromise", "establish_foothold",
+                "privilege_escalation", "internal_recon","move_laterally",
+                "maintain_presence", "cleanup_tracks"
+        );
+
         double score = 1.0;
-        Map<String, Integer> ps = findRelevantScores(involved);
+        Map<String, Integer> ps = findRelevantScores(involved, originId);
         int i = 0;
-        for(Integer severity: ps.values()){
-            i++;
-            double weight = (10 + i)/10.0;
-            score *= pow(severity,weight);
+        for(String phase : phaseOrder){
+            if(ps.containsKey(phase)) {
+                i++;
+                //Gewichtung wie im Paper
+                double weight = (10 + i) / 10.0;
+
+                score *= pow(ps.get(phase), weight);
+            }
         }
         return  score;
     }
@@ -70,17 +81,28 @@ public class ScoringEngine {
      * @param involved Liste an Kanten in einem Szenario
      * @return Map <Phase -> höchster score>
      */
-    private static Map<String ,Integer> findRelevantScores(List<Edge> involved){
+    private static Map<String ,Integer> findRelevantScores(List<Edge> involved, String originId){
         Map<String, Integer> phases = new HashMap<>();
         for (Edge e : involved){
             Node n = e.getDstNode();
-            for(TTP ttp:n.getTTPs()){
-                int severity = getSeverityValue(ttp);
-                //höchster Wert für die Phase
-                if(!phases.containsKey(ttp.getPhase()) || phases.get(ttp.getPhase()) < severity){
-                    phases.put(ttp.getPhase(),severity);
+            Set<String> scenarioTTPs = new HashSet<>();
+            for(TTPChain chain: n.getChains()){
+                //TTPs des Szenarios identifizieren
+                if (chain.getOriginId().equals(originId)){
+                    String ttp = chain.getTTPForNode(n);
+                    if(ttp!=null){
+                        scenarioTTPs.add(ttp);
+                    }
                 }
-
+            }
+            for(TTP ttp : n.getTTPs()){
+                //Nur TTP des Knotens hinzufügen, das wirklich zur Chain gehört
+                if(scenarioTTPs.contains(ttp.getName())){
+                    int severity = getSeverityValue(ttp);
+                    if(!phases.containsKey(ttp.getPhase()) || phases.get(ttp.getPhase())< severity){
+                        phases.put(ttp.getPhase(), severity);
+                    }
+                }
             }
         }
         return phases;
@@ -99,7 +121,13 @@ public class ScoringEngine {
             List<Edge> involved = entry.getValue();
             double score = entry.getKey();
             if (score >= MENTION_SCENARIO_THRESHOLD) {
-                String origin = involved.get(0).getDstNode().getChains().get(0).getOriginId();
+                String origin = null;
+                for (Edge e : involved) {
+                    if (!e.getDstNode().getChains().isEmpty()) {
+                        origin = e.getDstNode().getChains().get(0).getOriginId();
+                        break;
+                    }
+                }
 
                 Logger.logSemiResult("\n Szenario " + count);
                 Logger.logSemiResult("Threat-Score: " + score);
@@ -115,7 +143,7 @@ public class ScoringEngine {
                 for (Edge n : involved) {
                     for (TTPChain chain : n.getDstNode().getChains()) {
                         if (chain.getOriginId().equals(origin)) {
-                            allTTPs.addAll(chain.getTtps());
+                            allTTPs.addAll(chain.getTtps().keySet());
                         }
                     }
                 }
