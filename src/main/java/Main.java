@@ -59,7 +59,7 @@ public class Main {
 
         Map<String, List<Edge>> scenarios = HSGBuilder.matchTTPs(graph, phases);
 
-        List<Map.Entry<Double, List<Edge>>> scoredScenarios = ScoringEngine.scoreSzenarios(scenarios);
+        List<Map.Entry<Double, List<Edge>>> scoredScenarios = ScoringEngine.scoreScenarios(scenarios);
 
         HSGConverter.exportToDOT(scoredScenarios);
 

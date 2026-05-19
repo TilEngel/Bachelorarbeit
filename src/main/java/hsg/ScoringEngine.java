@@ -18,7 +18,7 @@ public class ScoringEngine {
      * @param scenarios Liste an Szenarien
      * @return Liste an Szenarien, die auf ihren Thread-Score abgebildet werden
      */
-    public static List<Map.Entry<Double, List<Edge>>> scoreSzenarios(Map<String, List<Edge>> scenarios){
+    public static List<Map.Entry<Double, List<Edge>>> scoreScenarios(Map<String, List<Edge>> scenarios){
         List<Map.Entry<Double, List<Edge>>> rankedScenarios = new ArrayList<>();
 
         int count =0;

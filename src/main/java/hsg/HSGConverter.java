@@ -18,6 +18,12 @@ import static main.java.Main.INDIRECT_EDGES_BOTH_WAYS;
  */
 public class HSGConverter {
 
+
+    /**
+     * Erstellt aus einer Liste an Szenarien einen Graphen pro Szenario.
+     * Graph enthält Name, Threat-Score und Graphen mit relevanten Knoten
+     * @param scenarios Bewertete Szenarien
+     */
     public static void exportToDOT(List<Map.Entry<Double, List<Edge>>> scenarios){
 
         File outDir = new File("hsg_output");
@@ -85,6 +91,10 @@ public class HSGConverter {
         }
     }
 
+    /*
+    Zeichnet den tatsächlichen Graphen
+    mit TTP-Kanten und Verbindungskanten
+     */
     private static void drawGraph(List<Edge> involved, Set<String> usefulNodes, String originId, StringBuilder dot, int count){
         Set<String> usedEdges = new HashSet<>();
         for (Edge e : involved) {
@@ -146,6 +156,9 @@ public class HSGConverter {
         }
     }
 
+    /*
+    Findet für eine Kante Namen der TTP-Instanz, die zu dem Szenario gehört
+     */
     private static Set<String> getTTPNames(Edge e, String originId){
         Set<String> ttpNames = new HashSet<>();
 
