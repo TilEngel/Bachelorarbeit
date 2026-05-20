@@ -119,4 +119,7 @@ public class TTPChain {
     }
 
     public String getOriginTimestamp(){return originTimestamp;}
+    public int getPathFactor(){
+        return pathFactor;
+    }
 }

@@ -116,8 +116,15 @@ public class HSGBuilder {
                             //Ketten an Nachfolger weitergeben, wenn durch Matching noch nicht geschehen
                             List<TTPChain> copyNew = new ArrayList<>(currentNode.getChains());
                             for (TTPChain chain : copyNew) {
+                                //PF anpassen
                                 if (!changedChains.contains(chain)) {
-                                    TTPChain ex = chain.updatePF(newPF);
+                                    TTPChain ex;
+                                    if(newPF == chain.getPathFactor()){
+                                        ex = chain;
+                                    } else {
+                                        ex = chain.updatePF(newPF);
+                                    }
+
                                     //Verbindungskante (gestrichelte Linien im Graphen)
                                     String oid = chain.getOriginId();
                                     if(scenarios.containsKey(oid) && !scenarios.get(oid).contains(e)
