@@ -6,7 +6,6 @@ import main.java.database.graph.Node;
 import main.java.events.ttps.TTP;
 
 import java.util.*;
-
 import static java.lang.Math.pow;
 import static main.java.Main.*;
 
@@ -89,7 +88,7 @@ public class ScoringEngine {
             for(TTPChain chain: n.getChains()){
                 //TTPs des Szenarios identifizieren
                 if (chain.getOriginId().equals(originId)){
-                    String ttp = chain.getTTPForNode(n);
+                    String ttp = chain.getTTPForEdge(e);
                     if(ttp!=null){
                         scenarioTTPs.add(ttp);
                     }
@@ -134,7 +133,7 @@ public class ScoringEngine {
                 Logger.logSemiResult("Beteiligte Knoten: " + involved.size());
                 if (score >= ALARM_THRESHOLD) {
                     Logger.logSemiResult("\nGEFAHR\n");
-                    HSGBuilder.printScenario(involved);
+                    //HSGBuilder.printScenario(involved);
                 }
 
 

@@ -40,7 +40,7 @@ public class HSGBuilder {
                     //Könnte schon durch andere Kante Instanz haben
                     if(match.getChains().isEmpty()) {
                         //Initial_Compromise entdeckt -> neue Kette starten
-                        TTPChain newChain = new TTPChain(ttp.getName(), match, e.getTimestampRec());
+                        TTPChain newChain = new TTPChain(ttp.getName(), e, e.getTimestampRec());
                         match.addChain(newChain);
                         match.addTTP(ttp);
                         startNodes.add(match.getHashId());
@@ -91,7 +91,7 @@ public class HSGBuilder {
                                                 if(Long.parseLong(e.getTimestampRec()) > Long.parseLong(chain.getOriginTimestamp())){
                                                     if (!e.getSrcNode().getName().equals(e.getDstNode().getName())) {
                                                         //Kette erweitern
-                                                        TTPChain extend = chain.extendChain(ttp.getName(), newPF, dstNode);
+                                                        TTPChain extend = chain.extendChain(ttp.getName(), newPF,e);
                                                         //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
                                                         if (!dstNode.hasChain(extend)) {
                                                             Logger.log("----[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
@@ -229,7 +229,7 @@ public class HSGBuilder {
         for(Edge e : scenario){
             for(TTPChain chain: e.getDstNode().getChains()){
                 if(chain.getOriginId().equals(scenario.get(0).getDstNode().getHashId())){
-                    String ttp = chain.getTTPForNode(e.getDstNode());
+                    String ttp = chain.getTTPForEdge(e);
                     if(ttp != null){
                         ttpEdges.computeIfAbsent(ttp, k->new ArrayList<>());
                         if(!ttpEdges.get(ttp).contains(e)){

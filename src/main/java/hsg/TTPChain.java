@@ -1,5 +1,6 @@
 package main.java.hsg;
 
+import main.java.database.graph.Edge;
 import main.java.database.graph.Node;
 
 import java.util.HashMap;
@@ -11,7 +12,7 @@ import java.util.Map;
  * TTPChain wird von einem Knoten an alle Nachfahren weitergegeben und eventuell. erweitert
  */
 public class TTPChain {
-    private final Map<String, Node> ttps;
+    private final Map<String, Edge> ttps;
     private final int pathFactor;
     private final Node origin;
     private final String originTimestamp;
@@ -21,11 +22,11 @@ public class TTPChain {
      * @param ttpName Name des TTPs
      * @param origin Ursprungsknoten
      */
-    public TTPChain(String ttpName, Node origin, String originTimestamp){
+    public TTPChain(String ttpName, Edge origin, String originTimestamp){
         this.ttps= new HashMap<>();
         this.ttps.put(ttpName, origin);
         this.pathFactor=1;
-        this.origin = origin;
+        this.origin = origin.getDstNode();
         this.originTimestamp = originTimestamp;
     }
 
@@ -36,7 +37,7 @@ public class TTPChain {
      * @param newPF neuer PF
      * @param origin Ursprungsknoten
      */
-    private  TTPChain(Map<String,Node> existing, String newTTP, int newPF,Node origin, String originTimestamp, Node foundAt){
+    private  TTPChain(Map<String,Edge> existing, String newTTP, int newPF,Node origin, String originTimestamp, Edge foundAt){
         this.ttps = new HashMap<>(existing);
         this.ttps.put(newTTP,foundAt);
         this.pathFactor= newPF;
@@ -44,7 +45,7 @@ public class TTPChain {
         this.originTimestamp = originTimestamp;
     }
 
-    private  TTPChain(Map<String, Node> existing, int newPF,Node origin, String originTimestamp){
+    private  TTPChain(Map<String, Edge> existing, int newPF,Node origin, String originTimestamp){
         this.ttps = new HashMap<>(existing);
         this.pathFactor= newPF;
         this.origin = origin;
@@ -57,7 +58,7 @@ public class TTPChain {
      * @param newPF neuer PF
      * @return erweiterte TTPChain
      */
-    public TTPChain extendChain(String ttpName, int newPF, Node foundAt){
+    public TTPChain extendChain(String ttpName, int newPF, Edge foundAt){
         return new TTPChain(ttps, ttpName, newPF, origin,originTimestamp, foundAt);
     }
 
@@ -88,7 +89,7 @@ public class TTPChain {
     }
 
 
-    public Map<String,Node> getTtps(){
+    public Map<String,Edge> getTtps(){
         return ttps;
     }
 
@@ -106,12 +107,14 @@ public class TTPChain {
 
     /**
      * gibt TTP dieser Chain aus, das auf Node gefunden wurde
-     * @param node Knoten
+     * @param edge Kante
      * @return Name des TTPs oder null falls kein TTP auf dem Knoten für die Chain
      */
-    public String getTTPForNode(Node node){
-        for(Map.Entry<String, Node> entry: ttps.entrySet()){
-            if(entry.getValue().getHashId().equals(node.getHashId())){
+    public String getTTPForEdge(Edge edge){
+        for(Map.Entry<String, Edge> entry: ttps.entrySet()){
+            boolean dst= entry.getValue().getDstNode().getHashId().equals(edge.getDstNode().getHashId());
+            boolean src = entry.getValue().getSrcNode().getHashId().equals(edge.getSrcNode().getHashId());
+            if(src && dst){
                 return entry.getKey();
             }
         }

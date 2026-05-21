@@ -44,7 +44,8 @@ public class HSGConverter {
             //Titel mit Score
             dot.append("    label=\"Szenario ").append(count)
                     .append(" | Bedrohungspunkzahl: ").append(entry.getKey()).append("\";\n");
-            dot.append("    labelloc=\"t\";\n"); //Titel oben
+            dot.append("    labelloc=\"t\";\n");
+            dot.append("\n    //LN war hier\n\n");
             dot.append("    fontsize=16;\n");
 
             List<Edge> involved = entry.getValue();
@@ -164,7 +165,7 @@ public class HSGConverter {
 
         for (TTPChain chain : e.getDstNode().getChains()) {
             if (chain.getOriginId().equals(originId)) {
-                String ttp = chain.getTTPForNode(e.getDstNode());
+                String ttp = chain.getTTPForEdge(e);
                 if (ttp != null) {
                     ttpNames.add(ttp);
                 }

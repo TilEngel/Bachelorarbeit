@@ -73,12 +73,12 @@ public class Main {
     private static void setTimestamp() {
         ZonedDateTime startTime = ZonedDateTime.of(
                 2018, 4, 6,
-                15, 20, 0, 0,
+                11, 20, 0, 0,
                 ZoneId.of("America/New_York")
         );
         ZonedDateTime endTime = ZonedDateTime.of(
                 2018, 4, 6,
-                17, 10, 0, 0,
+                13, 10, 0, 0,
                 ZoneId.of("America/New_York")
         );
 
