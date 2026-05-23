@@ -124,7 +124,7 @@ public class JDBCEngine {
         } catch (SQLException e) {
             Logger.logError("getAllSubjectNodes: " + e.getMessage());
         }
-        Logger.log("[INFO] getAllNodes beendet. NodeType: "+nodeType);
+        //Logger.log("[INFO] getAllNodes beendet. NodeType: "+nodeType);
         return rows;
     }
 

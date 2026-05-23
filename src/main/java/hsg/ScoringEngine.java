@@ -9,6 +9,9 @@ import java.util.*;
 import static java.lang.Math.pow;
 import static main.java.Main.*;
 
+/**
+ * Klasse zur Bewertung der erstellten Szenarien
+ */
 public class ScoringEngine {
 
     /**
@@ -56,7 +59,7 @@ public class ScoringEngine {
         List<String> phaseOrder = List.of( //Reihenfolge der Phasen
                 "initial_compromise", "establish_foothold",
                 "privilege_escalation", "internal_recon","move_laterally",
-                "maintain_presence", "cleanup_tracks"
+                "complete_mission", "cleanup_tracks"
         );
 
         double score = 1.0;
