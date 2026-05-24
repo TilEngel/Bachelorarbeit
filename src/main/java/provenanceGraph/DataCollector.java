@@ -136,4 +136,41 @@ public class DataCollector {
         return graph;
     }
 
+
+    public void collectDataStreaming(){
+        //Knoten
+        collectSubjects();
+        collectFiles();
+        collectNetflows();
+        //Kanten
+        collectEventsStreaming();
+    }
+
+    private void collectEventsStreaming(){
+        List<Map<String, Object>> rows = engine.getAllEvents();
+        int count =0;
+
+        for (Map<String,Object> row:rows ){
+            count++;
+            String srcId = (String) row.get("src_node");
+            String dstId = (String) row.get("dst_node");
+            //jeweilige Knoten-Instanzen aus NodeIndex holen
+            Node srcNode = graph.getNode(srcId);
+            Node dstNode = graph.getNode(dstId);
+
+            // falls einer der Knoten nicht im Zeitfenster liegt
+            if(srcNode == null || dstNode == null){
+                continue;
+            }
+            String operation = (String) row.get("operation");
+
+            String timestamp = String.valueOf(row.get("timestamp_rec"));
+
+            Edge e = new Edge(srcNode,operation,dstNode,timestamp);
+
+            graph.addEdgeStreaming(e);
+        }
+        Logger.log("[INFO] "+ count + " Edges verarbeitet");
+    }
+
 }

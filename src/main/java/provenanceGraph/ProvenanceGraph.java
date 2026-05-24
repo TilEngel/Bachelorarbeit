@@ -4,8 +4,12 @@ package main.java.provenanceGraph;
 import main.java.Logger;
 import main.java.database.graph.Edge;
 import main.java.database.graph.Node;
+import main.java.hsg.HSGBuilder;
+import main.java.hsg.ScoringEngine;
 
 import java.util.*;
+
+import static main.java.Main.PHASES;
 
 /**
  * Repräsentiert den Provenance-Graphen
@@ -86,6 +90,16 @@ public class ProvenanceGraph {
     }
     public List<Edge> getEdges() {
         return edges;
+    }
+
+    public void addEdgeStreaming(Edge edge){
+        edges.add(edge);
+        String srcId = edge.getSrcNode().getHashId();
+        String dstId = edge.getDstNode().getHashId();
+
+        outEdges.computeIfAbsent(srcId, k -> new ArrayList<>()).add(edge);
+        inEdges.computeIfAbsent(dstId, k-> new ArrayList<>()).add(edge);
+        HSGBuilder.matchTTPsStreaming(edge,PHASES);
     }
 
 }

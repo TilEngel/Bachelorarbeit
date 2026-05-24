@@ -176,4 +176,72 @@ public class HSGConverter {
         }
         return ttpNames;
     }
+
+
+    private static int countStreaming=0;
+    public static void exportToDOTStreaming(List<Edge> scenario, double score, String originId){
+
+        File outDir = new File("hsg_output");
+        if(!outDir.exists()){
+            outDir.mkdir();
+        }
+        if (score > MENTION_SCENARIO_THRESHOLD) {
+            countStreaming++;
+
+            StringBuilder dot = new StringBuilder();
+            //Header
+            dot.append("digraph Szenario").append(countStreaming).append("{\n");
+            dot.append("    rankdir=LR;\n");
+            dot.append("    node [shape=box];\n");
+
+            //Titel mit Score
+            dot.append("    label=\"Szenario ").append(countStreaming)
+                    .append(" | Bedrohungspunkzahl: ").append(score).append("\";\n");
+            dot.append("    labelloc=\"t\";\n");
+            dot.append("\n    //LN war hier\n\n");
+            dot.append("    fontsize=16;\n");
+
+
+
+            //Graph erstellen
+            Set<String> usefulNodes = new HashSet<>();
+            Set<String> forwardEdges = new HashSet<>();
+            for (Edge e : scenario) {
+
+                //TTP-Namen der Kante
+                Set<String> ttpNames = getTTPNames(e, originId);
+                //Nützliche Knoten bestimmen
+                if (!ttpNames.isEmpty()) {
+                    usefulNodes.add(e.getSrcNode().getHashId());
+                    usefulNodes.add(e.getDstNode().getHashId());
+                }
+                //Vorbestimmen, welche Kanten gezeichnet werden
+                String fwd = e.getSrcNode().getName() + "->" + e.getDstNode().getName();
+                String rev = e.getDstNode().getName() + "->" + e.getSrcNode().getName();
+                //Kanten nur in eine Richtung
+                if (!INDIRECT_EDGES_BOTH_WAYS && forwardEdges.contains(rev)) continue;
+                forwardEdges.add(fwd);
+
+            }
+
+            //Rückwärts propagieren, um irrelevante Knoten zu eleminieren
+            boolean changed = true;
+            while (changed) {
+                changed = false;
+                for (Edge edge : scenario) {
+                    String fwd = edge.getSrcNode().getName() + "->" + edge.getDstNode().getName();
+                    if (!forwardEdges.contains(fwd)) continue; //Rückwärts-Kanten überspringen
+                    if (usefulNodes.contains(edge.getDstNode().getHashId())
+                            && usefulNodes.add(edge.getSrcNode().getHashId())) {
+                        changed = true;
+
+                    }
+                }
+            }
+            drawGraph(scenario, usefulNodes, originId, dot, countStreaming);
+
+
+        }
+    }
+
 }

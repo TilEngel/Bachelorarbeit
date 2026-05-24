@@ -133,4 +133,41 @@ public class ScoringEngine {
             return 10;
         }
     }
+
+    private static final Map<String, List<Edge>> streamingScenarios = new HashMap<>();
+    private static final Map<String, Set<String>> knownPhases = new HashMap<>();
+    public static void scoreScenarioStreaming(TTPChain chain, Edge edge){
+        String origin = chain.getOriginId();
+        streamingScenarios.computeIfAbsent(origin, k->new ArrayList<>());
+        if(!streamingScenarios.get(origin).contains(edge)){
+            streamingScenarios.get(origin).add(edge);
+        }
+
+        List<Edge> scenario = streamingScenarios.get(origin);
+        Map<String, Integer> currentPhaseScores = findRelevantScores(scenario,origin);
+        Set<String> currentPhaseSet = currentPhaseScores.keySet();
+
+        Set<String> known = knownPhases.computeIfAbsent(origin, k->new HashSet<>());
+        if(currentPhaseSet.equals(known)) return;
+        known.clear();
+        known.addAll(currentPhaseSet);
+
+        double score = computeScore(scenario, chain.getOriginId());
+        if(ROUND_THREAT_SCORES) { //Wert auf eine Nachkommastelle runden
+            score = Math.round(score * 10.0) / 10.0;
+        }
+        if(score > MENTION_SCENARIO_THRESHOLD) {
+            Logger.logResult("[RESULT] Score: " + score);
+            if (score >= ALARM_THRESHOLD) {
+                Logger.logResult("\n[ALARM] GRENZWERT ÜBERSCHRITTEN!!\n ");
+                HSGConverter.exportToDOTStreaming(scenario, score, origin);
+            }
+        }
+    }
+    public static void addPathEdge(String originId, Edge edge){
+        List<Edge> edges = streamingScenarios.computeIfAbsent(originId, k->new ArrayList<>());
+        if(!edges.contains(edge)){
+            edges.add(edge);
+        }
+    }
 }
