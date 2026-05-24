@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Agiert als Schnittstelle zur JDBCEngine.
  * Holt die richtigen Daten aus der Datenbank, verarbeitet sie zu Objekten
- * und gibt sie der Klasse ProvenanceGraph
+ * und gibt sie der Klasse Provenance Graph
  */
 public class DataCollector {
 
@@ -25,7 +25,7 @@ public class DataCollector {
 
     /**
      * Holt alle nötigen Daten mit der JDBCEngine
-     * aus der Datenbank und speichert sie im ProvenanceGraphen
+     * aus der Datenbank und speichert sie im Provenance Graphen
      */
     public void collectData(){
         //Knoten

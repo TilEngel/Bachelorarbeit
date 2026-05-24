@@ -12,12 +12,19 @@ import java.util.Set;
 import java.io.FileWriter;
 
 import static main.java.Main.INDIRECT_EDGES_BOTH_WAYS;
+import static main.java.Main.MENTION_SCENARIO_THRESHOLD;
 
 /**
  * Erstellt aus den im HSGBuilder erstellten Szenarien Graphen im DOT-Format
  */
 public class HSGConverter {
 
+
+    /**
+     * Erstellt aus einer Liste an Szenarien einen Graphen pro Szenario.
+     * Graph enthält Name, Threat-Score und Graphen mit relevanten Knoten
+     * @param scenarios Bewertete Szenarien
+     */
     public static void exportToDOT(List<Map.Entry<Double, List<Edge>>> scenarios){
 
         File outDir = new File("hsg_output");
@@ -26,65 +33,72 @@ public class HSGConverter {
         }
         int count =0;
         for(Map.Entry<Double, List<Edge>> entry : scenarios) {
-            count++;
-            String originId = entry.getValue().get(0).getDstNode().getHashId();
+            if (entry.getKey() > MENTION_SCENARIO_THRESHOLD) {
+                count++;
+                String originId = entry.getValue().get(0).getDstNode().getHashId();
 
-            StringBuilder dot = new StringBuilder();
-            //Header
-            dot.append("digraph Szenario").append(count).append("{\n");
-            dot.append("    rankdir=LR;\n");
-            dot.append("    node [shape=box];\n");
+                StringBuilder dot = new StringBuilder();
+                //Header
+                dot.append("digraph Szenario").append(count).append("{\n");
+                dot.append("    rankdir=LR;\n");
+                dot.append("    node [shape=box];\n");
 
-            //Titel mit Score
-            dot.append("    label=\"Szenario ").append(count)
-                    .append(" | Bedrohungspunkzahl: ").append(entry.getKey()).append("\";\n");
-            dot.append("    labelloc=\"t\";\n"); //Titel oben
-            dot.append("    fontsize=16;\n");
+                //Titel mit Score
+                dot.append("    label=\"Szenario ").append(count)
+                        .append(" | Bedrohungspunkzahl: ").append(entry.getKey()).append("\";\n");
+                dot.append("    labelloc=\"t\";\n");
+                dot.append("\n    //LN war hier\n\n");
+                dot.append("    fontsize=16;\n");
 
-            List<Edge> involved = entry.getValue();
+                List<Edge> involved = entry.getValue();
 
 
-            //Graph erstellen
-            Set<String> usefulNodes = new HashSet<>();
-            Set<String> forwardEdges = new HashSet<>();
-            for (Edge e : involved) {
+                //Graph erstellen
+                Set<String> usefulNodes = new HashSet<>();
+                Set<String> forwardEdges = new HashSet<>();
+                for (Edge e : involved) {
 
-                //TTP-Namen der Kante
-                Set<String> ttpNames = getTTPNames(e, originId);
-                //Nützliche Knoten bestimmen
-                if (!ttpNames.isEmpty()) {
-                    usefulNodes.add(e.getSrcNode().getHashId());
-                    usefulNodes.add(e.getDstNode().getHashId());
+                    //TTP-Namen der Kante
+                    Set<String> ttpNames = getTTPNames(e, originId);
+                    //Nützliche Knoten bestimmen
+                    if (!ttpNames.isEmpty()) {
+                        usefulNodes.add(e.getSrcNode().getHashId());
+                        usefulNodes.add(e.getDstNode().getHashId());
+                    }
+                    //Vorbestimmen, welche Kanten gezeichnet werden
+                    String fwd = e.getSrcNode().getName() + "->" + e.getDstNode().getName();
+                    String rev = e.getDstNode().getName() + "->" + e.getSrcNode().getName();
+                    //Kanten nur in eine Richtung
+                    if (!INDIRECT_EDGES_BOTH_WAYS && forwardEdges.contains(rev)) continue;
+                    forwardEdges.add(fwd);
+
                 }
-                //Vorbestimmen, welche Kanten gezeichnet werden
-                String fwd = e.getSrcNode().getName() + "->" + e.getDstNode().getName();
-                String rev = e.getDstNode().getName()+ "->" + e.getSrcNode().getName();
-                //Kanten nur in eine Richtung
-                if(!INDIRECT_EDGES_BOTH_WAYS && forwardEdges.contains(rev)) continue;
-                forwardEdges.add(fwd);
 
-            }
+                //Rückwärts propagieren, um irrelevante Knoten zu eleminieren
+                boolean changed = true;
+                while (changed) {
+                    changed = false;
+                    for (Edge edge : involved) {
+                        String fwd = edge.getSrcNode().getName() + "->" + edge.getDstNode().getName();
+                        if (!forwardEdges.contains(fwd)) continue; //Rückwärts-Kanten überspringen
+                        if (usefulNodes.contains(edge.getDstNode().getHashId())
+                                && usefulNodes.add(edge.getSrcNode().getHashId())) {
+                            changed = true;
 
-            //Rückwärts propagieren, um irrelevante Knoten zu eleminieren
-            boolean changed = true;
-            while (changed) {
-                changed = false;
-                for (Edge edge : involved) {
-                    String fwd = edge.getSrcNode().getName() + "->" + edge.getDstNode().getName();
-                    if(!forwardEdges.contains(fwd)) continue; //Rückwärts-Kanten überspringen
-                    if (usefulNodes.contains(edge.getDstNode().getHashId())
-                            && usefulNodes.add(edge.getSrcNode().getHashId())) {
-                        changed = true;
-
+                        }
                     }
                 }
+                drawGraph(involved, usefulNodes, originId, dot, count);
+
+
             }
-            drawGraph(involved, usefulNodes, originId,dot,count);
-
-
         }
     }
 
+    /*
+    Zeichnet den tatsächlichen Graphen
+    mit TTP-Kanten und Verbindungskanten
+     */
     private static void drawGraph(List<Edge> involved, Set<String> usefulNodes, String originId, StringBuilder dot, int count){
         Set<String> usedEdges = new HashSet<>();
         for (Edge e : involved) {
@@ -146,12 +160,15 @@ public class HSGConverter {
         }
     }
 
+    /*
+    Findet für eine Kante Namen der TTP-Instanz, die zu dem Szenario gehört
+     */
     private static Set<String> getTTPNames(Edge e, String originId){
         Set<String> ttpNames = new HashSet<>();
 
         for (TTPChain chain : e.getDstNode().getChains()) {
             if (chain.getOriginId().equals(originId)) {
-                String ttp = chain.getTTPForNode(e.getDstNode());
+                String ttp = chain.getTTPForEdge(e);
                 if (ttp != null) {
                     ttpNames.add(ttp);
                 }

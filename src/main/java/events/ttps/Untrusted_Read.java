@@ -2,6 +2,7 @@ package main.java.events.ttps;
 
 import main.java.database.graph.Edge;
 import main.java.database.graph.Netflow;
+import main.java.database.graph.Subject;
 import main.java.events.EventType;
 import main.java.provenanceGraph.ProvenanceGraph;
 
@@ -26,6 +27,7 @@ public class Untrusted_Read extends TTP {
                 //Quellknoten muss untrusted IP haben
                 (edge) -> {
                     if(!(edge.getSrcNode() instanceof Netflow)) return false;
+                    if(!(edge.getDstNode() instanceof Subject)) return false;
                     Netflow n = (Netflow) edge.getSrcNode();
                     return !TRUSTED_IPS.contains(n.getDstAddr());
                 }

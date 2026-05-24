@@ -6,10 +6,12 @@ import main.java.database.graph.Node;
 import main.java.events.ttps.TTP;
 
 import java.util.*;
-
 import static java.lang.Math.pow;
 import static main.java.Main.*;
 
+/**
+ * Klasse zur Bewertung der erstellten Szenarien
+ */
 public class ScoringEngine {
 
     /**
@@ -18,7 +20,7 @@ public class ScoringEngine {
      * @param scenarios Liste an Szenarien
      * @return Liste an Szenarien, die auf ihren Thread-Score abgebildet werden
      */
-    public static List<Map.Entry<Double, List<Edge>>> scoreSzenarios(Map<String, List<Edge>> scenarios){
+    public static List<Map.Entry<Double, List<Edge>>> scoreScenarios(Map<String, List<Edge>> scenarios){
         List<Map.Entry<Double, List<Edge>>> rankedScenarios = new ArrayList<>();
 
         int count =0;
@@ -31,11 +33,12 @@ public class ScoringEngine {
             if(ROUND_THREAT_SCORES) { //Wert auf eine Nachkommastelle runden
                 score = Math.round(score * 10.0) / 10.0;
             }
-
-            rankedScenarios.add(Map.entry(score, involved));
-            Logger.logResult("[RESULT] Szenario "+ count+ " Score: " + score);
-            if(score >= ALARM_THRESHOLD){
-                Logger.logResult("\n[ALARM] GRENZWERT ÜBERSCHRITTEN!!\n ");
+            if(score > MENTION_SCENARIO_THRESHOLD) {
+                rankedScenarios.add(Map.entry(score, involved));
+                Logger.logResult("[RESULT] Szenario " + count + " Score: " + score);
+                if (score >= ALARM_THRESHOLD) {
+                    Logger.logResult("\n[ALARM] GRENZWERT ÜBERSCHRITTEN!!\n ");
+                }
             }
         }
 
@@ -57,7 +60,7 @@ public class ScoringEngine {
         List<String> phaseOrder = List.of( //Reihenfolge der Phasen
                 "initial_compromise", "establish_foothold",
                 "privilege_escalation", "internal_recon","move_laterally",
-                "maintain_presence", "cleanup_tracks"
+                "complete_mission", "cleanup_tracks"
         );
 
         double score = 1.0;
@@ -89,7 +92,7 @@ public class ScoringEngine {
             for(TTPChain chain: n.getChains()){
                 //TTPs des Szenarios identifizieren
                 if (chain.getOriginId().equals(originId)){
-                    String ttp = chain.getTTPForNode(n);
+                    String ttp = chain.getTTPForEdge(e);
                     if(ttp!=null){
                         scenarioTTPs.add(ttp);
                     }
@@ -108,49 +111,6 @@ public class ScoringEngine {
         return phases;
     }
 
-
-    /**
-     * Gibt die Szenarien sortiert nach Threat-Score mit Threat-Score aus
-     * @param rankedScenarios Bewertete Szenarien (durch ScoringEngine.scoreScenarios)
-     */
-    public static void printRankedScenarios(List<Map.Entry<Double,List<Edge>>> rankedScenarios){
-        Logger.logPriority("\n++Szenarien (Sortiert absteigend nach Bedrohlichkeit)++ \n");
-        int count = 0;
-        for (Map.Entry<Double, List<Edge>> entry : rankedScenarios) {
-            count++;
-            List<Edge> involved = entry.getValue();
-            double score = entry.getKey();
-            if (score >= MENTION_SCENARIO_THRESHOLD) {
-                String origin = null;
-                for (Edge e : involved) {
-                    if (!e.getDstNode().getChains().isEmpty()) {
-                        origin = e.getDstNode().getChains().get(0).getOriginId();
-                        break;
-                    }
-                }
-
-                Logger.logSemiResult("\n Szenario " + count);
-                Logger.logSemiResult("Threat-Score: " + score);
-                Logger.logSemiResult("Beteiligte Knoten: " + involved.size());
-                if (score >= ALARM_THRESHOLD) {
-                    Logger.logSemiResult("\nGEFAHR\n");
-                    HSGBuilder.printScenario(involved);
-                }
-
-
-                //TTPs des Szenarios sammeln
-                Set<String> allTTPs = new LinkedHashSet<>();
-                for (Edge n : involved) {
-                    for (TTPChain chain : n.getDstNode().getChains()) {
-                        if (chain.getOriginId().equals(origin)) {
-                            allTTPs.addAll(chain.getTtps().keySet());
-                        }
-                    }
-                }
-                Logger.logSemiResult("TTP-Kette: " + allTTPs);
-            }
-        }
-    }
 
     /**
      * Liefert numerischen Wert für Severities
