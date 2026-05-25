@@ -30,3 +30,7 @@ replay_pid*
 
 #DB Zugangsdaten
 /config.properties
+
+
+.DS_Store
+hsg_output/
