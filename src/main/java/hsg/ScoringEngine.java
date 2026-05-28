@@ -15,41 +15,6 @@ import static main.java.Main.*;
 public class ScoringEngine {
 
     /**
-     * Berechnet zu jedem Szenario die Bedrohungspunktzahl und speichert sie
-     * sortiert nach Score in eine Liste
-     * @param scenarios Liste an Szenarien
-     * @return Liste an Szenarien, die auf ihren Thread-Score abgebildet werden
-     */
-    public static List<Map.Entry<Double, List<Edge>>> scoreScenarios(Map<String, List<Edge>> scenarios){
-        List<Map.Entry<Double, List<Edge>>> rankedScenarios = new ArrayList<>();
-
-        int count =0;
-        for (Map.Entry<String, List<Edge> > entry : scenarios.entrySet()) {
-            String originId = entry.getKey();
-            count++;
-            List<Edge> involved = entry.getValue();
-
-            double score= computeScore(involved, originId);
-            if(ROUND_THREAT_SCORES) { //Wert auf eine Nachkommastelle runden
-                score = Math.round(score * 10.0) / 10.0;
-            }
-            if(score > MENTION_SCENARIO_THRESHOLD) {
-                rankedScenarios.add(Map.entry(score, involved));
-                Logger.logResult("[RESULT] Szenario " + count + " Score: " + score);
-                if (score >= ALARM_THRESHOLD) {
-                    Logger.logResult("\n[ALARM] GRENZWERT ÜBERSCHRITTEN!!\n ");
-                }
-            }
-        }
-
-        //Szenarien nach Score absteigend sortieren
-        rankedScenarios.sort((a,b) -> Double.compare(b.getKey(),a.getKey() ));
-
-        return  rankedScenarios;
-    }
-
-
-    /**
      * Berechnet den Score für ein Szenario.
      * Beachtet dabei, den kritischsten TTP-Typ pro Phase zu verwenden
      * @param involved zu bewertendes Szenario
@@ -136,6 +101,14 @@ public class ScoringEngine {
 
     private static final Map<String, List<Edge>> streamingScenarios = new HashMap<>();
     private static final Map<String, Set<String>> knownPhases = new HashMap<>();
+
+
+    /**
+     * Berechnet zu einem Szenario die Bedrohungspunktzahl.
+     * Stößt eventuell HSGConverter an
+     * @param chain TTP Kette
+     * @param edge neue Kante
+     */
     public static void scoreScenarioStreaming(TTPChain chain, Edge edge){
         String origin = chain.getOriginId();
         streamingScenarios.computeIfAbsent(origin, k->new ArrayList<>());

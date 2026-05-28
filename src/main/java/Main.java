@@ -1,19 +1,13 @@
 package main.java;
 
 import main.java.database.JDBCEngine;
-import main.java.database.graph.Edge;
 import main.java.events.ttps.*;
-import main.java.hsg.HSGBuilder;
-import main.java.hsg.HSGConverter;
-import main.java.hsg.ScoringEngine;
 import main.java.provenanceGraph.DataCollector;
-import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 
 public class Main {
     public static final boolean INDIRECT_EDGES_BOTH_WAYS = false; //Zwei Knoten können sich gegenseitig mit indirekten Kanten referenzieren
@@ -36,7 +30,6 @@ public class Main {
     public static final List<List<TTP>> PHASES = List.of(initialCompromise1, initialCompromise2,
             establishFoothold, privilegeEscalation, internalRecon, cleanupTracks);
 
-    private static ProvenanceGraph graph;
 
     public static void main(String[] args) {
         Logger.doLogAll();
@@ -49,7 +42,6 @@ public class Main {
             jdbc.connect();
 
             collector.collectDataStreaming();
-            graph = collector.getGraph();
 
             jdbc.disconnect();
 

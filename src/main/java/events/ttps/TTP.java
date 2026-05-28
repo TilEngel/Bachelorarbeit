@@ -2,7 +2,6 @@ package main.java.events.ttps;
 
 import main.java.database.graph.Edge;
 import main.java.events.Prerequisite;
-import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.util.List;
 

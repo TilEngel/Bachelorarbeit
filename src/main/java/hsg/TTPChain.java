@@ -121,7 +121,6 @@ public class TTPChain {
         return null;
     }
 
-    public String getOriginTimestamp(){return originTimestamp;}
     public int getPathFactor(){
         return pathFactor;
     }
