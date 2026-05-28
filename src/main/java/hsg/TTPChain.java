@@ -26,7 +26,7 @@ public class TTPChain {
         this.ttps= new HashMap<>();
         this.ttps.put(ttpName, origin);
         this.pathFactor=1;
-        this.origin = origin.getDstNode();
+        this.origin = origin.getSrcNode();
         this.originTimestamp = originTimestamp;
     }
 

@@ -299,7 +299,9 @@ public class HSGBuilder {
                     match.addChain(newChain);
                     match.addTTP(ttp);
 
-                    edge.getSrcNode().addChain(newChain.updatePF(1));
+                    ScoringEngine.scoreScenarioStreaming(newChain,edge);
+
+                    edge.getSrcNode().addTTP(ttp);
 
                     Logger.log("[INFO] New Chain " + ttp.getName() + " auf " + match.getName());
 

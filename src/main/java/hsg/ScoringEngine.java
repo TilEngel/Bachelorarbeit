@@ -152,7 +152,7 @@ public class ScoringEngine {
         known.clear();
         known.addAll(currentPhaseSet);
 
-        double score = computeScore(scenario, chain.getOriginId());
+        double score = computeScore(scenario,origin);
         if(ROUND_THREAT_SCORES) { //Wert auf eine Nachkommastelle runden
             score = Math.round(score * 10.0) / 10.0;
         }
