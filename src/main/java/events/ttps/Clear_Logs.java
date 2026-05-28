@@ -49,6 +49,10 @@ public class Clear_Logs extends TTP{
         }
         return true;
     }
+    @Override
+    public boolean matches(Edge edge, String origin){
+        return matches(edge);
+    }
 
     @Override
     public String getName(){
