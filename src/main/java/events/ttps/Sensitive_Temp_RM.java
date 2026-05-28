@@ -27,7 +27,7 @@ public class Sensitive_Temp_RM extends TTP {
 
 
     @Override
-    public  boolean matches(Edge edge){
+    public  boolean matches(Edge edge, String originId){
         if(!edge.getOperation().equals(EventType.Type.EVENT_UNLINK.toString())){
             return false;
         }
@@ -36,10 +36,18 @@ public class Sensitive_Temp_RM extends TTP {
         }
         //Prüfen, ob vorher ein sensitive_command stattgefunden hat
         for(TTPChain chain: edge.getSrcNode().getChains()){
-            if(chain.getTtps().containsKey("sensitive_command")){
-                return true;
+            if(chain.getOriginId().equals(originId)) {
+                if (chain.getTtps().containsKey("sensitive_command")) {
+                    if (Long.parseLong(chain.getTtps().get("sensitive_command").getTimestampRec()) < Long.parseLong(edge.getTimestampRec())) {
+                        return true;
+                    }
+                }
             }
         }
+        return false;
+    }
+    @Override
+    public boolean matches(Edge edge){
         return false;
     }
 

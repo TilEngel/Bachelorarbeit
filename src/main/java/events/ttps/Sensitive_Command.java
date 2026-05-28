@@ -45,6 +45,10 @@ public class Sensitive_Command extends TTP {
 
         return true;
     }
+    @Override
+    public boolean matches(Edge edge, String origin){
+        return matches(edge);
+    }
 
     @Override
     public String getName(){

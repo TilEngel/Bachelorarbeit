@@ -41,6 +41,10 @@ public class Untrusted_Read extends TTP {
         }
         return prerequisitesMet(edge);
     }
+    @Override
+    public boolean matches(Edge edge, String origin){
+        return matches(edge);
+    }
 
     @Override
     public String getName(){

@@ -86,7 +86,7 @@ public class HSGBuilder {
                                 for (List<TTP> phase : phases) {
                                     for (TTP ttp : phase) {
                                         if (!chain.getTtps().containsKey(ttp.getName())) {
-                                            if (ttp.matches(e)) {
+                                            if (ttp.matches(e, chain.getOriginId())) {
                                                 //Zeitliche Reihenfolge beachten
                                                 if(Long.parseLong(e.getTimestampRec()) > Long.parseLong(chain.getOriginTimestamp())){
                                                     if (!e.getSrcNode().getName().equals(e.getDstNode().getName())) {

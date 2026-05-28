@@ -2,7 +2,6 @@ package main.java.events.ttps;
 
 import main.java.database.graph.Edge;
 import main.java.events.Prerequisite;
-import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.util.List;
 
@@ -20,9 +19,11 @@ public abstract class TTP {
      */
     public abstract boolean matches(Edge edge);
 
+    public abstract boolean matches(Edge edge, String origin);
+
 
     /**
-     * Prüft für alle Prärekonditionen des entsprechenden
+     * Prüft für alle Vorbedingungen des entsprechenden
      * TTPs, ob sie eingehalten werden
      * @param edge Die Kante dessen Knoten geprüft wird
      * @return true, wenn alle Bedingungen eingehalten werden, sonst false
