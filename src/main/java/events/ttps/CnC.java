@@ -4,7 +4,6 @@ import main.java.database.graph.Edge;
 import main.java.database.graph.Netflow;
 import main.java.database.graph.Subject;
 import main.java.events.EventType;
-import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.util.List;
 /**

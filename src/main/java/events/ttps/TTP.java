@@ -21,7 +21,7 @@ public abstract class TTP {
 
 
     /**
-     * Prüft für alle Prärekonditionen des entsprechenden
+     * Prüft für alle Vorbedingungen des entsprechenden
      * TTPs, ob sie eingehalten werden
      * @param edge Die Kante dessen Knoten geprüft wird
      * @return true, wenn alle Bedingungen eingehalten werden, sonst false

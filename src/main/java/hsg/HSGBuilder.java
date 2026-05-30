@@ -6,12 +6,10 @@ import main.java.database.graph.Node;
 import main.java.database.graph.Subject;
 import main.java.events.EventType;
 import main.java.events.ttps.*;
-import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.util.*;
 
 import static main.java.Main.PF_THRESHOLD;
-import static main.java.Main.REMOVE_DUPLICATE_SCENARIOS;
 
 /**
  * Soll Einhaltung der TTPs prüfen und entsprechende Schritte einleiten

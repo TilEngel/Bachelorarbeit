@@ -11,9 +11,8 @@ import java.util.List;
 
 public class Main {
     public static final boolean INDIRECT_EDGES_BOTH_WAYS = false; //Zwei Knoten können sich gegenseitig mit indirekten Kanten referenzieren
-    public static final boolean REMOVE_DUPLICATE_SCENARIOS = true; //Entfernt inhaltlich identische Szenarien
     public static final boolean ROUND_THREAT_SCORES = true; //Bedrohungspunktzahl auf eine Nachkommastelle runden
-    public static final int PF_THRESHOLD = 2; //Path-Factor Schwellenwert
+    public static final int PF_THRESHOLD = 3; //Path-Factor Schwellenwert
     public static final int ALARM_THRESHOLD = 120; //Bedrohungspunktzahl, ab der Alarm gemeldet wird
     public static final int MENTION_SCENARIO_THRESHOLD = 10; //Szenarien unter diesen Wert, werden nicht erwähnt
 
@@ -58,12 +57,12 @@ public class Main {
     private static void setTimestamp() {
         ZonedDateTime startTime = ZonedDateTime.of(
                 2018, 4, 6,
-                11, 20, 0, 0,
+                11, 0, 0, 0,
                 ZoneId.of("America/New_York")
         );
         ZonedDateTime endTime = ZonedDateTime.of(
                 2018, 4, 6,
-                13, 10, 0, 0,
+                12, 10, 0, 0,
                 ZoneId.of("America/New_York")
         );
 
