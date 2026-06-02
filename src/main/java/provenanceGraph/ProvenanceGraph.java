@@ -8,7 +8,7 @@ import main.java.database.graph.Node;
 import java.util.*;
 
 /**
- * Repräsentiert den Provenance-Graphen
+ * Repräsentiert den Provenance Graphen
  * hält zu den Knoten immer ein- und ausgehende Kanten
  */
 public class ProvenanceGraph {
@@ -81,9 +81,7 @@ public class ProvenanceGraph {
     public Node getNode(String hashId){
         return nodes.get(hashId);
     }
-    public Map<String,Node> getNodes(){
-        return nodes;
-    }
+
     public List<Edge> getEdges() {
         return edges;
     }
