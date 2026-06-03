@@ -2,13 +2,11 @@ package main.java.hsg;
 
 import main.java.Logger;
 import main.java.database.graph.Edge;
+import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.io.FileWriter;
 
 import static main.java.Main.INDIRECT_EDGES_BOTH_WAYS;
@@ -54,41 +52,7 @@ public class HSGConverter {
 
 
                 //Graph erstellen
-                Set<String> usefulNodes = new HashSet<>();
-                Set<String> forwardEdges = new HashSet<>();
-                for (Edge e : involved) {
-
-                    //TTP-Namen der Kante
-                    Set<String> ttpNames = getTTPNames(e, originId);
-                    //Nützliche Knoten bestimmen
-                    if (!ttpNames.isEmpty()) {
-                        usefulNodes.add(e.getSrcNode().getHashId());
-                        usefulNodes.add(e.getDstNode().getHashId());
-                    }
-                    //Vorbestimmen, welche Kanten gezeichnet werden
-                    String fwd = e.getSrcNode().getName() + "->" + e.getDstNode().getName();
-                    String rev = e.getDstNode().getName() + "->" + e.getSrcNode().getName();
-                    //Kanten nur in eine Richtung
-                    if (!INDIRECT_EDGES_BOTH_WAYS && forwardEdges.contains(rev)) continue;
-                    forwardEdges.add(fwd);
-
-                }
-
-                //Rückwärts propagieren, um irrelevante Knoten zu eleminieren
-                boolean changed = true;
-                while (changed) {
-                    changed = false;
-                    for (Edge edge : involved) {
-                        String fwd = edge.getSrcNode().getName() + "->" + edge.getDstNode().getName();
-                        if (!forwardEdges.contains(fwd)) continue; //Rückwärts-Kanten überspringen
-                        if (usefulNodes.contains(edge.getDstNode().getHashId())
-                                && usefulNodes.add(edge.getSrcNode().getHashId())) {
-                            changed = true;
-
-                        }
-                    }
-                }
-                drawGraph(involved, usefulNodes, originId, dot, count);
+                drawGraph(involved, originId, dot, count);
 
 
             }
@@ -99,17 +63,26 @@ public class HSGConverter {
     Zeichnet den tatsächlichen Graphen
     mit TTP-Kanten und Verbindungskanten
      */
-    private static void drawGraph(List<Edge> involved, Set<String> usefulNodes, String originId, StringBuilder dot, int count){
-        Set<String> usedEdges = new HashSet<>();
+    private static void drawGraph(List<Edge> involved, String originId, StringBuilder dot, int count){
+
+        Map<String, List<Edge>> adjOut = new HashMap<>();
         for (Edge e : involved) {
-            if(!usefulNodes.contains(e.getDstNode().getHashId())) continue;
+            adjOut.computeIfAbsent(e.getSrcNode().getHashId(), k -> new ArrayList<>()).add(e);
+        }
+
+        Set<String> ttpEdgeKeys = new HashSet<>();
+        List<Edge> ttpEdges = new ArrayList<>();
+
+        Set<String> usedEdges = new HashSet<>();
+
+        for (Edge e : involved) {
 
             Set<String> ttpNames = getTTPNames(e, originId);
-            //Src --ttp--> Dst
-            String src = e.getSrcNode().getName();
-            String dst = e.getDstNode().getName();
 
             if (!ttpNames.isEmpty()) {
+                //Src --ttp--> Dst
+                String src = e.getSrcNode().getName();
+                String dst = e.getDstNode().getName();
                 for (String ttpName : ttpNames) {
                     String edgeName = src + "->" + dst + ttpName;
                     if (!usedEdges.contains(edgeName)) {
@@ -126,28 +99,64 @@ public class HSGConverter {
                                 .append(" ").append(attrs).append(";\n");
                     }
                 }
-            } else {
-                //Verbindungskante
-                String edgeKey = src + "->" + dst;
-                String reverseKey = dst+"->"+src;
+                ttpEdgeKeys.add(e.getSrcNode().getHashId() + "->" + e.getDstNode().getHashId());
+                ttpEdges.add(e);
+            }
+        }
 
-                boolean addEdge =!usedEdges.contains(edgeKey);
-                if(!INDIRECT_EDGES_BOTH_WAYS){
-                    //gestrichelte Kanten gehen nur in eine Richtung
-                    addEdge = addEdge&& !usedEdges.contains(reverseKey);
-                }
-                if (addEdge){
+        Set<String> ttpNodeIds = new HashSet<>();
+        for(Edge e: ttpEdges){
+            ttpNodeIds.add(e.getSrcNode().getHashId());
+            ttpNodeIds.add(e.getDstNode().getHashId());
+        }
 
-                    usedEdges.add(edgeKey);
-                    dot.append("    \"").append(src).append("\"")
-                            .append("->\"").append(dst).append("\"")
-                            .append(" [style=dashed, color=gray];\n");
+        Set<String> minimalPathEdges = new HashSet<>();
+        ttpEdges.sort(Comparator.comparingLong(e->Long.parseLong(e.getTimestampRec())));
 
+        for(int i=0; i<ttpEdges.size(); i++){
+            String from = ttpEdges.get(i).getDstNode().getHashId();
+
+            for(int j=i+1; j<ttpEdges.size(); j++){
+                String to = ttpEdges.get(j).getSrcNode().getHashId();
+
+                if(!from.equals(to)){
+                    List<Edge> path = findShortPath(from,to,adjOut, involved);
+
+                    for(Edge e: path){
+                        String key = e.getSrcNode().getHashId()+"->"+e.getDstNode().getHashId();
+
+                        if(!ttpEdgeKeys.contains(key)){
+                            minimalPathEdges.add(key);
+                        }
+                    }
                 }
             }
-
-
         }
+        Set<String> drawnDashed = new HashSet<>();
+        for(Edge e: involved){
+            String key= e.getSrcNode().getHashId()+"->"+e.getDstNode().getHashId();
+            if(minimalPathEdges.contains(key)){
+                if(!ttpEdgeKeys.contains(key)){
+                    String src= e.getSrcNode().getName();
+                    String dst= e.getDstNode().getName();
+                    String edgeKey = src+"->"+dst;
+                    String reverseKey = dst+"->"+src;
+
+                    boolean addedEdge = !drawnDashed.contains(edgeKey);
+                    if(!INDIRECT_EDGES_BOTH_WAYS){
+                        addedEdge = addedEdge && !drawnDashed.contains(reverseKey);
+                    }
+                    if(addedEdge){
+                        drawnDashed.add(edgeKey);
+                        dot.append("    \"").append(src).append("\"")
+                                .append("->\"").append(dst).append("\"")
+                                .append(" [style=dashed, color=gray];\n");
+                    }
+                }
+            }
+        }
+
+
         dot.append("}\n");
 
 
@@ -175,5 +184,46 @@ public class HSGConverter {
             }
         }
         return ttpNames;
+    }
+
+
+    private static List<Edge> findShortPath(String from, String to,Map<String,List<Edge>> adjOut, List<Edge> involved){
+        if(!from.equals(to)) {
+
+            Map<String, Edge> predecessor = new HashMap<>();
+
+            Queue<String> queue = new LinkedList<>();
+            Set<String> visited = new HashSet<>();
+
+            queue.add(from);
+            visited.add(from);
+
+            while (!queue.isEmpty()) {
+                String current = queue.poll();
+                for (Edge e : adjOut.getOrDefault(current,Collections.emptyList())) {
+                    String next = e.getDstNode().getHashId();
+                    if (!visited.contains(next)) {
+                        predecessor.put(next, e);
+                        if (next.equals(to)) {
+                            return reconstructPath(predecessor, to);
+                        }
+                        visited.add(next);
+                        queue.add(next);
+                    }
+                }
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    private static List<Edge> reconstructPath(Map<String,Edge>predecessor, String to){
+        LinkedList<Edge> path = new LinkedList<>();
+        String current = to;
+        while(predecessor.containsKey(current)){
+            Edge e = predecessor.get(current);
+            path.addFirst(e);
+            current=e.getSrcNode().getHashId();
+        }
+        return path;
     }
 }
