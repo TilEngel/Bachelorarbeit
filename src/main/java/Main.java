@@ -33,7 +33,7 @@ public class Main {
     private static final List<TTP> privilegeEscalation = List.of(new Switch_SU());
     private static final List<TTP> internalRecon = List.of(new Sensitive_Command());
     private static final List<TTP> cleanupTracks = List.of(new Clear_Logs(), new Sensitive_Temp_RM());
-    private static final List<List<TTP>> phases = List.of(initialCompromise1, initialCompromise2,
+    public static final List<List<TTP>> PHASES = List.of(initialCompromise1, initialCompromise2,
             establishFoothold, privilegeEscalation, internalRecon, cleanupTracks);
 
     private static ProvenanceGraph graph;
@@ -57,7 +57,7 @@ public class Main {
             Logger.logError("Fehler in Main:" + e.getMessage());
         }
 
-        Map<String, List<Edge>> scenarios = HSGBuilder.matchTTPs(graph, phases);
+        Map<String, List<Edge>> scenarios = HSGBuilder.matchTTPs(graph);
 
         List<Map.Entry<Double, List<Edge>>> scoredScenarios = ScoringEngine.scoreScenarios(scenarios);
 
