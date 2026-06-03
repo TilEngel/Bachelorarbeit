@@ -5,6 +5,7 @@ import main.java.database.graph.Edge;
 import main.java.events.ttps.*;
 import main.java.hsg.HSGBuilder;
 import main.java.hsg.HSGConverter;
+import main.java.hsg.Scenario;
 import main.java.hsg.ScoringEngine;
 import main.java.provenanceGraph.DataCollector;
 import main.java.provenanceGraph.ProvenanceGraph;
@@ -57,9 +58,9 @@ public class Main {
             Logger.logError("Fehler in Main:" + e.getMessage());
         }
 
-        Map<String, List<Edge>> scenarios = HSGBuilder.matchTTPs(graph);
+        List<Scenario> scenarios = HSGBuilder.matchTTPs(graph);
 
-        List<Map.Entry<Double, List<Edge>>> scoredScenarios = ScoringEngine.scoreScenarios(scenarios);
+        List<Scenario> scoredScenarios = ScoringEngine.scoreScenarios(scenarios);
 
         HSGConverter.exportToDOT(scoredScenarios);
     }

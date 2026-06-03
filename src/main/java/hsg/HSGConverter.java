@@ -22,17 +22,17 @@ public class HSGConverter {
      * Graph enthält Name, Threat-Score und Graphen mit relevanten Knoten
      * @param scenarios Bewertete Szenarien
      */
-    public static void exportToDOT(List<Map.Entry<Double, List<Edge>>> scenarios){
+    public static void exportToDOT(List<Scenario> scenarios){
 
         File outDir = new File("hsg_output");
         if(!outDir.exists()){
             outDir.mkdir();
         }
         int count =0;
-        for(Map.Entry<Double, List<Edge>> entry : scenarios) {
-            if (entry.getKey() > MENTION_SCENARIO_THRESHOLD) {
+        for(Scenario scenario : scenarios) {
+            if (scenario.getScore() > MENTION_SCENARIO_THRESHOLD) {
                 count++;
-                String originId = entry.getValue().get(0).getDstNode().getHashId();
+                String originId = scenario.getOriginId();
 
                 StringBuilder dot = new StringBuilder();
                 //Header
@@ -42,16 +42,14 @@ public class HSGConverter {
 
                 //Titel mit Score
                 dot.append("    label=\"Szenario ").append(count)
-                        .append(" | Bedrohungspunkzahl: ").append(entry.getKey()).append("\";\n");
+                        .append(" | Bedrohungspunkzahl: ").append(scenario.getScore()).append("\";\n");
                 dot.append("    labelloc=\"t\";\n");
                 dot.append("\n    //LN war hier\n\n");
                 dot.append("    fontsize=16;\n");
 
-                List<Edge> involved = entry.getValue();
-
 
                 //Graph erstellen
-                drawGraph(involved, originId, dot, count);
+                drawGraph(scenario, dot, count);
 
 
             }
@@ -62,10 +60,10 @@ public class HSGConverter {
     Zeichnet den tatsächlichen Graphen
     mit TTP-Kanten und Verbindungskanten
      */
-    private static void drawGraph(List<Edge> involved, String originId, StringBuilder dot, int count){
+    private static void drawGraph(Scenario scenario, StringBuilder dot, int count){
 
         Map<String, List<Edge>> adjOut = new HashMap<>();
-        for (Edge e : involved) {
+        for (Edge e : scenario.getAllEdges()) {
             adjOut.computeIfAbsent(e.getSrcNode().getHashId(), k -> new ArrayList<>()).add(e);
         }
 
@@ -74,9 +72,9 @@ public class HSGConverter {
 
         Set<String> usedEdges = new HashSet<>();
 
-        for (Edge e : involved) {
+        for (Edge e :scenario.getAllEdges()) {
 
-            Set<String> ttpNames = getTTPNames(e, originId);
+            Set<String> ttpNames = getTTPNames(e, scenario.getOriginId());
 
             if (!ttpNames.isEmpty()) {
                 //Src --ttp--> Dst
@@ -119,7 +117,7 @@ public class HSGConverter {
                 String to = ttpEdges.get(j).getSrcNode().getHashId();
 
                 if(!from.equals(to)){
-                    List<Edge> path = findShortPath(from,to,adjOut, involved);
+                    List<Edge> path = findShortPath(from,to,adjOut, scenario);
 
                     for(Edge e: path){
                         String key = e.getSrcNode().getHashId()+"->"+e.getDstNode().getHashId();
@@ -132,7 +130,7 @@ public class HSGConverter {
             }
         }
         Set<String> drawnDashed = new HashSet<>();
-        for(Edge e: involved){
+        for(Edge e: scenario.getAllEdges()){
             String key= e.getSrcNode().getHashId()+"->"+e.getDstNode().getHashId();
             if(minimalPathEdges.contains(key)){
                 if(!ttpEdgeKeys.contains(key)){
@@ -186,7 +184,7 @@ public class HSGConverter {
     }
 
 
-    private static List<Edge> findShortPath(String from, String to,Map<String,List<Edge>> adjOut, List<Edge> involved){
+    private static List<Edge> findShortPath(String from, String to,Map<String,List<Edge>> adjOut, Scenario scenario){
         if(!from.equals(to)) {
 
             Map<String, Edge> predecessor = new HashMap<>();

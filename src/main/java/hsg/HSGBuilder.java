@@ -25,9 +25,9 @@ public class HSGBuilder {
      * Hält aufeinanderfolgende TTPs in TTPChains fest
      * @return Szenarien mit Startknoten
      */
-    public static Map<String,List<Edge>> matchTTPs(ProvenanceGraph graph) {
+    public static List<Scenario> matchTTPs(ProvenanceGraph graph) {
 
-        Map<String, List<Edge>> scenarios = new HashMap<>();
+        Map<String, Scenario> scenarios = new HashMap<>();
         Set<String> startNodes = new HashSet<>();
 
         //Initial_Compromise finden
@@ -42,8 +42,11 @@ public class HSGBuilder {
                         match.addChain(newChain);
                         match.addTTP(ttp);
                         startNodes.add(match.getHashId());
-                        scenarios.put(match.getHashId(), new ArrayList<>());
-                        scenarios.get(match.getHashId()).add(e);
+
+                        Scenario scenario = new Scenario(match.getHashId());
+                        scenario.addTTPEdge(e);
+                        scenarios.put(match.getHashId(), scenario);
+
                         Logger.log("[INFO] New Chain " + ttp.getName() + " auf " + match.getName());
 
                     }
@@ -74,6 +77,7 @@ public class HSGBuilder {
                         //if(startNodes.contains(dstId)) continue;
                         //Neuen PF bestimmen
                         int newPF = computeNewPF(currentNode, dstNode, currentPF, graph);
+
                         //Wenn PF>Threshold, wird Kette abgebrochen
                         if (newPF <= PF_THRESHOLD) {
                             List<TTPChain> changedChains = new ArrayList<>();
@@ -95,11 +99,12 @@ public class HSGBuilder {
 
                                     //Verbindungskante (gestrichelte Linien im Graphen)
                                     String oid = chain.getOriginId();
-                                    if(scenarios.containsKey(oid) && !scenarios.get(oid).contains(e)
+                                    Scenario scen = scenarios.get(oid);
+                                    if(scen != null && !scen.hasEdge(e)
                                             &&!e.getSrcNode().getName().equals(e.getDstNode().getName())
                                             &&Long.parseLong(e.getTimestampRec()) >= Long.parseLong(chain.getOriginTimestamp())){
 
-                                        scenarios.get(oid).add(e);
+                                        scen.addConnectingEdge(e);
 
                                     }
                                     if (!dstNode.hasChain(ex)) {
@@ -128,20 +133,22 @@ public class HSGBuilder {
 
         //Nach dem Einfügen Kanten sortieren (aufsteigend nach Timestamp).
         //Damit Kanten in Reihenfolge, wie sie aufgetreten sind
-        for(List<Edge> edges : scenarios.values()){
-
-            edges.sort((edge1, edge2) -> Long.compare(Long.parseLong(edge1.getTimestampRec()), Long.parseLong(edge2.getTimestampRec())));
+        for(Scenario scenario: scenarios.values()){
+            Comparator<Edge> comp = Comparator.comparingLong(e->Long.parseLong(e.getTimestampRec()));
+            scenario.getTTPEdges().sort(comp);
+            scenario.getConnectingEdges().sort(comp);
 
         }
 
+        List<Scenario> scenarioList = new ArrayList<>(scenarios.values());
         if(REMOVE_DUPLICATE_SCENARIOS){
             //Duplikate entfernen, Szenarien mit identischer Kantenabfolge
             //Node.hasChain prüft gleichheit auf Knotenebene, trotzdem kommt es zu duplikaten
             //(vermutlich durch Versionierung der Knoten)#
-            removeDuplicates(scenarios);
+            removeDuplicates(scenarioList);
         }
 
-        return scenarios;
+        return scenarioList;
     }
 
     /**
@@ -153,12 +160,12 @@ public class HSGBuilder {
      * @param scenarios Alle Szenarien
      * @param changedChains Liste an Chains, die sich verändert haben
      */
-    private static void matchOnEdge(Node currentNode, Edge e, int newPF, Map<String, List<Edge>> scenarios, List<TTPChain> changedChains){
+    private static void matchOnEdge(Node currentNode, Edge e, int newPF, Map<String,Scenario> scenarios, List<TTPChain> changedChains){
         Node dstNode = e.getDstNode();
         //Kopie, über die iteriert wird, weil dem Knoten in der Schleife Chains hinzugefügt werden können (exception)
         List<TTPChain> copy = new ArrayList<>(currentNode.getChains());
-        for (TTPChain chain : copy) {
 
+        for (TTPChain chain : copy) {
             for (List<TTP> phase : PHASES) {
                 for (TTP ttp : phase) {
                     if (!chain.getTtps().containsKey(ttp.getName())) {
@@ -171,11 +178,12 @@ public class HSGBuilder {
                                     //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
                                     if (!dstNode.hasChain(extend)) {
                                         Logger.log("[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
+
                                         dstNode.addChain(extend);
                                         changedChains.add(chain); //Damit nicht weitergegeben
                                         dstNode.addTTP(ttp);
 
-                                        scenarios.get(extend.getOriginId()).add(e);
+                                        scenarios.get(extend.getOriginId()).addTTPEdge(e);
 
                                     }
                                 }
@@ -215,11 +223,13 @@ public class HSGBuilder {
 
     /**
      * Schaut, ob zwei Szenarien die gleiche Länge haben und die Kanten aus den gleichen Knoten bestehen
-     * @param edges1 erstes Szenario
-     * @param edges2 zweites Szenario
+     * @param s1 erstes Szenario
+     * @param s2 zweites Szenario
      * @return true, wenn Anzahl und Namen der Knoten identisch sind
      */
-    private static boolean isSameScenario(List<Edge> edges1, List<Edge> edges2){
+    private static boolean isSameScenario(Scenario s1, Scenario s2){
+        List<Edge> edges1 = s1.getTTPEdges();
+        List<Edge> edges2 = s2.getTTPEdges();
         if(edges1.size() != edges2.size()){
             return false;
         }
@@ -240,26 +250,26 @@ public class HSGBuilder {
      * Entfernt doppelte Szenarien aus Gruppe
      * @param scenarios Gruppe an Szenarien
      */
-    private static void removeDuplicates(Map<String, List<Edge>> scenarios){
-        List<String> originIds = new ArrayList<>(scenarios.keySet());
-        Set<String> remove = new HashSet<>();
+    private static void removeDuplicates(List<Scenario> scenarios){
+        Set<Integer> remove = new HashSet<>();
         //Jedes Szenario mit jedem anderen vergleichen
-        for (int i = 0; i < originIds.size(); i++) {
-            if (!remove.contains(originIds.get(i))) {
-                List<Edge> edges1 = scenarios.get(originIds.get(i));
+        for (int i = 0; i < scenarios.size(); i++) {
+            if (!remove.contains(i)) {
 
-                for (int j = i + 1; j < originIds.size(); j++) {
-                    if (!remove.contains(originIds.get(j))) {
-                        List<Edge> edges2 = scenarios.get(originIds.get(j));
+                for (int j = i + 1; j < scenarios.size(); j++) {
+                    if (!remove.contains(j)) {
+
                         //Falls Szenarien inhaltlich identisch sind
-                        if (isSameScenario(edges1, edges2)) {
-                            remove.add(originIds.get(j));
+                        if (isSameScenario(scenarios.get(i), scenarios.get(j))) {
+                            remove.add(j);
                         }
                     }
                 }
             }
         }
-        for (String id : remove) {
+        List<Integer> sorted = new ArrayList<>(remove);
+        sorted.sort(Comparator.reverseOrder());
+        for (int id : remove) {
             scenarios.remove(id);
         }
 

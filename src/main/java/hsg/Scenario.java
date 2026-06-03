@@ -43,6 +43,25 @@ public class Scenario {
     public void setScore(double score){
         this.score = score;
     }
+    public List<Edge> getTTPEdges(){
+        return ttpEdges;
+    }
+    public List<Edge> getConnectingEdges(){
+        return connectingEdges;
+    }
+    public String getOriginId(){
+        return originId;
+    }
+
+    public boolean hasEdge(Edge e){
+        return ttpEdges.contains(e) || connectingEdges.contains(e);
+    }
+
+    public List<Edge> getAllEdges(){
+        List<Edge> all = new ArrayList<>(ttpEdges);
+        all.addAll(connectingEdges);
+        return all;
+    }
 
 
 }
