@@ -2,7 +2,6 @@ package main.java.hsg;
 
 import main.java.Logger;
 import main.java.database.graph.Edge;
-import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.io.File;
 import java.io.IOException;
