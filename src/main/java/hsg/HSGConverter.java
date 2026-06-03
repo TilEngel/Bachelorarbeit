@@ -32,7 +32,6 @@ public class HSGConverter {
         for(Scenario scenario : scenarios) {
             if (scenario.getScore() > MENTION_SCENARIO_THRESHOLD) {
                 count++;
-                String originId = scenario.getOriginId();
 
                 StringBuilder dot = new StringBuilder();
                 //Header
@@ -67,9 +66,6 @@ public class HSGConverter {
             adjOut.computeIfAbsent(e.getSrcNode().getHashId(), k -> new ArrayList<>()).add(e);
         }
 
-        Set<String> ttpEdgeKeys = new HashSet<>();
-        List<Edge> ttpEdges = new ArrayList<>();
-
         Set<String> usedEdges = new HashSet<>();
 
         for (Edge e :scenario.getAllEdges()) {
@@ -96,19 +92,17 @@ public class HSGConverter {
                                 .append(" ").append(attrs).append(";\n");
                     }
                 }
-                ttpEdgeKeys.add(e.getSrcNode().getHashId() + "->" + e.getDstNode().getHashId());
-                ttpEdges.add(e);
             }
         }
 
         Set<String> ttpNodeIds = new HashSet<>();
+        List<Edge> ttpEdges = scenario.getTTPEdges();
         for(Edge e: ttpEdges){
             ttpNodeIds.add(e.getSrcNode().getHashId());
             ttpNodeIds.add(e.getDstNode().getHashId());
         }
 
         Set<String> minimalPathEdges = new HashSet<>();
-        ttpEdges.sort(Comparator.comparingLong(e->Long.parseLong(e.getTimestampRec())));
 
         for(int i=0; i<ttpEdges.size(); i++){
             String from = ttpEdges.get(i).getDstNode().getHashId();
@@ -122,7 +116,7 @@ public class HSGConverter {
                     for(Edge e: path){
                         String key = e.getSrcNode().getHashId()+"->"+e.getDstNode().getHashId();
 
-                        if(!ttpEdgeKeys.contains(key)){
+                        if(!scenario.containsKey(key)){
                             minimalPathEdges.add(key);
                         }
                     }
@@ -133,7 +127,7 @@ public class HSGConverter {
         for(Edge e: scenario.getAllEdges()){
             String key= e.getSrcNode().getHashId()+"->"+e.getDstNode().getHashId();
             if(minimalPathEdges.contains(key)){
-                if(!ttpEdgeKeys.contains(key)){
+                if(!scenario.containsKey(key)){
                     String src= e.getSrcNode().getName();
                     String dst= e.getDstNode().getName();
                     String edgeKey = src+"->"+dst;

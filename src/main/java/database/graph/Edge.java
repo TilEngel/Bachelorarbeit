@@ -48,6 +48,11 @@ public class Edge {
     public String getTimestampRec(){
         return timestampRec;
     }
+    public String getKey(){
+        String src= srcNode.getName();
+        String dst = dstNode.getName();
+        return src+"->"+dst;
+    }
 
 }
 

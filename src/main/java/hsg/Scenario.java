@@ -57,11 +57,29 @@ public class Scenario {
         return ttpEdges.contains(e) || connectingEdges.contains(e);
     }
 
+    /**
+     * Key zumVergleich, ob zwei verschiedene Kanten zwischen den gleichen
+     * Knoten liegen
+     * @return String "srcName->dstName"
+     */
     public List<Edge> getAllEdges(){
         List<Edge> all = new ArrayList<>(ttpEdges);
         all.addAll(connectingEdges);
         return all;
     }
 
+    /**
+     * Liefert, ob Szenario eine Kante zwischen zwei bestimmten Knoten enthält
+     * @param key src->dst
+     * @return true, wenn Kante existiert mit key==edge.key
+     */
+    public boolean containsKey(String key){
+        for(Edge e: getAllEdges()){
+            if(key.equals(e.getKey())){
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

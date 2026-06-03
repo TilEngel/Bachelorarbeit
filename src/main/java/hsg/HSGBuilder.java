@@ -267,8 +267,6 @@ public class HSGBuilder {
                 }
             }
         }
-        List<Integer> sorted = new ArrayList<>(remove);
-        sorted.sort(Comparator.reverseOrder());
         for (int id : remove) {
             scenarios.remove(id);
         }
