@@ -1,9 +1,9 @@
 package main.java.hsg;
 
 import main.java.database.graph.Edge;
+import main.java.provenanceGraph.ProvenanceGraph;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Repräsentiert ein potenzielles Angriffsszenario.
@@ -81,5 +81,58 @@ public class Scenario {
         }
         return false;
     }
+    private Map<String,List<Edge>> adjOut = new HashMap<>();
+    private void fillAdjOut(){
+        Map<String, List<Edge>> temp = new HashMap<>();
+        for (Edge e : getAllEdges()) {
+            temp.computeIfAbsent(e.getSrcNode().getHashId(), k -> new ArrayList<>()).add(e);
+        }
+        adjOut= temp;
+    }
 
+    public List<Edge> findShortestPath(String from, String to){
+
+        if(adjOut.keySet().isEmpty()){
+            fillAdjOut();
+        }
+        if(!from.equals(to)) {
+
+            Map<String, Edge> predecessor = new HashMap<>();
+
+            Queue<String> queue = new LinkedList<>();
+            Set<String> visited = new HashSet<>();
+
+            queue.add(from);
+            visited.add(from);
+
+            while (!queue.isEmpty()) {
+                String current = queue.poll();
+                for (Edge e : adjOut.getOrDefault(current,Collections.emptyList())) {
+                    String next = e.getDstNode().getHashId();
+                    if (!visited.contains(next)) {
+                        predecessor.put(next, e);
+                        if (next.equals(to)) {
+                            //Pfad rekonstruieren
+                            return reconstructPath(predecessor,to);
+                        }
+                        visited.add(next);
+                        queue.add(next);
+                    }
+                }
+            }
+        }
+        return Collections.emptyList();
+    }
+
+
+    private List<Edge> reconstructPath(Map<String,Edge>predecessor, String to){
+        LinkedList<Edge> path = new LinkedList<>();
+        String current = to;
+        while(predecessor.containsKey(current)){
+            Edge e = predecessor.get(current);
+            path.addFirst(e);
+            current=e.getSrcNode().getHashId();
+        }
+        return path;
+    }
 }

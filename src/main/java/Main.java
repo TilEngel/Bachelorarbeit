@@ -77,7 +77,7 @@ public class Main {
         );
         ZonedDateTime endTime = ZonedDateTime.of(
                 2018, 4, 6,
-                13, 10, 0, 0,
+                12, 10, 0, 0,
                 ZoneId.of("America/New_York")
         );
 

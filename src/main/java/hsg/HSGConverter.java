@@ -61,11 +61,6 @@ public class HSGConverter {
      */
     private static void drawGraph(Scenario scenario, StringBuilder dot, int count){
 
-        Map<String, List<Edge>> adjOut = new HashMap<>();
-        for (Edge e : scenario.getAllEdges()) {
-            adjOut.computeIfAbsent(e.getSrcNode().getHashId(), k -> new ArrayList<>()).add(e);
-        }
-
         Set<String> usedEdges = new HashSet<>();
 
         for (Edge e :scenario.getAllEdges()) {
@@ -111,7 +106,7 @@ public class HSGConverter {
                 String to = ttpEdges.get(j).getSrcNode().getHashId();
 
                 if(!from.equals(to)){
-                    List<Edge> path = findShortPath(from,to,adjOut, scenario);
+                    List<Edge> path = scenario.findShortestPath(from,to);
 
                     for(Edge e: path){
                         String key = e.getSrcNode().getHashId()+"->"+e.getDstNode().getHashId();
@@ -177,44 +172,4 @@ public class HSGConverter {
         return ttpNames;
     }
 
-
-    private static List<Edge> findShortPath(String from, String to,Map<String,List<Edge>> adjOut, Scenario scenario){
-        if(!from.equals(to)) {
-
-            Map<String, Edge> predecessor = new HashMap<>();
-
-            Queue<String> queue = new LinkedList<>();
-            Set<String> visited = new HashSet<>();
-
-            queue.add(from);
-            visited.add(from);
-
-            while (!queue.isEmpty()) {
-                String current = queue.poll();
-                for (Edge e : adjOut.getOrDefault(current,Collections.emptyList())) {
-                    String next = e.getDstNode().getHashId();
-                    if (!visited.contains(next)) {
-                        predecessor.put(next, e);
-                        if (next.equals(to)) {
-                            return reconstructPath(predecessor, to);
-                        }
-                        visited.add(next);
-                        queue.add(next);
-                    }
-                }
-            }
-        }
-        return Collections.emptyList();
-    }
-
-    private static List<Edge> reconstructPath(Map<String,Edge>predecessor, String to){
-        LinkedList<Edge> path = new LinkedList<>();
-        String current = to;
-        while(predecessor.containsKey(current)){
-            Edge e = predecessor.get(current);
-            path.addFirst(e);
-            current=e.getSrcNode().getHashId();
-        }
-        return path;
-    }
 }
