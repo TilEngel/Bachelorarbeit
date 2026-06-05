@@ -10,10 +10,8 @@ import java.util.*;
 public class Scenario {
     private final String originId;
 
-    //Kanten, auf denen ein TTP-Match gefunden wurde
-    private final List<Edge> ttpEdges = new ArrayList<>();
-
-    private Map<Edge, Integer> ttpPF = new HashMap<>();
+    //Kanten, auf denen ein TTP-Match gefunden wurde mit PathFactor
+    private final Map<Edge, Integer> ttpEdges = new HashMap<>();
 
     //Relevante kanten, an denen kein TTP direkt gefunden wurde
     private final List<Edge> connectingEdges= new ArrayList<>();
@@ -28,11 +26,9 @@ public class Scenario {
     }
 
     public void addTTPEdge(Edge e, int pathFactor){
-        if(!ttpEdges.contains(e)){
-            ttpEdges.add(e);
-        }
-        if(!ttpPF.containsKey(e) || ttpPF.get(e)> pathFactor){
-            ttpPF.put(e, pathFactor);
+
+        if(!ttpEdges.containsKey(e) || ttpEdges.get(e)> pathFactor){
+            ttpEdges.put(e, pathFactor);
         }
     }
 
@@ -49,8 +45,8 @@ public class Scenario {
     public void setScore(double score){
         this.score = score;
     }
-    public List<Edge> getTTPEdges(){
-        return ttpEdges;
+    public Set<Edge> getTTPEdges(){
+        return ttpEdges.keySet();
     }
     public List<Edge> getConnectingEdges(){
         return connectingEdges;
@@ -60,7 +56,7 @@ public class Scenario {
     }
 
     public boolean hasEdge(Edge e){
-        return ttpEdges.contains(e) || connectingEdges.contains(e);
+        return ttpEdges.containsKey(e) || connectingEdges.contains(e);
     }
 
     /**
@@ -69,7 +65,7 @@ public class Scenario {
      * @return String "srcName->dstName"
      */
     public List<Edge> getAllEdges(){
-        List<Edge> all = new ArrayList<>(ttpEdges);
+        List<Edge> all = new ArrayList<>(ttpEdges.keySet());
         all.addAll(connectingEdges);
         return all;
     }
@@ -138,6 +134,6 @@ public class Scenario {
     }
 
     public int getPathFactor(Edge e){
-        return ttpPF.get(e);
+        return ttpEdges.get(e);
     }
 }

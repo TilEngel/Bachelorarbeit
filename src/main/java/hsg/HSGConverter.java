@@ -131,14 +131,14 @@ public class HSGConverter {
      */
     private static Set<Edge> findMinimalPathEdges(Scenario scenario){
         Set<Edge> minimalPathEdges = new HashSet<>();
-        List<Edge> ttpEdges = scenario.getTTPEdges();
+        Set<Edge> ttpEdges = scenario.getTTPEdges();
 
-        for(int i=0; i<ttpEdges.size(); i++){
-            String from = ttpEdges.get(i).getDstNode().getHashId();
-            for(int j=i+1; j<ttpEdges.size(); j++){
-                String to = ttpEdges.get(j).getSrcNode().getHashId();
+        for(Edge e1 : ttpEdges){
+            String from = e1.getDstNode().getHashId();
+            for(Edge e2: ttpEdges){
+                String to = e2.getSrcNode().getHashId();
 
-                if(!from.equals(to)){
+                if(!from.equals(to) && (Long.parseLong(e1.getTimestampRec()) < Long.parseLong(e2.getTimestampRec()))){
                     minimalPathEdges.addAll(scenario.findShortestPath(from,to));
                 }
 
