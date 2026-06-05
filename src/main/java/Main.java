@@ -1,7 +1,6 @@
 package main.java;
 
 import main.java.database.JDBCEngine;
-import main.java.database.graph.Edge;
 import main.java.events.ttps.*;
 import main.java.hsg.HSGBuilder;
 import main.java.hsg.HSGConverter;
@@ -14,7 +13,6 @@ import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 
 public class Main {
     public static final boolean REMOVE_DUPLICATE_SCENARIOS = true; //Entfernt inhaltlich identische Szenarien

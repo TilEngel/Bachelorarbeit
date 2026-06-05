@@ -13,8 +13,13 @@ public class Scenario {
     //Kanten, auf denen ein TTP-Match gefunden wurde
     private final List<Edge> ttpEdges = new ArrayList<>();
 
+    private Map<Edge, Integer> ttpPF = new HashMap<>();
+
     //Relevante kanten, an denen kein TTP direkt gefunden wurde
     private final List<Edge> connectingEdges= new ArrayList<>();
+
+    //Ausgehende Kanten, die Teil des Szenarios sind
+    private Map<String,List<Edge>> adjOut = new HashMap<>();
 
     private double score= 1.0;
 
@@ -22,9 +27,12 @@ public class Scenario {
         this.originId=originId;
     }
 
-    public void addTTPEdge(Edge e){
+    public void addTTPEdge(Edge e, int pathFactor){
         if(!ttpEdges.contains(e)){
             ttpEdges.add(e);
+        }
+        if(!ttpPF.containsKey(e) || ttpPF.get(e)> pathFactor){
+            ttpPF.put(e, pathFactor);
         }
     }
 
@@ -66,40 +74,33 @@ public class Scenario {
         return all;
     }
 
-    /**
-     * Liefert, ob Szenario eine Kante zwischen zwei bestimmten Knoten enthält
-     * @param key src->dst
-     * @return true, wenn Kante existiert mit key==edge.key
+    /*
+    Befüllt einmalig adjOut
      */
-    public boolean containsKey(String key){
-        for(Edge e: getAllEdges()){
-            if(key.equals(e.getKey())){
-                return true;
-            }
-        }
-        return false;
-    }
-    private Map<String,List<Edge>> adjOut = new HashMap<>();
     private void fillAdjOut(){
-        Map<String, List<Edge>> temp = new HashMap<>();
-        for (Edge e : getAllEdges()) {
-            temp.computeIfAbsent(e.getSrcNode().getHashId(), k -> new ArrayList<>()).add(e);
+        if(adjOut.keySet().isEmpty()) {
+            Map<String, List<Edge>> temp = new HashMap<>();
+            for (Edge e : getAllEdges()) {
+                temp.computeIfAbsent(e.getSrcNode().getHashId(), k -> new ArrayList<>()).add(e);
+            }
+            adjOut = temp;
         }
-        adjOut= temp;
     }
 
+    /**
+     * Findet den kürzesten Pfad zwischen zwei Knoten
+     * @param from Startknoten
+     * @param to Zielknoten
+     * @return Pfad an Kanten
+     */
     public List<Edge> findShortestPath(String from, String to){
 
-        if(adjOut.keySet().isEmpty()){
-            fillAdjOut();
-        }
+        fillAdjOut();
         if(!from.equals(to)) {
 
             Map<String, Edge> predecessor = new HashMap<>();
-
             Queue<String> queue = new LinkedList<>();
             Set<String> visited = new HashSet<>();
-
             queue.add(from);
             visited.add(from);
 
@@ -122,7 +123,9 @@ public class Scenario {
         return Collections.emptyList();
     }
 
-
+    /*
+    Rekonstruiert den Pfad nach to
+     */
     private List<Edge> reconstructPath(Map<String,Edge>predecessor, String to){
         LinkedList<Edge> path = new LinkedList<>();
         String current = to;
@@ -134,8 +137,7 @@ public class Scenario {
         return path;
     }
 
-    public List<Edge> getOut(String node){
-        if(adjOut.keySet().isEmpty()) return Collections.emptyList();
-        return adjOut.get(node);
+    public int getPathFactor(Edge e){
+        return ttpPF.get(e);
     }
 }

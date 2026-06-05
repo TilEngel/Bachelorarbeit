@@ -44,7 +44,7 @@ public class HSGBuilder {
                         startNodes.add(match.getHashId());
 
                         Scenario scenario = new Scenario(match.getHashId());
-                        scenario.addTTPEdge(e);
+                        scenario.addTTPEdge(e,1);
                         scenarios.put(match.getHashId(), scenario);
 
                         Logger.log("[INFO] New Chain " + ttp.getName() + " auf " + match.getName());
@@ -131,24 +131,7 @@ public class HSGBuilder {
             }
         }
 
-        //Nach dem Einfügen Kanten sortieren (aufsteigend nach Timestamp).
-        //Damit Kanten in Reihenfolge, wie sie aufgetreten sind
-        for(Scenario scenario: scenarios.values()){
-            Comparator<Edge> comp = Comparator.comparingLong(e->Long.parseLong(e.getTimestampRec()));
-            scenario.getTTPEdges().sort(comp);
-            scenario.getConnectingEdges().sort(comp);
-
-        }
-
-        List<Scenario> scenarioList = new ArrayList<>(scenarios.values());
-        if(REMOVE_DUPLICATE_SCENARIOS){
-            //Duplikate entfernen, Szenarien mit identischer Kantenabfolge
-            //Node.hasChain prüft gleichheit auf Knotenebene, trotzdem kommt es zu duplikaten
-            //(vermutlich durch Versionierung der Knoten)#
-            removeDuplicates(scenarioList);
-        }
-
-        return scenarioList;
+        return new ArrayList<>(scenarios.values());
     }
 
     /**
@@ -183,7 +166,7 @@ public class HSGBuilder {
                                         changedChains.add(chain); //Damit nicht weitergegeben
                                         dstNode.addTTP(ttp);
 
-                                        scenarios.get(extend.getOriginId()).addTTPEdge(e);
+                                        scenarios.get(extend.getOriginId()).addTTPEdge(e, newPF);
 
                                     }
                                 }
@@ -218,61 +201,5 @@ public class HSGBuilder {
         }
         return currentPF +1;
     }
-
-
-
-    /**
-     * Schaut, ob zwei Szenarien die gleiche Länge haben und die Kanten aus den gleichen Knoten bestehen
-     * @param s1 erstes Szenario
-     * @param s2 zweites Szenario
-     * @return true, wenn Anzahl und Namen der Knoten identisch sind
-     */
-    private static boolean isSameScenario(Scenario s1, Scenario s2){
-        List<Edge> edges1 = s1.getTTPEdges();
-        List<Edge> edges2 = s2.getTTPEdges();
-        if(edges1.size() != edges2.size()){
-            return false;
-        }
-        Set<String> nodeNames1 = new HashSet<>();
-        Set<String> nodeNames2 = new HashSet<>();
-
-        for(Edge e: edges1){
-            nodeNames1.add(e.getSrcNode().getName()+e.getDstNode().getName());
-
-        }
-        for (Edge e: edges2){
-            nodeNames2.add(e.getSrcNode().getName()+e.getDstNode().getName());
-        }
-        return nodeNames1.equals(nodeNames2);
-    }
-
-    /**
-     * Entfernt doppelte Szenarien aus Gruppe
-     * @param scenarios Gruppe an Szenarien
-     */
-    private static void removeDuplicates(List<Scenario> scenarios){
-        Set<Integer> remove = new HashSet<>();
-        //Jedes Szenario mit jedem anderen vergleichen
-        for (int i = 0; i < scenarios.size(); i++) {
-            if (!remove.contains(i)) {
-
-                for (int j = i + 1; j < scenarios.size(); j++) {
-                    if (!remove.contains(j)) {
-
-                        //Falls Szenarien inhaltlich identisch sind
-                        if (isSameScenario(scenarios.get(i), scenarios.get(j))) {
-                            remove.add(j);
-                        }
-                    }
-                }
-            }
-        }
-        for (int id : remove) {
-            scenarios.remove(id);
-        }
-
-    }
-
-
 
 }

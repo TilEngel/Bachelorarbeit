@@ -61,14 +61,15 @@ public class HSGConverter {
                 String src = e.getSrcNode().getName();
                 String dst = e.getDstNode().getName();
                 for (String ttpName : ttpNames) {
+                    String pf = " (PF = "+ scenario.getPathFactor(e)+ ")";
                     String edgeName = src + "->" + dst + ttpName;
                     if (!usedEdges.contains(edgeName)) {
                         usedEdges.add(edgeName);
                         //untrusted_read hervorheben
                         //Vorlage von Claude.ai
                         String attrs = ttpName.equals("untrusted_read")
-                                ? "[label=\"" + ttpName + "\", color=blue, penwidth=2.5, fontcolor=blue, fontsize=13]"
-                                : "[label=\"" + ttpName + "\"]";
+                                ? "[label=\"" + ttpName + pf+  "\", color=blue, penwidth=2.5, fontcolor=blue, fontsize=13]"
+                                : "[label=\"" + ttpName +pf+  "\"]";
                         //Kante einzeichnen
                         dot.append("    \"").append(src).append("\"")
                                 .append(" -> \"").append(dst).append("\"")
