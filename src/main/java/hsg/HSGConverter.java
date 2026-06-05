@@ -7,8 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.io.FileWriter;
-
-import static main.java.Main.INDIRECT_EDGES_BOTH_WAYS;
 import static main.java.Main.MENTION_SCENARIO_THRESHOLD;
 
 /**
@@ -23,7 +21,6 @@ public class HSGConverter {
      * @param scenarios Bewertete Szenarien
      */
     public static void exportToDOT(List<Scenario> scenarios){
-
         File outDir = new File("hsg_output");
         if(!outDir.exists()){
             outDir.mkdir();
@@ -32,25 +29,19 @@ public class HSGConverter {
         for(Scenario scenario : scenarios) {
             if (scenario.getScore() > MENTION_SCENARIO_THRESHOLD) {
                 count++;
-
                 StringBuilder dot = new StringBuilder();
                 //Header
                 dot.append("digraph Szenario").append(count).append("{\n");
                 dot.append("    rankdir=LR;\n");
                 dot.append("    node [shape=box];\n");
-
                 //Titel mit Score
                 dot.append("    label=\"Szenario ").append(count)
                         .append(" | Bedrohungspunkzahl: ").append(scenario.getScore()).append("\";\n");
                 dot.append("    labelloc=\"t\";\n");
                 dot.append("\n    //LN war hier\n\n");
                 dot.append("    fontsize=16;\n");
-
-
                 //Graph erstellen
                 drawGraph(scenario, dot, count);
-
-
             }
         }
     }
@@ -60,11 +51,9 @@ public class HSGConverter {
     mit TTP-Kanten und Verbindungskanten
      */
     private static void drawGraph(Scenario scenario, StringBuilder dot, int count){
-
         Set<String> usedEdges = new HashSet<>();
 
-        for (Edge e :scenario.getAllEdges()) {
-
+        for (Edge e :scenario.getTTPEdges()) {
             Set<String> ttpNames = getTTPNames(e, scenario.getOriginId());
 
             if (!ttpNames.isEmpty()) {
@@ -75,7 +64,6 @@ public class HSGConverter {
                     String edgeName = src + "->" + dst + ttpName;
                     if (!usedEdges.contains(edgeName)) {
                         usedEdges.add(edgeName);
-
                         //untrusted_read hervorheben
                         //Vorlage von Claude.ai
                         String attrs = ttpName.equals("untrusted_read")
@@ -89,64 +77,31 @@ public class HSGConverter {
                 }
             }
         }
+        //Kürzeste Wege zwischen TTP-Kanten finden
+        for(Edge e:findMinimalPathEdges(scenario)){
+                //Graph ist nicht versioniert, darum durch Name unterscheiden anstatt HashID
+                String src= e.getSrcNode().getName();
+                String dst= e.getDstNode().getName();
+                String edgeKey = src+"->"+dst;
 
-        Set<String> ttpNodeIds = new HashSet<>();
-        List<Edge> ttpEdges = scenario.getTTPEdges();
-        for(Edge e: ttpEdges){
-            ttpNodeIds.add(e.getSrcNode().getHashId());
-            ttpNodeIds.add(e.getDstNode().getHashId());
-        }
-
-        Set<String> minimalPathEdges = new HashSet<>();
-
-        for(int i=0; i<ttpEdges.size(); i++){
-            String from = ttpEdges.get(i).getDstNode().getHashId();
-
-            for(int j=i+1; j<ttpEdges.size(); j++){
-                String to = ttpEdges.get(j).getSrcNode().getHashId();
-
-                if(!from.equals(to)){
-                    List<Edge> path = scenario.findShortestPath(from,to);
-
-                    for(Edge e: path){
-                        String key = e.getSrcNode().getHashId()+"->"+e.getDstNode().getHashId();
-
-                        if(!scenario.containsKey(key)){
-                            minimalPathEdges.add(key);
-                        }
-                    }
+                boolean addedEdge = !usedEdges.contains(edgeKey);
+                //Wege zeichnen
+                if(addedEdge){
+                    usedEdges.add(edgeKey);
+                    dot.append("    \"").append(src).append("\"")
+                            .append("->\"").append(dst).append("\"")
+                            .append(" [style=dashed, color=gray];\n");
                 }
-            }
+
         }
-        Set<String> drawnDashed = new HashSet<>();
-        for(Edge e: scenario.getAllEdges()){
-            String key= e.getSrcNode().getHashId()+"->"+e.getDstNode().getHashId();
-            if(minimalPathEdges.contains(key)){
-                if(!scenario.containsKey(key)){
-                    String src= e.getSrcNode().getName();
-                    String dst= e.getDstNode().getName();
-                    String edgeKey = src+"->"+dst;
-                    String reverseKey = dst+"->"+src;
-
-                    boolean addedEdge = !drawnDashed.contains(edgeKey);
-                    if(!INDIRECT_EDGES_BOTH_WAYS){
-                        addedEdge = addedEdge && !drawnDashed.contains(reverseKey);
-                    }
-                    if(addedEdge){
-                        drawnDashed.add(edgeKey);
-                        dot.append("    \"").append(src).append("\"")
-                                .append("->\"").append(dst).append("\"")
-                                .append(" [style=dashed, color=gray];\n");
-                    }
-                }
-            }
-        }
-
-
         dot.append("}\n");
-
-
         //in Datei schreiben
+        writeToFile(dot, count);
+    }
+
+    /*Schreibt StringBuilder in eine Datei
+     */
+    private static void writeToFile(StringBuilder dot, int count){
         try (FileWriter fw = new FileWriter("hsg_output/szenario"+count+".dot")){
             fw.write(dot.toString());
             Runtime.getRuntime().exec("dot -Tpng hsg_output/szenario"+ count+".dot -o hsg_output/szenario"+count+".png");
@@ -171,5 +126,23 @@ public class HSGConverter {
         }
         return ttpNames;
     }
+    /*Liefert Kanten, die für minimale Wege nötig sind
+     */
+    private static Set<Edge> findMinimalPathEdges(Scenario scenario){
+        Set<Edge> minimalPathEdges = new HashSet<>();
+        List<Edge> ttpEdges = scenario.getTTPEdges();
 
+        for(int i=0; i<ttpEdges.size(); i++){
+            String from = ttpEdges.get(i).getDstNode().getHashId();
+            for(int j=i+1; j<ttpEdges.size(); j++){
+                String to = ttpEdges.get(j).getSrcNode().getHashId();
+
+                if(!from.equals(to)){
+                    minimalPathEdges.addAll(scenario.findShortestPath(from,to));
+                }
+
+            }
+        }
+        return minimalPathEdges;
+    }
 }

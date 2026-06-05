@@ -49,8 +49,8 @@ public class Edge {
         return timestampRec;
     }
     public String getKey(){
-        String src= srcNode.getName();
-        String dst = dstNode.getName();
+        String src= srcNode.getHashId();
+        String dst = dstNode.getHashId();
         return src+"->"+dst;
     }
 

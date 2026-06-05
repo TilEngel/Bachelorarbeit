@@ -1,8 +1,6 @@
 package main.java.hsg;
 
 import main.java.database.graph.Edge;
-import main.java.provenanceGraph.ProvenanceGraph;
-
 import java.util.*;
 
 /**
@@ -134,5 +132,10 @@ public class Scenario {
             current=e.getSrcNode().getHashId();
         }
         return path;
+    }
+
+    public List<Edge> getOut(String node){
+        if(adjOut.keySet().isEmpty()) return Collections.emptyList();
+        return adjOut.get(node);
     }
 }
