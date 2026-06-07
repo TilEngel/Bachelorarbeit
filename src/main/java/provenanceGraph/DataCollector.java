@@ -16,8 +16,6 @@ public class DataCollector {
 
     private static JDBCEngine engine;
 
-    private final ProvenanceGraph graph = new ProvenanceGraph();
-
 
     public DataCollector(JDBCEngine engine){
         setEngine(engine);
@@ -48,7 +46,7 @@ public class DataCollector {
             String hashId = (String) row.get("hash_id");
 
             Subject s = new Subject(hashId,cmd);
-            graph.addNode(s);
+            ProvenanceGraph.addNode(s);
         }
         Logger.log("[INFO] "+ count+ " Subjects verarbeitet");
 
@@ -69,7 +67,7 @@ public class DataCollector {
             String hashId = (String) row.get("hash_id");
 
             File f = new File(hashId,path);
-            graph.addNode(f);
+            ProvenanceGraph.addNode(f);
         }
         Logger.log("[INFO] "+ count+ " Files verarbeitet");
 
@@ -89,7 +87,7 @@ public class DataCollector {
             String hashId = (String) row.get("hash_id");
 
             Netflow n = new Netflow(hashId, srcAddr,dstAddr);
-            graph.addNode(n);
+            ProvenanceGraph.addNode(n);
         }
         Logger.log("[INFO] "+ count + " Netflows verarbeitet");
 
@@ -108,8 +106,8 @@ public class DataCollector {
             String srcId = (String) row.get("src_node");
             String dstId = (String) row.get("dst_node");
             //jeweilige Knoten-Instanzen aus NodeIndex holen
-            Node srcNode = graph.getNode(srcId);
-            Node dstNode = graph.getNode(dstId);
+            Node srcNode = ProvenanceGraph.getNode(srcId);
+            Node dstNode = ProvenanceGraph.getNode(dstId);
 
             // falls einer der Knoten nicht im Zeitfenster liegt
             if(srcNode == null || dstNode == null){
@@ -121,7 +119,7 @@ public class DataCollector {
 
             Edge e = new Edge(srcNode,operation,dstNode,timestamp);
 
-            graph.addEdge(e);
+            ProvenanceGraph.addEdge(e);
         }
         Logger.log("[INFO] "+ count + " Edges verarbeitet");
     }
@@ -129,11 +127,6 @@ public class DataCollector {
 
     public void setEngine(JDBCEngine jdbcEngine){
         engine = jdbcEngine;
-    }
-
-
-    public ProvenanceGraph getGraph( ){
-        return graph;
     }
 
 }

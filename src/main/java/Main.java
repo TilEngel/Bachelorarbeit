@@ -7,7 +7,6 @@ import main.java.hsg.HSGConverter;
 import main.java.hsg.Scenario;
 import main.java.hsg.ScoringEngine;
 import main.java.provenanceGraph.DataCollector;
-import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.sql.SQLException;
 import java.time.ZoneId;
@@ -15,7 +14,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 public class Main {
-    public static final boolean SHOW_TIMESTAMPS = true; //Entfernt inhaltlich identische Szenarien
+    public static final boolean SHOW_TIMESTAMPS = false; //Zeigt Timestamp der TTPs im Graphen an
     public static final boolean ROUND_THREAT_SCORES = true; //Bedrohungspunktzahl auf eine Nachkommastelle runden
     public static final int PF_THRESHOLD = 2; //Path-Factor Schwellenwert
     public static final int ALARM_THRESHOLD = 120; //Bedrohungspunktzahl, ab der Alarm gemeldet wird
@@ -34,8 +33,6 @@ public class Main {
     public static final List<List<TTP>> PHASES = List.of(initialCompromise1, initialCompromise2,
             establishFoothold, privilegeEscalation, internalRecon, cleanupTracks);
 
-    private static ProvenanceGraph graph;
-
     public static void main(String[] args) {
         Logger.doLogAll();
 
@@ -47,7 +44,6 @@ public class Main {
             jdbc.connect();
 
             collector.collectData();
-            graph = collector.getGraph();
 
             jdbc.disconnect();
 
@@ -55,7 +51,7 @@ public class Main {
             Logger.logError("Fehler in Main:" + e.getMessage());
         }
 
-        List<Scenario> scenarios = HSGBuilder.matchTTPs(graph);
+        List<Scenario> scenarios = HSGBuilder.matchTTPs();
 
         List<Scenario> scoredScenarios = ScoringEngine.scoreScenarios(scenarios);
 

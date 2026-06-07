@@ -25,13 +25,13 @@ public class HSGBuilder {
      * Hält aufeinanderfolgende TTPs in TTPChains fest
      * @return Szenarien mit Startknoten
      */
-    public static List<Scenario> matchTTPs(ProvenanceGraph graph) {
+    public static List<Scenario> matchTTPs() {
 
         Map<String, Scenario> scenarios = new HashMap<>();
         Set<String> startNodes = new HashSet<>();
 
         //Initial_Compromise finden
-        for (Edge e : graph.getEdges()) {
+        for (Edge e : ProvenanceGraph.getEdges()) {
             for (TTP ttp : PHASES.get(0)) { //initial_compromise1
                 if (ttp.matches(e)) {
                     Node match = e.getDstNode();
@@ -57,7 +57,7 @@ public class HSGBuilder {
         //Kette verfolgen und auf spätere Phasen testen
 
         for (String startId : startNodes) {
-            Node startNode = graph.getNode(startId);
+            Node startNode = ProvenanceGraph.getNode(startId);
             if (!startNode.getChains().isEmpty()) {
                 //Vom Startknoten zu erreichende Knoten durchlaufen
                 Queue<String> queue = new LinkedList<>();
@@ -68,15 +68,15 @@ public class HSGBuilder {
                 //Breitensuche
                 while (!queue.isEmpty()) {
                     String currentId = queue.poll();
-                    Node currentNode = graph.getNode(currentId);
+                    Node currentNode = ProvenanceGraph.getNode(currentId);
                     int currentPF = visitedPF.get(currentId);
 
-                    for (Edge e : graph.getOutEdges(currentId)) {
+                    for (Edge e : ProvenanceGraph.getOutEdges(currentId)) {
                         Node dstNode = e.getDstNode();
                         String dstId = dstNode.getHashId();
                         //if(startNodes.contains(dstId)) continue;
                         //Neuen PF bestimmen
-                        int newPF = computeNewPF(currentNode, dstNode, currentPF, graph);
+                        int newPF = computeNewPF(currentNode, dstNode, currentPF);
 
                         //Wenn PF>Threshold, wird Kette abgebrochen
                         if (newPF <= PF_THRESHOLD) {
@@ -188,11 +188,11 @@ public class HSGBuilder {
      * @param currentPF aktueller PF
      * @return currentPF++, wenn nötig. Sonst currentPF
      */
-    private static int computeNewPF(Node srcNode, Node dstNode, int currentPF, ProvenanceGraph graph){
+    private static int computeNewPF(Node srcNode, Node dstNode, int currentPF){
         if(!(dstNode instanceof Subject)){
             return currentPF;
         }
-        for(Edge e: graph.getInEdges(dstNode.getHashId())){
+        for(Edge e: ProvenanceGraph.getInEdges(dstNode.getHashId())){
             if(e.getOperation().equals(EventType.Type.EVENT_FORK.toString()) && e.getSrcNode().getHashId().equals((srcNode.getHashId()))){
                 return currentPF;
             }

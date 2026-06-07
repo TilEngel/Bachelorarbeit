@@ -1,7 +1,7 @@
 package main.java.database.graph;
 
 /**
- * Die Kanten des Provenance-Graphen bzw. die
+ * Die Kanten des Provenance Graphen bzw. die
  *  Ereignisse zwischen Knoten
  */
 public class Edge {
@@ -47,11 +47,6 @@ public class Edge {
     }
     public String getTimestampRec(){
         return timestampRec;
-    }
-    public String getKey(){
-        String src= srcNode.getHashId();
-        String dst = dstNode.getHashId();
-        return src+"->"+dst;
     }
 
 }
