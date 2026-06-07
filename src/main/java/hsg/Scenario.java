@@ -48,9 +48,6 @@ public class Scenario {
     public Set<Edge> getTTPEdges(){
         return ttpEdges.keySet();
     }
-    public List<Edge> getConnectingEdges(){
-        return connectingEdges;
-    }
     public String getOriginId(){
         return originId;
     }

@@ -5,9 +5,13 @@ import main.java.database.graph.Edge;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.io.FileWriter;
 import static main.java.Main.MENTION_SCENARIO_THRESHOLD;
+import static main.java.Main.SHOW_TIMESTAMPS;
 
 /**
  * Erstellt aus den im HSGBuilder erstellten Szenarien Graphen im DOT-Format
@@ -53,7 +57,10 @@ public class HSGConverter {
     private static void drawGraph(Scenario scenario, StringBuilder dot, int count){
         Set<String> usedEdges = new HashSet<>();
 
+        //Set<String> reachable = scenario.getReachable();
+
         for (Edge e :scenario.getTTPEdges()) {
+            //if(!reachable.contains(e.getSrcNode().getHashId())) continue;
             Set<String> ttpNames = getTTPNames(e, scenario.getOriginId());
 
             if (!ttpNames.isEmpty()) {
@@ -62,6 +69,15 @@ public class HSGConverter {
                 String dst = e.getDstNode().getName();
                 for (String ttpName : ttpNames) {
                     String pf = " (PF = "+ scenario.getPathFactor(e)+ ")";
+                    if(SHOW_TIMESTAMPS) {
+                        //Zeit bestimmen
+                        //Vorlage von Claude.ai
+                        Instant time = Instant.ofEpochSecond(Long.parseLong(e.getTimestampRec()) / 1_000_000_000L);
+                        pf += " |" + DateTimeFormatter.ofPattern("HH:mm")
+                                .withZone(ZoneId.of("America/New_York"))
+                                .format(time) + "|";
+
+                    }
                     String edgeName = src + "->" + dst + ttpName;
                     if (!usedEdges.contains(edgeName)) {
                         usedEdges.add(edgeName);

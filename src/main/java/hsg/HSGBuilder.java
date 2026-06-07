@@ -88,27 +88,25 @@ public class HSGBuilder {
                             //Ketten an Nachfolger weitergeben, wenn durch Matching noch nicht geschehen
                             List<TTPChain> copyNew = new ArrayList<>(currentNode.getChains());
                             for (TTPChain chain : copyNew) {
-                                //PF anpassen
-                                if (!changedChains.contains(chain)) {
-                                    TTPChain ex;
-                                    if(newPF == chain.getPathFactor()){
-                                        ex = chain;
-                                    } else {
-                                        ex = chain.updatePF(newPF);
-                                    }
 
+                                if (!changedChains.contains(chain)) {
+                                    //PF anpassen, wenn nötig
+                                    TTPChain ex=(newPF == chain.getPathFactor()) ? chain : chain.updatePF(newPF);
                                     //Verbindungskante (gestrichelte Linien im Graphen)
                                     String oid = chain.getOriginId();
                                     Scenario scen = scenarios.get(oid);
-                                    if(scen != null && !scen.hasEdge(e)
+                                    if(scen != null
                                             &&!e.getSrcNode().getName().equals(e.getDstNode().getName())
                                             &&Long.parseLong(e.getTimestampRec()) >= Long.parseLong(chain.getOriginTimestamp())){
+                                        if(!scen.hasEdge(e)) {
 
-                                        scen.addConnectingEdge(e);
+                                            scen.addConnectingEdge(e);
+                                        }
 
-                                    }
-                                    if (!dstNode.hasChain(ex)) {
-                                        dstNode.addChain(ex);
+
+                                        if (!dstNode.hasChain(ex)) {
+                                            dstNode.addChain(ex);
+                                        }
                                     }
                                 }
                             }
