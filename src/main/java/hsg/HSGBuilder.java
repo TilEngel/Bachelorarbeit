@@ -158,7 +158,7 @@ public class HSGBuilder {
                                     TTPChain extend = chain.extendChain(ttp.getName(), newPF,e);
                                     //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
                                     if (!dstNode.hasChain(extend)) {
-                                        Logger.log("[INFO] Chain erweitert" + extend + " auf " + dstNode.getName());
+                                        Logger.log("[INFO] Chain erweitert auf " + dstNode.getName() + " (PF= "+extend.getPathFactor()+ ")");
 
                                         dstNode.addChain(extend);
                                         changedChains.add(chain); //Damit nicht weitergegeben

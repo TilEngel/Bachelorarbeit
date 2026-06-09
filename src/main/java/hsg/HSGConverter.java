@@ -57,10 +57,7 @@ public class HSGConverter {
     private static void drawGraph(Scenario scenario, StringBuilder dot, int count){
         Set<String> usedEdges = new HashSet<>();
 
-        //Set<String> reachable = scenario.getReachable();
-
         for (Edge e :scenario.getTTPEdges()) {
-            //if(!reachable.contains(e.getSrcNode().getHashId())) continue;
             Set<String> ttpNames = getTTPNames(e, scenario.getOriginId());
 
             if (!ttpNames.isEmpty()) {
@@ -148,14 +145,14 @@ public class HSGConverter {
     private static Set<Edge> findMinimalPathEdges(Scenario scenario){
         Set<Edge> minimalPathEdges = new HashSet<>();
         Set<Edge> ttpEdges = scenario.getTTPEdges();
-
+        //e1.src--e1-->from---...minimalPathEdges...--->to--e2-->e2.dst
         for(Edge e1 : ttpEdges){
             String from = e1.getDstNode().getHashId();
             for(Edge e2: ttpEdges){
                 String to = e2.getSrcNode().getHashId();
 
                 if(!from.equals(to) && (Long.parseLong(e1.getTimestampRec()) < Long.parseLong(e2.getTimestampRec()))){
-                    minimalPathEdges.addAll(scenario.findShortestPath(from,to));
+                    minimalPathEdges.addAll(scenario.findShortestPath(from,to, e1.getTimestampRec()));
                 }
 
             }

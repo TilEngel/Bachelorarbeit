@@ -14,7 +14,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 public class Main {
-    public static final boolean SHOW_TIMESTAMPS = false; //Zeigt Timestamp der TTPs im Graphen an
+    private static final boolean CREATE_GRAPHS = true;
+    public static final boolean SHOW_TIMESTAMPS = true; //Zeigt Timestamp der TTPs im Graphen an
     public static final boolean ROUND_THREAT_SCORES = true; //Bedrohungspunktzahl auf eine Nachkommastelle runden
     public static final int PF_THRESHOLD = 2; //Path-Factor Schwellenwert
     public static final int ALARM_THRESHOLD = 120; //Bedrohungspunktzahl, ab der Alarm gemeldet wird
@@ -55,7 +56,9 @@ public class Main {
 
         List<Scenario> scoredScenarios = ScoringEngine.scoreScenarios(scenarios);
 
-        HSGConverter.exportToDOT(scoredScenarios);
+        if(CREATE_GRAPHS) {
+            HSGConverter.exportToDOT(scoredScenarios);
+        }
     }
 
     /*
