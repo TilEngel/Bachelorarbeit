@@ -1,23 +1,21 @@
 package main.java;
 
 import main.java.database.JDBCEngine;
-import main.java.database.graph.Edge;
 import main.java.events.ttps.*;
 import main.java.hsg.HSGBuilder;
 import main.java.hsg.HSGConverter;
+import main.java.hsg.Scenario;
 import main.java.hsg.ScoringEngine;
 import main.java.provenanceGraph.DataCollector;
-import main.java.provenanceGraph.ProvenanceGraph;
 
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 
 public class Main {
-    public static final boolean INDIRECT_EDGES_BOTH_WAYS = false; //Zwei Knoten können sich gegenseitig mit indirekten Kanten referenzieren
-    public static final boolean REMOVE_DUPLICATE_SCENARIOS = true; //Entfernt inhaltlich identische Szenarien
+    private static final boolean CREATE_GRAPHS = true;
+    public static final boolean SHOW_TIMESTAMPS = true; //Zeigt Timestamp der TTPs im Graphen an
     public static final boolean ROUND_THREAT_SCORES = true; //Bedrohungspunktzahl auf eine Nachkommastelle runden
     public static final int PF_THRESHOLD = 2; //Path-Factor Schwellenwert
     public static final int ALARM_THRESHOLD = 120; //Bedrohungspunktzahl, ab der Alarm gemeldet wird
@@ -33,10 +31,8 @@ public class Main {
     private static final List<TTP> privilegeEscalation = List.of(new Switch_SU());
     private static final List<TTP> internalRecon = List.of(new Sensitive_Command());
     private static final List<TTP> cleanupTracks = List.of(new Clear_Logs(), new Sensitive_Temp_RM());
-    private static final List<List<TTP>> phases = List.of(initialCompromise1, initialCompromise2,
+    public static final List<List<TTP>> PHASES = List.of(initialCompromise1, initialCompromise2,
             establishFoothold, privilegeEscalation, internalRecon, cleanupTracks);
-
-    private static ProvenanceGraph graph;
 
     public static void main(String[] args) {
         Logger.doLogAll();
@@ -49,7 +45,6 @@ public class Main {
             jdbc.connect();
 
             collector.collectData();
-            graph = collector.getGraph();
 
             jdbc.disconnect();
 
@@ -57,11 +52,13 @@ public class Main {
             Logger.logError("Fehler in Main:" + e.getMessage());
         }
 
-        Map<String, List<Edge>> scenarios = HSGBuilder.matchTTPs(graph, phases);
+        List<Scenario> scenarios = HSGBuilder.matchTTPs();
 
-        List<Map.Entry<Double, List<Edge>>> scoredScenarios = ScoringEngine.scoreScenarios(scenarios);
+        List<Scenario> scoredScenarios = ScoringEngine.scoreScenarios(scenarios);
 
-        HSGConverter.exportToDOT(scoredScenarios);
+        if(CREATE_GRAPHS) {
+            HSGConverter.exportToDOT(scoredScenarios);
+        }
     }
 
     /*
@@ -76,7 +73,7 @@ public class Main {
         );
         ZonedDateTime endTime = ZonedDateTime.of(
                 2018, 4, 6,
-                13, 10, 0, 0,
+                12, 10, 0, 0,
                 ZoneId.of("America/New_York")
         );
 

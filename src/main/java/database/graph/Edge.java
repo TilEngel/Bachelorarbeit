@@ -1,7 +1,7 @@
 package main.java.database.graph;
 
 /**
- * Die Kanten des Provenance-Graphen bzw. die
+ * Die Kanten des Provenance Graphen bzw. die
  *  Ereignisse zwischen Knoten
  */
 public class Edge {

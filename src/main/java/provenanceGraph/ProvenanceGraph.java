@@ -13,19 +13,20 @@ import java.util.*;
  */
 public class ProvenanceGraph {
 
-    private final Map<String, Node> nodes = new HashMap<>();
-    private final List<Edge> edges = new ArrayList<>();
+    private static final Map<String, Node> nodes = new HashMap<>();
+    //Kanten liegen nach Zeitstempel sortiert vor
+    private static final List<Edge> edges = new ArrayList<>();
 
     //Adjazenzliste hashID -> ausgehende Kanten
-    private final Map<String,List<Edge>> outEdges = new HashMap<>();
+    private static final Map<String,List<Edge>> outEdges = new HashMap<>();
     //Eingehende Kanten
-    private final Map<String,List<Edge>> inEdges = new HashMap<>();
+    private static final Map<String,List<Edge>> inEdges = new HashMap<>();
 
     /**
      * Fügt einen Knoten dem Graphen hinzu
      * @param node  Der Knoten, der hinzugefügt werden soll
      */
-    public void addNode(Node node){
+    public static void addNode(Node node){
         String hashId = node.getHashId();
         nodes.put(hashId,node);
         outEdges.putIfAbsent(hashId,new ArrayList<>());
@@ -36,7 +37,7 @@ public class ProvenanceGraph {
      * Fügt eine Kante dem Graphen als Knoten hinzu
      * @param edge Kante die hinzugefügt werden soll
      */
-    public void addEdge(Edge edge){
+    public static void addEdge(Edge edge){
         edges.add(edge);
         String srcId = edge.getSrcNode().getHashId();
         String dstId = edge.getDstNode().getHashId();
@@ -51,7 +52,7 @@ public class ProvenanceGraph {
      * @param hashId id des Knotens
      * @return Liste mit Edges, die von dem Knoten ausgehen
      */
-    public List<Edge> getOutEdges(String hashId){
+    public static List<Edge> getOutEdges(String hashId){
         if(outEdges.containsKey(hashId)){
             return outEdges.get(hashId);
         }
@@ -65,7 +66,7 @@ public class ProvenanceGraph {
      * @param hashId ID des Knotens
      * @return Liste mit allen ausgehenden Kanten
      */
-    public List<Edge> getInEdges(String hashId){
+    public static List<Edge> getInEdges(String hashId){
         if (inEdges.containsKey(hashId)){
             return inEdges.get(hashId);
         }
@@ -78,11 +79,11 @@ public class ProvenanceGraph {
      * @param hashId ID des gesuchten Knotens
      * @return Knoten mit der ID
      */
-    public Node getNode(String hashId){
+    public static Node getNode(String hashId){
         return nodes.get(hashId);
     }
 
-    public List<Edge> getEdges() {
+    public static List<Edge> getEdges() {
         return edges;
     }
 

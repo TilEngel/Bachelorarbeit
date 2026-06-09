@@ -3,7 +3,6 @@ package main.java.hsg;
 import main.java.database.graph.Edge;
 import main.java.database.graph.Node;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 

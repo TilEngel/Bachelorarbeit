@@ -20,21 +20,19 @@ public class ScoringEngine {
      * @param scenarios Liste an Szenarien
      * @return Liste an Szenarien, die auf ihren Thread-Score abgebildet werden
      */
-    public static List<Map.Entry<Double, List<Edge>>> scoreScenarios(Map<String, List<Edge>> scenarios){
-        List<Map.Entry<Double, List<Edge>>> rankedScenarios = new ArrayList<>();
-
+    public static List<Scenario> scoreScenarios(List<Scenario> scenarios){
+        List<Scenario> rankedScenarios = new ArrayList<>();
         int count =0;
-        for (Map.Entry<String, List<Edge> > entry : scenarios.entrySet()) {
-            String originId = entry.getKey();
+        for (Scenario scenario : scenarios) {
             count++;
-            List<Edge> involved = entry.getValue();
 
-            double score= computeScore(involved, originId);
+            double score= computeScore(scenario);
             if(ROUND_THREAT_SCORES) { //Wert auf eine Nachkommastelle runden
                 score = Math.round(score * 10.0) / 10.0;
             }
             if(score > MENTION_SCENARIO_THRESHOLD) {
-                rankedScenarios.add(Map.entry(score, involved));
+                scenario.setScore(score);
+                rankedScenarios.add(scenario);
                 Logger.logResult("[RESULT] Szenario " + count + " Score: " + score);
                 if (score >= ALARM_THRESHOLD) {
                     Logger.logResult("\n[ALARM] GRENZWERT ÜBERSCHRITTEN!!\n ");
@@ -43,8 +41,7 @@ public class ScoringEngine {
         }
 
         //Szenarien nach Score absteigend sortieren
-        rankedScenarios.sort((a,b) -> Double.compare(b.getKey(),a.getKey() ));
-
+        rankedScenarios.sort(Comparator.comparingDouble(Scenario::getScore).reversed() );
         return  rankedScenarios;
     }
 
@@ -52,10 +49,10 @@ public class ScoringEngine {
     /**
      * Berechnet den Score für ein Szenario.
      * Beachtet dabei, den kritischsten TTP-Typ pro Phase zu verwenden
-     * @param involved zu bewertendes Szenario
+     * @param scenario zu bewertendes Szenario
      * @return Bedrohungspunktzahl
      */
-    private static double computeScore(List<Edge> involved,String originId){
+    private static double computeScore(Scenario scenario){
 
         List<String> phaseOrder = List.of( //Reihenfolge der Phasen
                 "initial_compromise", "establish_foothold",
@@ -64,7 +61,7 @@ public class ScoringEngine {
         );
 
         double score = 1.0;
-        Map<String, Integer> ps = findRelevantScores(involved, originId);
+        Map<String, Integer> ps = findRelevantScores(scenario);
         int i = 0;
         for(String phase : phaseOrder){
             if(ps.containsKey(phase)) {
@@ -79,14 +76,15 @@ public class ScoringEngine {
     }
 
     /**
-     * Findet aus einer Liste an Kanten die höchsten Scores
+     * Findet aus einem Szenario die höchsten Scores
      * der Phasen. Nur ein Score pro Phase
-     * @param involved Liste an Kanten in einem Szenario
+     * @param scenario entsprechendes Szenario
      * @return Map <Phase -> höchster score>
      */
-    private static Map<String ,Integer> findRelevantScores(List<Edge> involved, String originId){
+    private static Map<String ,Integer> findRelevantScores(Scenario scenario){
         Map<String, Integer> phases = new HashMap<>();
-        for (Edge e : involved){
+        String originId = scenario.getOriginId();
+        for (Edge e : scenario.getTTPEdges()){
             Node n = e.getDstNode();
             Set<String> scenarioTTPs = new HashSet<>();
             for(TTPChain chain: n.getChains()){
