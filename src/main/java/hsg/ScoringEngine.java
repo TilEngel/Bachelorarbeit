@@ -91,7 +91,6 @@ public class ScoringEngine {
         if(ROUND_THREAT_SCORES) { //Wert auf eine Nachkommastelle runden
             score = Math.round(score * 10.0) / 10.0;
         }
-        scenario.setScore(score);
         if(score > MENTION_SCENARIO_THRESHOLD) {
             Logger.logResult("[RESULT] Score: " + score);
             if (score >= ALARM_THRESHOLD) {

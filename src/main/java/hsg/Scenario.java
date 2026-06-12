@@ -5,11 +5,13 @@ import main.java.database.graph.Edge;
 import java.util.*;
 
 public class Scenario {
+    //Kanten in dem Szenario
     private final List<Edge> edges = new ArrayList<>();
+    //Set an Kanten (contains() in O(1))
     private final Set<Edge> edgeSet = new HashSet<>();
+    //Für die Bewertung relevante Scores
     private final Map<String,Integer> relevantScores = new HashMap<>();
-    private final Set<String> nodeIds = new HashSet<>();
-    private double score = 1.0;
+
 
     public Scenario( Edge startEdge){
         addEdge(startEdge);
@@ -18,13 +20,17 @@ public class Scenario {
     public boolean addEdge(Edge e){
         if(edgeSet.add(e)) {
             edges.add(e);
-            nodeIds.add(e.getSrcNode().getHashId());
-            nodeIds.add(e.getDstNode().getHashId());
             return true;
         }
         return false;
     }
 
+    /**
+     * Wenn für eine Phase ein höherer Score gefunden wird, wird relevantScores angepasst
+     * @param phase APT-Phase
+     * @param severity Wert des TTPs
+     * @return true, wenn neuer Höchstwert für Phase
+     */
     public boolean updatePhaseScore(String phase, int severity){
         if(!relevantScores.containsKey(phase)|| relevantScores.get(phase)< severity) {
             relevantScores.put(phase,severity);
@@ -37,17 +43,9 @@ public class Scenario {
     public Map<String, Integer> getRelevantScores(){
         return relevantScores;
     }
-    public void setScore(double score){
-        this.score = score;
-    }
-    public double getScore(){
-        return score;
-    }
+
     public  List<Edge> getEdges(){
         return edges;
-    }
-    public boolean hasNode(String nodeId){
-        return nodeIds.contains(nodeId);
     }
 
 }

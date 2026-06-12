@@ -121,6 +121,7 @@ public class HSGConverter {
             int count;
             List<Edge> edges = scenario.getEdges();
             String startEdge = edges.get(0).getSrcNode().getName()+edges.get(0).getDstNode().getName();
+            //Graphen überschreiben, wenn Szenario bereits durch bestehenden (kleineren) Graphen dargestellt wird
             if(!scenNumbers.containsKey(startEdge)){
                 scenNumbers.put(startEdge,countStreaming);
                 count = countStreaming;
