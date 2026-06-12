@@ -17,6 +17,8 @@ import static main.java.Main.PF_THRESHOLD;
  */
 public class HSGBuilder {
 
+    private static final Map<String, Scenario> scenarios = new HashMap<>();
+
     /**
      * Sucht nach Initial_Compromise.
      * Verfolgt Kette an zusammenhängenden Ereignissen (unter Berücksichtigung PF).
@@ -26,7 +28,7 @@ public class HSGBuilder {
      */
     public static void matchTTPsStreaming(Edge edge, List<List<TTP>> phases){
         if(edge.getSrcNode().getChains().isEmpty()){
-            for (TTP ttp : phases.get(0)) { //initial_compromise1
+            for (TTP ttp : phases.get(0)) { //initial_compromise1 O(1)
                 if (ttp.matches(edge)) {
                     Node match = edge.getDstNode();
                     //Initial_Compromise entdeckt -> neue Kette starten
@@ -36,7 +38,7 @@ public class HSGBuilder {
                     match.addChain(newChain);
                     match.addTTP(ttp);
 
-                    ScoringEngine.scoreScenarioStreaming(newChain,edge);
+                    scenarios.put(newChain.getOriginId(), new Scenario(edge));
 
                     edge.getSrcNode().addTTP(ttp);
 
@@ -46,15 +48,15 @@ public class HSGBuilder {
             }
         } else{
             List<TTPChain> copy = new ArrayList<>(edge.getSrcNode().getChains());
-            for(TTPChain chain: copy) {
+            for(TTPChain chain: copy) { //O(C) = O(1)
                 int currentPF = chain.getPathFactor();
                 int newPF = computeNewPFStreaming(edge, currentPF);
 
                 if(newPF <= PF_THRESHOLD){
                     boolean chainAdded = false;
-                    for(List<TTP> phase: phases){
-                        for(TTP ttp : phase){
-                            if (ttp.matches(edge)){
+                    for(List<TTP> phase: phases){ //O(1)
+                        for(TTP ttp : phase){ //O(1)
+                            if (ttp.matches(edge)){ // O(1)
                                 if (!chain.getTtps().containsKey(ttp.getName())) {
                                     //Kette erweitern
                                     TTPChain extend = chain.extendChain(ttp.getName(), newPF, edge);
@@ -63,7 +65,7 @@ public class HSGBuilder {
                                         chainAdded = true;
                                         edge.getDstNode().addChain(extend);
                                         edge.getDstNode().addTTP(ttp);
-                                        ScoringEngine.scoreScenarioStreaming(extend, edge);
+                                        ScoringEngine.scoreScenarioStreaming(scenarios.get(extend.getOriginId()), edge,ttp, extend.getOriginId());
                                     }
                                 }
                             }
@@ -72,7 +74,10 @@ public class HSGBuilder {
                     if(!chainAdded){
                         if (!edge.getDstNode().hasChain(chain)) {
                             edge.getDstNode().addChain(chain.updatePF(newPF));
-                            ScoringEngine.addPathEdge(chain.getOriginId(), edge);
+                            Scenario scenario = scenarios.get(chain.getOriginId());
+
+                            scenario.addEdge(edge);
+
                         }
                     }
                 }

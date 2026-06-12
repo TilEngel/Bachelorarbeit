@@ -16,8 +16,8 @@ public class Main {
     public static final int ALARM_THRESHOLD = 120; //Bedrohungspunktzahl, ab der Alarm gemeldet wird
     public static final int MENTION_SCENARIO_THRESHOLD = 10; //Szenarien unter diesen Wert, werden nicht erwähnt
 
-    public static String TIMESTAMP_MIN = "";
-    public static String TIMESTAMP_MAX = "";
+    public static String TIMESTAMP_MIN = "0";
+    public static String TIMESTAMP_MAX = "1522732800000000000";
 
     //Zu suchende TTP-Typen
     private static final List<TTP> initialCompromise1 = List.of(new Untrusted_Read());

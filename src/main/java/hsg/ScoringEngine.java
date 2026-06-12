@@ -2,7 +2,6 @@ package main.java.hsg;
 
 import main.java.Logger;
 import main.java.database.graph.Edge;
-import main.java.database.graph.Node;
 import main.java.events.ttps.TTP;
 
 import java.util.*;
@@ -17,10 +16,10 @@ public class ScoringEngine {
     /**
      * Berechnet den Score für ein Szenario.
      * Beachtet dabei, den kritischsten TTP-Typ pro Phase zu verwenden
-     * @param involved zu bewertendes Szenario
+     * @param phaseScores Map Phase->Score
      * @return Bedrohungspunktzahl
      */
-    private static double computeScore(List<Edge> involved,String originId){
+    private static double computeScore(Map<String, Integer> phaseScores){
 
         List<String> phaseOrder = List.of( //Reihenfolge der Phasen
                 "initial_compromise", "establish_foothold",
@@ -29,51 +28,17 @@ public class ScoringEngine {
         );
 
         double score = 1.0;
-        Map<String, Integer> ps = findRelevantScores(involved, originId);
         int i = 0;
         for(String phase : phaseOrder){
-            if(ps.containsKey(phase)) {
+            if(phaseScores.containsKey(phase)) {
                 i++;
                 //Gewichtung wie im Paper
                 double weight = (10 + i) / 10.0;
 
-                score *= pow(ps.get(phase), weight);
+                score *= pow(phaseScores.get(phase), weight);
             }
         }
         return  score;
-    }
-
-    /**
-     * Findet aus einer Liste an Kanten die höchsten Scores
-     * der Phasen. Nur ein Score pro Phase
-     * @param involved Liste an Kanten in einem Szenario
-     * @return Map <Phase -> höchster score>
-     */
-    private static Map<String ,Integer> findRelevantScores(List<Edge> involved, String originId){
-        Map<String, Integer> phases = new HashMap<>();
-        for (Edge e : involved){
-            Node n = e.getDstNode();
-            Set<String> scenarioTTPs = new HashSet<>();
-            for(TTPChain chain: n.getChains()){
-                //TTPs des Szenarios identifizieren
-                if (chain.getOriginId().equals(originId)){
-                    String ttp = chain.getTTPForEdge(e);
-                    if(ttp!=null){
-                        scenarioTTPs.add(ttp);
-                    }
-                }
-            }
-            for(TTP ttp : n.getTTPs()){
-                //Nur TTP des Knotens hinzufügen, das wirklich zur Chain gehört
-                if(scenarioTTPs.contains(ttp.getName())){
-                    int severity = getSeverityValue(ttp);
-                    if(!phases.containsKey(ttp.getPhase()) || phases.get(ttp.getPhase())< severity){
-                        phases.put(ttp.getPhase(), severity);
-                    }
-                }
-            }
-        }
-        return phases;
     }
 
 
@@ -99,48 +64,42 @@ public class ScoringEngine {
         }
     }
 
-    private static final Map<String, List<Edge>> streamingScenarios = new HashMap<>();
-    private static final Map<String, Set<String>> knownPhases = new HashMap<>();
+
+
 
 
     /**
      * Berechnet zu einem Szenario die Bedrohungspunktzahl.
      * Stößt eventuell HSGConverter an
-     * @param chain TTP Kette
+     * @param scenario Szenario
      * @param edge neue Kante
      */
-    public static void scoreScenarioStreaming(TTPChain chain, Edge edge){
-        String origin = chain.getOriginId();
-        streamingScenarios.computeIfAbsent(origin, k->new ArrayList<>());
-        if(!streamingScenarios.get(origin).contains(edge)){
-            streamingScenarios.get(origin).add(edge);
+    public static void scoreScenarioStreaming(Scenario scenario, Edge edge, TTP ttp, String origin){
+
+        //Wenn Kante schon im Szenario stoppen
+        if(!scenario.addEdge(edge)){
+            return;
         }
 
-        List<Edge> scenario = streamingScenarios.get(origin);
-        Map<String, Integer> currentPhaseScores = findRelevantScores(scenario,origin);
-        Set<String> currentPhaseSet = currentPhaseScores.keySet();
+        int severity = getSeverityValue(ttp);
+        //Wenn kein neuer Score entsteht stoppen
+        if(!scenario.updatePhaseScore(ttp.getPhase(),severity)){
+            return;
+        }
 
-        Set<String> known = knownPhases.computeIfAbsent(origin, k->new HashSet<>());
-        if(currentPhaseSet.equals(known)) return;
-        known.clear();
-        known.addAll(currentPhaseSet);
-
-        double score = computeScore(scenario,origin);
+        double score = computeScore(scenario.getRelevantScores());
         if(ROUND_THREAT_SCORES) { //Wert auf eine Nachkommastelle runden
             score = Math.round(score * 10.0) / 10.0;
         }
+        scenario.setScore(score);
         if(score > MENTION_SCENARIO_THRESHOLD) {
             Logger.logResult("[RESULT] Score: " + score);
             if (score >= ALARM_THRESHOLD) {
                 Logger.logResult("\n[ALARM] GRENZWERT ÜBERSCHRITTEN!!\n ");
-                HSGConverter.exportToDOTStreaming(scenario, score, origin);
+                HSGConverter.exportToDOTStreaming(scenario.getEdges(), score, origin);
             }
         }
     }
-    public static void addPathEdge(String originId, Edge edge){
-        List<Edge> edges = streamingScenarios.computeIfAbsent(originId, k->new ArrayList<>());
-        if(!edges.contains(edge)){
-            edges.add(edge);
-        }
-    }
+
+
 }
