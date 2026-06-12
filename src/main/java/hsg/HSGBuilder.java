@@ -27,63 +27,64 @@ public class HSGBuilder {
      * @param phases Zu prüfende TTPs in Phasen
      */
     public static void matchTTPsStreaming(Edge edge, List<List<TTP>> phases){
-        if(edge.getSrcNode().getChains().isEmpty()){
-            for (TTP ttp : phases.get(0)) { //initial_compromise1 O(1)
-                if (ttp.matches(edge)) {
-                    Node match = edge.getDstNode();
-                    //Initial_Compromise entdeckt -> neue Kette starten
-                    TTPChain newChain = new TTPChain(ttp.getName(), edge, edge.getTimestampRec());
+        if(!edge.getSrcNode().getHashId().equals(edge.getDstNode().getHashId())) {
+            if (edge.getSrcNode().getChains().isEmpty()) {
+                for (TTP ttp : phases.get(0)) { //initial_compromise1 O(1)
+                    if (ttp.matches(edge)) {
+                        Node match = edge.getDstNode();
+                        //Initial_Compromise entdeckt -> neue Kette starten
+                        TTPChain newChain = new TTPChain(ttp.getName(), edge, edge.getTimestampRec());
 
 
-                    match.addChain(newChain);
-                    match.addTTP(ttp);
+                        match.addChain(newChain);
+                        match.addTTP(ttp);
 
-                    scenarios.put(newChain.getOriginId(), new Scenario(edge));
+                        scenarios.put(newChain.getOriginId(), new Scenario(edge));
 
-                    edge.getSrcNode().addTTP(ttp);
+                        edge.getSrcNode().addTTP(ttp);
 
-                    Logger.log("[INFO] New Chain " + ttp.getName() + " auf " + match.getName());
+                        Logger.log("[INFO] New Chain " + ttp.getName() + " auf " + match.getName());
 
+                    }
                 }
-            }
-        } else{
-            List<TTPChain> copy = new ArrayList<>(edge.getSrcNode().getChains());
-            for(TTPChain chain: copy) { //O(C) = O(1)
-                int currentPF = chain.getPathFactor();
-                int newPF = computeNewPFStreaming(edge, currentPF);
+            } else {
+                List<TTPChain> copy = new ArrayList<>(edge.getSrcNode().getChains());
+                for (TTPChain chain : copy) { //O(C) = O(1)
+                    int currentPF = chain.getPathFactor();
+                    int newPF = computeNewPFStreaming(edge, currentPF);
 
-                if(newPF <= PF_THRESHOLD){
-                    boolean chainAdded = false;
-                    for(List<TTP> phase: phases){ //O(1)
-                        for(TTP ttp : phase){ //O(1)
-                            if (ttp.matches(edge)){ // O(1)
-                                if (!chain.getTtps().containsKey(ttp.getName())) {
-                                    //Kette erweitern
-                                    TTPChain extend = chain.extendChain(ttp.getName(), newPF, edge);
-                                    //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
-                                    if (!edge.getDstNode().hasChain(extend)) {
-                                        chainAdded = true;
-                                        edge.getDstNode().addChain(extend);
-                                        edge.getDstNode().addTTP(ttp);
-                                        ScoringEngine.scoreScenarioStreaming(scenarios.get(extend.getOriginId()), edge,ttp, extend.getOriginId());
+                    if (newPF <= PF_THRESHOLD) {
+                        boolean chainAdded = false;
+                        for (List<TTP> phase : phases) { //O(1)
+                            for (TTP ttp : phase) { //O(1)
+                                if (ttp.matches(edge, chain.getOriginId())) { // O(1)
+                                    if (!chain.getTtps().containsKey(ttp.getName())) {
+                                        //Kette erweitern
+                                        TTPChain extend = chain.extendChain(ttp.getName(), newPF, edge);
+                                        //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
+                                        if (!edge.getDstNode().hasChain(extend)) {
+                                            chainAdded = true;
+                                            edge.getDstNode().addChain(extend);
+                                            edge.getDstNode().addTTP(ttp);
+                                            ScoringEngine.scoreScenarioStreaming(scenarios.get(extend.getOriginId()), edge, ttp, extend.getOriginId());
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    if(!chainAdded){
-                        if (!edge.getDstNode().hasChain(chain)) {
-                            edge.getDstNode().addChain(chain.updatePF(newPF));
-                            Scenario scenario = scenarios.get(chain.getOriginId());
+                        if (!chainAdded) {
+                            if (!edge.getDstNode().hasChain(chain)) {
+                                edge.getDstNode().addChain(chain.updatePF(newPF));
+                                Scenario scenario = scenarios.get(chain.getOriginId());
 
-                            scenario.addEdge(edge);
+                                scenario.addEdge(edge);
 
+                            }
                         }
                     }
                 }
             }
         }
-
     }
 
     /**

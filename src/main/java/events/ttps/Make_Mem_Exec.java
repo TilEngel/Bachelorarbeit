@@ -35,6 +35,10 @@ public class Make_Mem_Exec extends TTP {
         return true;
 
     }
+    @Override
+    public boolean matches(Edge edge, String originId){
+        return matches(edge);
+    }
 
     @Override
     public String getName(){

@@ -18,6 +18,7 @@ public abstract class TTP {
      * @return true, wenn TTP erkannt wird
      */
     public abstract boolean matches(Edge edge);
+    public abstract boolean matches(Edge edge, String originId);
 
 
     /**

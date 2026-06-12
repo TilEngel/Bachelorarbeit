@@ -41,6 +41,11 @@ public class Switch_SU extends TTP{
         return true;
     }
     @Override
+    public boolean matches(Edge edge, String originId){
+        return matches(edge);
+    }
+
+    @Override
     public String getName(){
         return "switch_su";
     }

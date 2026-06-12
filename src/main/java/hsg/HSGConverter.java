@@ -5,9 +5,7 @@ import main.java.database.graph.Edge;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.io.FileWriter;
 
 import static main.java.Main.INDIRECT_EDGES_BOTH_WAYS;
@@ -18,6 +16,7 @@ import static main.java.Main.MENTION_SCENARIO_THRESHOLD;
  */
 public class HSGConverter {
 
+    private static final Map<String, Integer> scenNumbers = new HashMap<>();
 
     /*
     Zeichnet den tatsächlichen Graphen
@@ -110,7 +109,8 @@ public class HSGConverter {
      * @param score Score des Szenarios
      * @param originId origin des Szenarios
      */
-    public static void exportToDOTStreaming(List<Edge> scenario, double score, String originId){
+    public static void exportToDOTStreaming(Scenario scenario, double score, String originId){
+
 
         File outDir = new File("hsg_output");
         if(!outDir.exists()){
@@ -118,15 +118,24 @@ public class HSGConverter {
         }
         if (score > MENTION_SCENARIO_THRESHOLD) {
             countStreaming++;
+            int count;
+            List<Edge> edges = scenario.getEdges();
+            String startEdge = edges.get(0).getSrcNode().getName()+edges.get(0).getDstNode().getName();
+            if(!scenNumbers.containsKey(startEdge)){
+                scenNumbers.put(startEdge,countStreaming);
+                count = countStreaming;
+            } else{
+                count = scenNumbers.get(startEdge);
+            }
 
             StringBuilder dot = new StringBuilder();
             //Header
-            dot.append("digraph Szenario").append(countStreaming).append("{\n");
+            dot.append("digraph Szenario").append(count).append("{\n");
             dot.append("    rankdir=LR;\n");
             dot.append("    node [shape=box];\n");
 
             //Titel mit Score
-            dot.append("    label=\"Szenario ").append(countStreaming)
+            dot.append("    label=\"Szenario ").append(count)
                     .append(" | Bedrohungspunkzahl: ").append(score).append("\";\n");
             dot.append("    labelloc=\"t\";\n");
             dot.append("\n    //LN war hier\n\n");
@@ -137,7 +146,7 @@ public class HSGConverter {
             //Graph erstellen
             Set<String> usefulNodes = new HashSet<>();
             Set<String> forwardEdges = new HashSet<>();
-            for (Edge e : scenario) {
+            for (Edge e : edges) {
 
                 //TTP-Namen der Kante
                 Set<String> ttpNames = getTTPNames(e, originId);
@@ -159,7 +168,7 @@ public class HSGConverter {
             boolean changed = true;
             while (changed) {
                 changed = false;
-                for (Edge edge : scenario) {
+                for (Edge edge : edges) {
                     String fwd = edge.getSrcNode().getName() + "->" + edge.getDstNode().getName();
                     if (!forwardEdges.contains(fwd)) continue; //Rückwärts-Kanten überspringen
                     if (usefulNodes.contains(edge.getDstNode().getHashId())
@@ -169,7 +178,7 @@ public class HSGConverter {
                     }
                 }
             }
-            drawGraph(scenario, usefulNodes, originId, dot, countStreaming);
+            drawGraph(edges, usefulNodes, originId, dot, countStreaming);
 
 
         }

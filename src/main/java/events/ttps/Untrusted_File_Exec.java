@@ -34,6 +34,10 @@ public class Untrusted_File_Exec extends TTP{
         }
         return true;
     }
+    @Override
+    public boolean matches(Edge edge, String originId){
+        return matches(edge);
+    }
 
     @Override
     public String getName(){

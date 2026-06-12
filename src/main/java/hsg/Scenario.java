@@ -49,4 +49,5 @@ public class Scenario {
     public boolean hasNode(String nodeId){
         return nodeIds.contains(nodeId);
     }
+
 }

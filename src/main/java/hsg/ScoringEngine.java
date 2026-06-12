@@ -96,7 +96,7 @@ public class ScoringEngine {
             Logger.logResult("[RESULT] Score: " + score);
             if (score >= ALARM_THRESHOLD) {
                 Logger.logResult("\n[ALARM] GRENZWERT ÜBERSCHRITTEN!!\n ");
-                HSGConverter.exportToDOTStreaming(scenario.getEdges(), score, origin);
+                HSGConverter.exportToDOTStreaming(scenario, score, origin);
             }
         }
     }
