@@ -152,7 +152,7 @@ public class HSGConverter {
                 String to = e2.getSrcNode().getHashId();
 
                 if(!from.equals(to) && (Long.parseLong(e1.getTimestampRec()) < Long.parseLong(e2.getTimestampRec()))){
-                    minimalPathEdges.addAll(scenario.findShortestPath(from,to, e1.getTimestampRec()));
+                    minimalPathEdges.addAll(scenario.findShortestPath(from,to));
                 }
 
             }

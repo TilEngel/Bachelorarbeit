@@ -86,7 +86,7 @@ public class Scenario {
      * @param to Zielknoten
      * @return Pfad an Kanten
      */
-    public List<Edge> findShortestPath(String from, String to, String timestamp){
+    public List<Edge> findShortestPath(String from, String to){
 
         fillAdjOut();
         if(!from.equals(to)) {
@@ -95,7 +95,6 @@ public class Scenario {
             Queue<String> queue = new LinkedList<>();
             Set<String> visited = new HashSet<>();
             queue.add(from);
-            long currentTime = Long.parseLong(timestamp);
             visited.add(from);
 
             while (!queue.isEmpty()) {
@@ -103,18 +102,15 @@ public class Scenario {
                 for (Edge e : adjOut.getOrDefault(current,Collections.emptyList())) {
                     String next = e.getDstNode().getHashId();
                     if (!visited.contains(next)) {
-                        long newTime = Long.parseLong(e.getTimestampRec());
-                        //if(currentTime< newTime) {
-                            currentTime= newTime;
-                            predecessor.put(next, e);
-                            if (next.equals(to)) {
-                                //Pfad rekonstruieren
-                                return reconstructPath(predecessor, to);
-                            }
-                            visited.add(next);
-                            queue.add(next);
-                        //}
+                        predecessor.put(next, e);
+                        if (next.equals(to)) {
+                            //Pfad rekonstruieren
+                            return reconstructPath(predecessor, to);
+                        }
+                        visited.add(next);
+                        queue.add(next);
                     }
+
                 }
             }
         }
