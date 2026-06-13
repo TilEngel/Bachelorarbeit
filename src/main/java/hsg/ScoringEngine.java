@@ -72,14 +72,11 @@ public class ScoringEngine {
      * Berechnet zu einem Szenario die Bedrohungspunktzahl.
      * Stößt eventuell HSGConverter an
      * @param scenario Szenario
-     * @param edge neue Kante
+     * @param ttp das neue TTP
+     * @param origin Ursprungsknoten des Szenarios
      */
-    public static void scoreScenarioStreaming(Scenario scenario, Edge edge, TTP ttp, String origin){
+    public static void scoreScenarioStreaming(Scenario scenario, TTP ttp, String origin){
 
-        //Wenn Kante schon im Szenario stoppen
-        if(!scenario.addEdge(edge)){
-            return;
-        }
 
         int severity = getSeverityValue(ttp);
         //Wenn kein neuer Score entsteht stoppen

@@ -9,12 +9,15 @@ public class Scenario {
     private final List<Edge> edges = new ArrayList<>();
     //Set an Kanten (contains() in O(1))
     private final Set<Edge> edgeSet = new HashSet<>();
+    private final Set<String> ttpNodeIds = new HashSet<>();
+
+    private final Set<Edge> ttpEdges = new HashSet<>();
     //Für die Bewertung relevante Scores
     private final Map<String,Integer> relevantScores = new HashMap<>();
 
 
     public Scenario( Edge startEdge){
-        addEdge(startEdge);
+        addTTPEdge(startEdge);
     }
 
     public boolean addEdge(Edge e){
@@ -23,6 +26,16 @@ public class Scenario {
             return true;
         }
         return false;
+    }
+    public boolean addTTPEdge(Edge e){
+        if(addEdge(e)) {
+            ttpEdges.add(e);
+            ttpNodeIds.add(e.getSrcNode().getHashId());
+            ttpNodeIds.add(e.getDstNode().getHashId());
+            return true;
+        }
+        return false;
+
     }
 
     /**
@@ -38,6 +51,16 @@ public class Scenario {
 
         }
         return false;
+    }
+    public boolean isTTPNode(String id){
+        return ttpNodeIds.contains(id);
+    }
+    public Set<Edge> getTTPEdges(){
+        return ttpEdges;
+    }
+
+    public Set<String> getTtpNodeIds(){
+        return ttpNodeIds;
     }
 
     public Map<String, Integer> getRelevantScores(){

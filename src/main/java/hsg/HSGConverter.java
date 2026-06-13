@@ -145,40 +145,33 @@ public class HSGConverter {
 
 
             //Graph erstellen
-            Set<String> usefulNodes = new HashSet<>();
-            Set<String> forwardEdges = new HashSet<>();
+
+            //Erreichbare, aber irrelevante Knoten rausfiltern
+
+            //Alle von TTPs erreichbaren Knoten finden.               O(K)
+            Set<String> forwardEdges = new HashSet<>(scenario.getTtpNodeIds());
             for (Edge e : edges) {
 
-                //TTP-Namen der Kante
-                Set<String> ttpNames = getTTPNames(e, originId);
-                //Nützliche Knoten bestimmen
-                if (!ttpNames.isEmpty()) {
-                    usefulNodes.add(e.getSrcNode().getHashId());
-                    usefulNodes.add(e.getDstNode().getHashId());
+                if(forwardEdges.contains(e.getSrcNode().getHashId())){
+                    forwardEdges.add(e.getDstNode().getHashId());
                 }
-                //Vorbestimmen, welche Kanten gezeichnet werden
-                String fwd = e.getSrcNode().getName() + "->" + e.getDstNode().getName();
-                String rev = e.getDstNode().getName() + "->" + e.getSrcNode().getName();
-                //Kanten nur in eine Richtung
-                if (!INDIRECT_EDGES_BOTH_WAYS && forwardEdges.contains(rev)) continue;
-                forwardEdges.add(fwd);
 
             }
 
-            //Rückwärts propagieren, um irrelevante Knoten zu eleminieren
-            boolean changed = true;
-            while (changed) {
-                changed = false;
-                for (Edge edge : edges) {
-                    String fwd = edge.getSrcNode().getName() + "->" + edge.getDstNode().getName();
-                    if (!forwardEdges.contains(fwd)) continue; //Rückwärts-Kanten überspringen
-                    if (usefulNodes.contains(edge.getDstNode().getHashId())
-                            && usefulNodes.add(edge.getSrcNode().getHashId())) {
-                        changed = true;
-
-                    }
+            //Alle Knoten, die zu TTPs führen finden.               O(K)
+            Set<String> backwardEdges = new HashSet<>(scenario.getTtpNodeIds());
+            ListIterator<Edge> iterator = edges.listIterator(edges.size());
+            while (iterator.hasPrevious()){
+                Edge e = iterator.previous();
+                if (backwardEdges.contains(e.getDstNode().getHashId())){
+                    backwardEdges.add(e.getSrcNode().getHashId());
                 }
             }
+
+            //Relevante Knoten = Schnittmenge
+            Set<String> usefulNodes = new HashSet<>(forwardEdges);
+            usefulNodes.retainAll(backwardEdges);
+
             drawGraph(edges, usefulNodes, originId, dot, countStreaming);
 
 

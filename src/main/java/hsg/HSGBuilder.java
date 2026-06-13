@@ -27,7 +27,7 @@ public class HSGBuilder {
      * @param phases Zu prüfende TTPs in Phasen
      */
     public static void matchTTPsStreaming(Edge edge, List<List<TTP>> phases){
-        if(!edge.getSrcNode().getHashId().equals(edge.getDstNode().getHashId())) {
+        if(!edge.getSrcNode().getName().equals(edge.getDstNode().getName())) {
             if (edge.getSrcNode().getChains().isEmpty()) {
                 for (TTP ttp : phases.get(0)) { //initial_compromise1 O(1)
                     if (ttp.matches(edge)) {
@@ -66,7 +66,9 @@ public class HSGBuilder {
                                             chainAdded = true;
                                             edge.getDstNode().addChain(extend);
                                             edge.getDstNode().addTTP(ttp);
-                                            ScoringEngine.scoreScenarioStreaming(scenarios.get(extend.getOriginId()), edge, ttp, extend.getOriginId());
+                                            if(scenarios.get(extend.getOriginId()).addTTPEdge(edge)) {
+                                                ScoringEngine.scoreScenarioStreaming(scenarios.get(extend.getOriginId()), ttp, extend.getOriginId());
+                                            }
                                         }
                                     }
                                 }
