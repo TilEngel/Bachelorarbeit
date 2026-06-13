@@ -29,6 +29,7 @@ public class HSGBuilder {
 
         Map<String, Scenario> scenarios = new HashMap<>();
         Set<String> startNodes = new HashSet<>();
+        Map<String, Long> earliestVisit = new HashMap<>();
 
         //Initial_Compromise finden
         for (Edge e : ProvenanceGraph.getEdges()) {
@@ -46,6 +47,9 @@ public class HSGBuilder {
                         Scenario scenario = new Scenario(match.getHashId());
                         scenario.addTTPEdge(e,1);
                         scenarios.put(match.getHashId(), scenario);
+                        if(!earliestVisit.containsKey(match.getHashId()) || earliestVisit.get(match.getHashId())> Long.parseLong(e.getTimestampRec())){
+                            earliestVisit.put(match.getHashId(), Long.parseLong(e.getTimestampRec()));
+                        }
 
                         Logger.log("[INFO] New Chain " + ttp.getName() + " auf " + match.getName());
 
@@ -71,57 +75,63 @@ public class HSGBuilder {
                     Node currentNode = ProvenanceGraph.getNode(currentId);
                     int currentPF = visitedPF.get(currentId);
 
+
                     for (Edge e : ProvenanceGraph.getOutEdges(currentId)) {
-                        Node dstNode = e.getDstNode();
-                        String dstId = dstNode.getHashId();
-                        //if(startNodes.contains(dstId)) continue;
-                        //Neuen PF bestimmen
-                        int newPF = computeNewPF(currentNode, dstNode, currentPF);
+                        if (earliestVisit.get(currentId) < Long.parseLong(e.getTimestampRec())) {
+                            Node dstNode = e.getDstNode();
+                            String dstId = dstNode.getHashId();
+                            //Neuen PF bestimmen
+                            int newPF = computeNewPF(currentNode, dstNode, currentPF);
 
-                        //Wenn PF>Threshold, wird Kette abgebrochen
-                        if (newPF <= PF_THRESHOLD) {
-                            List<TTPChain> changedChains = new ArrayList<>();
+                            //Wenn PF>Threshold, wird Kette abgebrochen
+                            if (newPF <= PF_THRESHOLD) {
+                                List<TTPChain> changedChains = new ArrayList<>();
 
-                            //TTP Matching
-                            matchOnEdge(currentNode,e,newPF,scenarios,changedChains);
+                                //TTP Matching
+                                matchOnEdge(currentNode, e, newPF, scenarios, changedChains);
 
-                            //Ketten an Nachfolger weitergeben, wenn durch Matching noch nicht geschehen
-                            List<TTPChain> copyNew = new ArrayList<>(currentNode.getChains());
-                            for (TTPChain chain : copyNew) {
+                                //Ketten an Nachfolger weitergeben, wenn durch Matching noch nicht geschehen
+                                List<TTPChain> copyNew = new ArrayList<>(currentNode.getChains());
+                                for (TTPChain chain : copyNew) {
 
-                                if (!changedChains.contains(chain)) {
-                                    //PF anpassen, wenn nötig
-                                    TTPChain ex=(newPF == chain.getPathFactor()) ? chain : chain.updatePF(newPF);
-                                    //Verbindungskante (gestrichelte Linien im Graphen)
-                                    String oid = chain.getOriginId();
-                                    Scenario scen = scenarios.get(oid);
-                                    if(scen != null
-                                            &&!e.getSrcNode().getName().equals(e.getDstNode().getName())
-                                            &&Long.parseLong(e.getTimestampRec()) >= Long.parseLong(chain.getOriginTimestamp())){
-                                        if(!scen.hasEdge(e)) {
+                                    if (!changedChains.contains(chain)) {
+                                        //PF anpassen, wenn nötig
+                                        TTPChain ex = (newPF == chain.getPathFactor()) ? chain : chain.updatePF(newPF);
+                                        //Verbindungskante (gestrichelte Linien im Graphen)
+                                        String oid = chain.getOriginId();
+                                        Scenario scen = scenarios.get(oid);
+                                        if (scen != null
+                                                && !e.getSrcNode().getName().equals(e.getDstNode().getName())
+                                                && Long.parseLong(e.getTimestampRec()) >= Long.parseLong(chain.getOriginTimestamp())) {
+                                            if (!scen.hasEdge(e)) {
 
-                                            scen.addConnectingEdge(e);
-                                        }
+                                                scen.addConnectingEdge(e);
+                                            }
 
 
-                                        if (!dstNode.hasChain(ex)) {
-                                            dstNode.addChain(ex);
+                                            if (!dstNode.hasChain(ex)) {
+                                                dstNode.addChain(ex);
+                                            }
                                         }
                                     }
                                 }
-                            }
 
 
-                            //Auch ohne Match zum nächsten Knoten traversieren
-                            //Knoten werden erneut traversiert, wenn ein kürzerer Pfad gefunden wurde
-                            if (!visitedPF.containsKey(dstId) || visitedPF.get(dstId) > newPF ) {
+                                //Auch ohne Match zum nächsten Knoten traversieren
+                                //Knoten werden erneut traversiert, wenn ein kürzerer Pfad gefunden wurde
+                                if (!visitedPF.containsKey(dstId) || visitedPF.get(dstId) > newPF) {
 
-                                visitedPF.put(dstId, newPF);
-                                queue.add(dstId);
+                                    visitedPF.put(dstId, newPF);
+
+                                    if(!earliestVisit.containsKey(dstId) ||Long.parseLong(e.getTimestampRec())< earliestVisit.get(dstId)){
+                                        earliestVisit.put(dstId, Long.parseLong(e.getTimestampRec()));
+                                    }
+                                    queue.add(dstId);
+                                }
+
                             }
 
                         }
-
                     }
 
 
