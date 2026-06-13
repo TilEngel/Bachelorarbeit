@@ -2,22 +2,26 @@ package main.java;
 
 import main.java.database.JDBCEngine;
 import main.java.events.ttps.*;
+import main.java.hsg.HSGConverter;
+import main.java.hsg.Scenario;
 import main.java.provenanceGraph.DataCollector;
 
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
     public static final boolean INDIRECT_EDGES_BOTH_WAYS = false; //Zwei Knoten können sich gegenseitig mit indirekten Kanten referenzieren
     public static final boolean ROUND_THREAT_SCORES = true; //Bedrohungspunktzahl auf eine Nachkommastelle runden
-    public static final int PF_THRESHOLD = 3; //Path-Factor Schwellenwert
+    public static final int PF_THRESHOLD = 2; //Path-Factor Schwellenwert
     public static final int ALARM_THRESHOLD = 120; //Bedrohungspunktzahl, ab der Alarm gemeldet wird
     public static final int MENTION_SCENARIO_THRESHOLD = 10; //Szenarien unter diesen Wert, werden nicht erwähnt
 
     public static String TIMESTAMP_MIN = "0";
-    public static String TIMESTAMP_MAX = "1522732800000000000";
+    public static String TIMESTAMP_MAX = "1522706900000000000";
 
     //Zu suchende TTP-Typen
     private static final List<TTP> initialCompromise1 = List.of(new Untrusted_Read());
@@ -29,11 +33,12 @@ public class Main {
     public static final List<List<TTP>> PHASES = List.of(initialCompromise1, initialCompromise2,
             establishFoothold, privilegeEscalation, internalRecon, cleanupTracks);
 
+    public static final Map<String, Scenario> scenarios = new HashMap<>();
 
     public static void main(String[] args) {
         Logger.doLogAll();
 
-        setTimestamp();
+        //setTimestamp();
 
         JDBCEngine jdbc = new JDBCEngine();
         DataCollector collector = new DataCollector(jdbc);
@@ -47,6 +52,11 @@ public class Main {
         } catch (SQLException e) {
             Logger.logError("Fehler in Main:" + e.getMessage());
         }
+        for(Scenario scenario: scenarios.values()){
+            if(scenario.getScore() > MENTION_SCENARIO_THRESHOLD) {
+                HSGConverter.exportToDOTStreaming(scenario);
+            }
+        }
 
     }
 
@@ -56,13 +66,13 @@ public class Main {
      */
     private static void setTimestamp() {
         ZonedDateTime startTime = ZonedDateTime.of(
-                2018, 4, 12,
-                13, 59, 0, 0,
+                2018, 4, 6,
+                11, 20, 0, 0,
                 ZoneId.of("America/New_York")
         );
         ZonedDateTime endTime = ZonedDateTime.of(
-                2018, 4, 12,
-                14, 40, 0, 0,
+                2018, 4, 6,
+                12, 10, 0, 0,
                 ZoneId.of("America/New_York")
         );
 

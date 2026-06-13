@@ -10,6 +10,7 @@ import main.java.events.ttps.*;
 import java.util.*;
 
 import static main.java.Main.PF_THRESHOLD;
+import static main.java.Main.scenarios;
 
 /**
  * Soll Einhaltung der TTPs prüfen und entsprechende Schritte einleiten
@@ -17,7 +18,7 @@ import static main.java.Main.PF_THRESHOLD;
  */
 public class HSGBuilder {
 
-    private static final Map<String, Scenario> scenarios = new HashMap<>();
+
 
     /**
      * Sucht nach Initial_Compromise.
@@ -67,7 +68,7 @@ public class HSGBuilder {
                                             edge.getDstNode().addChain(extend);
                                             edge.getDstNode().addTTP(ttp);
                                             if(scenarios.get(extend.getOriginId()).addTTPEdge(edge)) {
-                                                ScoringEngine.scoreScenarioStreaming(scenarios.get(extend.getOriginId()), ttp, extend.getOriginId());
+                                                ScoringEngine.scoreScenarioStreaming(scenarios.get(extend.getOriginId()), ttp);
                                             }
                                         }
                                     }

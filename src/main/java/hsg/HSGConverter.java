@@ -106,11 +106,11 @@ public class HSGConverter {
      * Erstellt aus einer Liste an Kanten einen Graphen.
      * Graph enthält Name, Threat-Score und Graphen mit relevanten Knoten
      * @param scenario Bewertetes Szenario
-     * @param score Score des Szenarios
-     * @param originId origin des Szenarios
      */
-    public static void exportToDOTStreaming(Scenario scenario, double score, String originId){
+    public static void exportToDOTStreaming(Scenario scenario){
 
+        double score = scenario.getScore();
+        String originId = scenario.getOriginId();
 
         File outDir = new File("hsg_output");
         if(!outDir.exists()){
@@ -172,7 +172,7 @@ public class HSGConverter {
             Set<String> usefulNodes = new HashSet<>(forwardEdges);
             usefulNodes.retainAll(backwardEdges);
 
-            drawGraph(edges, usefulNodes, originId, dot, countStreaming);
+            drawGraph(edges, usefulNodes, originId, dot, count);
 
 
         }

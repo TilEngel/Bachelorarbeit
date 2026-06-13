@@ -1,7 +1,6 @@
 package main.java.hsg;
 
 import main.java.Logger;
-import main.java.database.graph.Edge;
 import main.java.events.ttps.TTP;
 
 import java.util.*;
@@ -73,9 +72,8 @@ public class ScoringEngine {
      * Stößt eventuell HSGConverter an
      * @param scenario Szenario
      * @param ttp das neue TTP
-     * @param origin Ursprungsknoten des Szenarios
      */
-    public static void scoreScenarioStreaming(Scenario scenario, TTP ttp, String origin){
+    public static void scoreScenarioStreaming(Scenario scenario, TTP ttp){
 
 
         int severity = getSeverityValue(ttp);
@@ -88,11 +86,12 @@ public class ScoringEngine {
         if(ROUND_THREAT_SCORES) { //Wert auf eine Nachkommastelle runden
             score = Math.round(score * 10.0) / 10.0;
         }
+        scenario.setScore(score);
         if(score > MENTION_SCENARIO_THRESHOLD) {
             Logger.logResult("[RESULT] Score: " + score);
             if (score >= ALARM_THRESHOLD) {
                 Logger.logResult("\n[ALARM] GRENZWERT ÜBERSCHRITTEN!!\n ");
-                HSGConverter.exportToDOTStreaming(scenario, score, origin);
+                HSGConverter.exportToDOTStreaming(scenario);
             }
         }
     }
