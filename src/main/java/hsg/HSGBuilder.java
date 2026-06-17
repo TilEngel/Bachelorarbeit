@@ -77,11 +77,21 @@ public class HSGBuilder {
 
 
                     for (Edge e : ProvenanceGraph.getOutEdges(currentId)) {
+                        //wenn zeitlich schlüssig
                         if (earliestVisit.get(currentId) < Long.parseLong(e.getTimestampRec())) {
+
                             Node dstNode = e.getDstNode();
                             String dstId = dstNode.getHashId();
+                            //prüfen, ob durch FORK entstanden
+                            if(e.getOperation().equals(EventType.Type.EVENT_FORK.toString())){
+                                for(TTPChain chain: currentNode.getChains()){
+                                    if(chain.isForkDescendant(currentId)){
+                                        chain.addFork(dstId);
+                                    }
+                                }
+                            }
                             //Neuen PF bestimmen
-                            int newPF = computeNewPF(currentNode, dstNode, currentPF);
+                            int newPF = computeNewPF(dstNode, currentPF, currentNode.getChains());
 
                             //Wenn PF>Threshold, wird Kette abgebrochen
                             if (newPF <= PF_THRESHOLD) {
@@ -97,22 +107,11 @@ public class HSGBuilder {
                                     if (!changedChains.contains(chain)) {
                                         //PF anpassen, wenn nötig
                                         TTPChain ex = (newPF == chain.getPathFactor()) ? chain : chain.updatePF(newPF);
-                                        //Verbindungskante (gestrichelte Linien im Graphen)
-                                        String oid = chain.getOriginId();
-                                        Scenario scen = scenarios.get(oid);
-                                        if (scen != null
-                                                && !e.getSrcNode().getName().equals(e.getDstNode().getName())
-                                                && Long.parseLong(e.getTimestampRec()) >= Long.parseLong(chain.getOriginTimestamp())) {
-                                            if (!scen.hasEdge(e)) {
 
-                                                scen.addConnectingEdge(e);
-                                            }
-
-
-                                            if (!dstNode.hasChain(ex)) {
-                                                dstNode.addChain(ex);
-                                            }
+                                        if(!dstNode.hasChain(ex)){
+                                            dstNode.addChain(ex);
                                         }
+
                                     }
                                 }
 
@@ -193,17 +192,17 @@ public class HSGBuilder {
 
     /**
      * Berechnung einens neuen PF
-     * @param srcNode Ursprungsknoten
      * @param dstNode Zielknoten
      * @param currentPF aktueller PF
      * @return currentPF++, wenn nötig. Sonst currentPF
      */
-    private static int computeNewPF(Node srcNode, Node dstNode, int currentPF){
+    private static int computeNewPF(Node dstNode, int currentPF, List<TTPChain> chains){
         if(!(dstNode instanceof Subject)){
             return currentPF;
         }
-        for(Edge e: ProvenanceGraph.getInEdges(dstNode.getHashId())){
-            if(e.getOperation().equals(EventType.Type.EVENT_FORK.toString()) && e.getSrcNode().getHashId().equals((srcNode.getHashId()))){
+        //Wenn dstNode durch FORK entstanden ist
+        for(TTPChain chain: chains){
+            if(chain.isForkDescendant(dstNode.getHashId())){
                 return currentPF;
             }
         }

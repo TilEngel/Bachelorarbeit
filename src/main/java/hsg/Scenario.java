@@ -1,6 +1,8 @@
 package main.java.hsg;
 
 import main.java.database.graph.Edge;
+import main.java.provenanceGraph.ProvenanceGraph;
+
 import java.util.*;
 
 /**
@@ -9,6 +11,7 @@ import java.util.*;
  */
 public class Scenario {
     private final String originId;
+    private String originTimeStamp = null;
 
     //Kanten, auf denen ein TTP-Match gefunden wurde mit PathFactor
     private final Map<Edge, Integer> ttpEdges = new HashMap<>();
@@ -30,11 +33,8 @@ public class Scenario {
         if(!ttpEdges.containsKey(e) || ttpEdges.get(e)> pathFactor){
             ttpEdges.put(e, pathFactor);
         }
-    }
-
-    public void addConnectingEdge(Edge e){
-        if(!connectingEdges.contains(e)){
-            connectingEdges.add(e);
+        if(originTimeStamp == null){
+            originTimeStamp = e.getTimestampRec();
         }
     }
 
@@ -50,10 +50,6 @@ public class Scenario {
     }
     public String getOriginId(){
         return originId;
-    }
-
-    public boolean hasEdge(Edge e){
-        return ttpEdges.containsKey(e) || connectingEdges.contains(e);
     }
 
     /**
@@ -80,6 +76,18 @@ public class Scenario {
         }
     }
 
+    public Set<TTPChain> getChains(){
+        Set<TTPChain> result = new LinkedHashSet<>();
+        for(Edge e : ttpEdges.keySet()){
+            for(TTPChain chain : e.getDstNode().getChains()){
+                if(chain.getOriginId().equals(originId)){
+                    result.add(chain);
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      * Findet den kürzesten Pfad zwischen zwei Knoten
      * @param from Startknoten
@@ -94,12 +102,16 @@ public class Scenario {
             Map<String, Edge> predecessor = new HashMap<>();
             Queue<String> queue = new LinkedList<>();
             Set<String> visited = new HashSet<>();
+            long originTime = Long.parseLong(originTimeStamp);
             queue.add(from);
             visited.add(from);
 
+            //BFS durch Szenario
             while (!queue.isEmpty()) {
                 String current = queue.poll();
-                for (Edge e : adjOut.getOrDefault(current,Collections.emptyList())) {
+                for (Edge e : ProvenanceGraph.getOutEdges(current)) {
+                    //Auf Zeit achten
+                    if(Long.parseLong(e.getTimestampRec())< originTime) continue;
                     String next = e.getDstNode().getHashId();
                     if (!visited.contains(next)) {
                         predecessor.put(next, e);

@@ -17,7 +17,7 @@ public class Main {
     private static final boolean CREATE_GRAPHS = true; //Graphen für die Szenarien werden erstellt
     public static final boolean SHOW_TIMESTAMPS = false; //Zeigt Timestamp der TTPs im Graphen an
     public static final boolean ROUND_THREAT_SCORES = true; //Bedrohungspunktzahl auf eine Nachkommastelle runden
-    public static final int PF_THRESHOLD = 2; //Path-Factor Schwellenwert
+    public static final int PF_THRESHOLD = 4; //Path-Factor Schwellenwert
     public static final int ALARM_THRESHOLD = 120; //Bedrohungspunktzahl, ab der Alarm gemeldet wird
     public static final int MENTION_SCENARIO_THRESHOLD = 10; //Szenarien unter diesen Wert, werden nicht erwähnt
 
