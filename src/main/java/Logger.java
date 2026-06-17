@@ -88,4 +88,17 @@ public class Logger {
     public static void logError(String message){
         System.err.println("[ERR] "+ message);
     }
+
+    public static void logLN(){
+        String logo = "\n ████               ███ ███  \n" +
+                "░░███              ███ ░░███ \n" +
+                " ░███  ████████   ███   ░░███\n" +
+                " ░███ ░░███░░███ ░███    ░███\n" +
+                " ░███  ░███ ░███ ░███    ░███\n" +
+                " ░███  ░███ ░███ ░░███   ███ \n" +
+                " █████ ████ █████ ░░███ ██░  \n" +
+                "░░░░░ ░░░░ ░░░░░   ░░░ ░░░   \n" +
+                "                             \n";
+        System.out.println(logo);
+    }
 }
