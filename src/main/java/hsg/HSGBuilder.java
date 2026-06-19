@@ -90,21 +90,23 @@ public class HSGBuilder {
                                     }
                                 }
                             }
-                            //Neuen PF bestimmen
-                            int newPF = computeNewPF(dstNode, currentPF, currentNode.getChains());
 
-                            //Wenn PF>Threshold, wird Kette abgebrochen
-                            if (newPF <= PF_THRESHOLD) {
-                                List<TTPChain> changedChains = new ArrayList<>();
+                            List<TTPChain> copyNew = new ArrayList<>(currentNode.getChains());
+                            for (TTPChain chain : copyNew) {
+                                //Nur TTPChains betrachten, die auch Teil des Szenarios sind
+                                if(!chain.getOriginId().equals(startId)) continue;
 
-                                //TTP Matching
-                                matchOnEdge(currentNode, e, newPF, scenarios, changedChains);
+                                //Neuen PF bestimmen
+                                int newPF = computeNewPF(dstNode, currentPF, chain);
 
-                                //Ketten an Nachfolger weitergeben, wenn durch Matching noch nicht geschehen
-                                List<TTPChain> copyNew = new ArrayList<>(currentNode.getChains());
-                                for (TTPChain chain : copyNew) {
+                                //Wenn PF>Threshold, wird Kette abgebrochen
+                                if (newPF <= PF_THRESHOLD) {
 
-                                    if (!changedChains.contains(chain)) {
+                                    //TTP Matching
+                                    boolean chainChanged = matchOnEdge(e, newPF, scenarios,chain);
+
+                                    //Ketten an Nachfolger weitergeben, wenn durch Matching noch nicht geschehen
+                                    if (!chainChanged) { //Chain wurde nicht erweitert, also noch nicht weitergegeben
                                         //PF anpassen, wenn nötig
                                         TTPChain ex = (newPF == chain.getPathFactor()) ? chain : chain.updatePF(newPF);
 
@@ -144,18 +146,14 @@ public class HSGBuilder {
     /**
      * Matcht auf TTPs an aktueller Kante.
      * Fügt gefundenes TTP in TTPChain und Szenario ein
-     * @param currentNode Aktueller Knoten
      * @param e Kante an dem Knoten
      * @param newPF PathFactor
      * @param scenarios Alle Szenarien
-     * @param changedChains Liste an Chains, die sich verändert haben
      */
-    private static void matchOnEdge(Node currentNode, Edge e, int newPF, Map<String,Scenario> scenarios, List<TTPChain> changedChains){
+    private static boolean matchOnEdge(Edge e, int newPF, Map<String,Scenario> scenarios, TTPChain chain){
         Node dstNode = e.getDstNode();
-        //Kopie, über die iteriert wird, weil dem Knoten in der Schleife Chains hinzugefügt werden können (exception)
-        List<TTPChain> copy = new ArrayList<>(currentNode.getChains());
+        boolean chainChanged = false;
 
-        for (TTPChain chain : copy) {
             for (List<TTP> phase : PHASES) {
                 for (TTP ttp : phase) {
                     if (!chain.getTtps().containsKey(ttp.getName())) {
@@ -170,7 +168,7 @@ public class HSGBuilder {
                                         Logger.log("[INFO] Chain erweitert auf " + dstNode.getName() + " (PF= "+extend.getPathFactor()+ ")");
 
                                         dstNode.addChain(extend);
-                                        changedChains.add(chain); //Damit nicht weitergegeben
+                                        chainChanged = true; //Damit nicht weitergegeben
                                         dstNode.addTTP(ttp);
 
                                         scenarios.get(extend.getOriginId()).addTTPEdge(e, newPF);
@@ -186,8 +184,9 @@ public class HSGBuilder {
                 }
 
             }
+            return chainChanged;
         }
-    }
+
 
 
     /**
@@ -196,16 +195,17 @@ public class HSGBuilder {
      * @param currentPF aktueller PF
      * @return currentPF++, wenn nötig. Sonst currentPF
      */
-    private static int computeNewPF(Node dstNode, int currentPF, List<TTPChain> chains){
+    private static int computeNewPF(Node dstNode, int currentPF, TTPChain chain){
         if(!(dstNode instanceof Subject)){
             return currentPF;
         }
         //Wenn dstNode durch FORK entstanden ist
-        for(TTPChain chain: chains){
-            if(chain.isForkDescendant(dstNode.getHashId())){
-                return currentPF;
-            }
+
+        if(chain.isForkDescendant(dstNode.getHashId())) {
+            return currentPF;
         }
+
+
         return currentPF +1;
     }
 

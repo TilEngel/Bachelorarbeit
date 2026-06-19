@@ -16,12 +16,6 @@ public class Scenario {
     //Kanten, auf denen ein TTP-Match gefunden wurde mit PathFactor
     private final Map<Edge, Integer> ttpEdges = new HashMap<>();
 
-    //Relevante kanten, an denen kein TTP direkt gefunden wurde
-    private final List<Edge> connectingEdges= new ArrayList<>();
-
-    //Ausgehende Kanten, die Teil des Szenarios sind
-    private Map<String,List<Edge>> adjOut = new HashMap<>();
-
     private double score= 1.0;
 
     public Scenario(String originId){
@@ -52,29 +46,6 @@ public class Scenario {
         return originId;
     }
 
-    /**
-     * Key zumVergleich, ob zwei verschiedene Kanten zwischen den gleichen
-     * Knoten liegen
-     * @return String "srcName->dstName"
-     */
-    public List<Edge> getAllEdges(){
-        List<Edge> all = new ArrayList<>(ttpEdges.keySet());
-        all.addAll(connectingEdges);
-        return all;
-    }
-
-    /*
-    Befüllt einmalig adjOut
-     */
-    private void fillAdjOut(){
-        if(adjOut.keySet().isEmpty()) {
-            Map<String, List<Edge>> temp = new HashMap<>();
-            for (Edge e : getAllEdges()) {
-                temp.computeIfAbsent(e.getSrcNode().getHashId(), k -> new ArrayList<>()).add(e);
-            }
-            adjOut = temp;
-        }
-    }
 
     public Set<TTPChain> getChains(){
         Set<TTPChain> result = new LinkedHashSet<>();
@@ -96,7 +67,6 @@ public class Scenario {
      */
     public List<Edge> findShortestPath(String from, String to){
 
-        fillAdjOut();
         if(!from.equals(to)) {
 
             Map<String, Edge> predecessor = new HashMap<>();
