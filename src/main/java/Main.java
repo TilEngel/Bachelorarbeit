@@ -16,7 +16,7 @@ import java.util.Map;
 public class Main {
     public static final boolean INDIRECT_EDGES_BOTH_WAYS = false; //Zwei Knoten können sich gegenseitig mit indirekten Kanten referenzieren
     public static final boolean ROUND_THREAT_SCORES = true; //Bedrohungspunktzahl auf eine Nachkommastelle runden
-    public static final int PF_THRESHOLD = 2; //Path-Factor Schwellenwert
+    public static final int PF_THRESHOLD = 4; //Path-Factor Schwellenwert
     public static final int ALARM_THRESHOLD = 120; //Bedrohungspunktzahl, ab der Alarm gemeldet wird
     public static final int MENTION_SCENARIO_THRESHOLD = 10; //Szenarien unter diesen Wert, werden nicht erwähnt
 
@@ -38,7 +38,7 @@ public class Main {
     public static void main(String[] args) {
         Logger.doLogAll();
 
-        //setTimestamp();
+        setTimestamp();
 
         JDBCEngine jdbc = new JDBCEngine();
         DataCollector collector = new DataCollector(jdbc);

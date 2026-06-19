@@ -4,7 +4,9 @@ import main.java.database.graph.Edge;
 import main.java.database.graph.Node;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Repräsentiert eine Liste an verketteten TTP-Instanzen.
@@ -16,6 +18,7 @@ public class TTPChain {
     private final int pathFactor;
     private final Node origin;
     private final String originTimestamp;
+    private final Set<String> forks;
 
     /**
      * Startet eine neue Kette, beim ersten TTP-Match
@@ -28,6 +31,8 @@ public class TTPChain {
         this.pathFactor=1;
         this.origin = origin.getSrcNode();
         this.originTimestamp = originTimestamp;
+        this.forks = new HashSet<>();
+        this.forks.add(origin.getSrcNode().getHashId());
     }
 
     /**
@@ -37,19 +42,21 @@ public class TTPChain {
      * @param newPF neuer PF
      * @param origin Ursprungsknoten
      */
-    private  TTPChain(Map<String,Edge> existing, String newTTP, int newPF,Node origin, String originTimestamp, Edge foundAt){
+    private  TTPChain(Map<String,Edge> existing, String newTTP, int newPF,Node origin, String originTimestamp, Edge foundAt, Set<String> forks){
         this.ttps = new HashMap<>(existing);
         this.ttps.put(newTTP,foundAt);
         this.pathFactor= newPF;
         this.origin = origin;
         this.originTimestamp = originTimestamp;
+        this.forks = new HashSet<>(forks);
     }
 
-    private  TTPChain(Map<String, Edge> existing, int newPF,Node origin, String originTimestamp){
+    private  TTPChain(Map<String, Edge> existing, int newPF,Node origin, String originTimestamp, Set<String>forks){
         this.ttps = new HashMap<>(existing);
         this.pathFactor= newPF;
         this.origin = origin;
         this.originTimestamp = originTimestamp;
+        this.forks = new HashSet<>(forks);
     }
 
     /**
@@ -59,11 +66,19 @@ public class TTPChain {
      * @return erweiterte TTPChain
      */
     public TTPChain extendChain(String ttpName, int newPF, Edge foundAt){
-        return new TTPChain(ttps, ttpName, newPF, origin,originTimestamp, foundAt);
+        return new TTPChain(ttps, ttpName, newPF, origin,originTimestamp, foundAt,forks);
     }
 
     public TTPChain updatePF(int newPF){
-        return new TTPChain(ttps,newPF,origin,originTimestamp);
+        return new TTPChain(ttps,newPF,origin,originTimestamp,forks);
+    }
+
+    public void addFork(Node node){
+        forks.add(node.getHashId());
+    }
+
+    public boolean isForkDescendant(String hashId){
+        return forks.contains(hashId);
     }
 
     /**

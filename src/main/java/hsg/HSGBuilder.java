@@ -51,8 +51,14 @@ public class HSGBuilder {
             } else {
                 List<TTPChain> copy = new ArrayList<>(edge.getSrcNode().getChains());
                 for (TTPChain chain : copy) { //O(C) = O(1)
+                    if(edge.getOperation().equals(EventType.Type.EVENT_FORK.toString())){
+                        if(chain.isForkDescendant(edge.getSrcNode().getHashId())){
+                            chain.addFork(edge.getDstNode());
+
+                        }
+                    }
                     int currentPF = chain.getPathFactor();
-                    int newPF = computeNewPFStreaming(edge, currentPF);
+                    int newPF = computeNewPFStreaming(edge.getDstNode(), currentPF, chain);
 
                     if (newPF <= PF_THRESHOLD) {
                         boolean chainAdded = false;
@@ -67,11 +73,12 @@ public class HSGBuilder {
                                             chainAdded = true;
                                             edge.getDstNode().addChain(extend);
                                             edge.getDstNode().addTTP(ttp);
-                                            if(scenarios.get(extend.getOriginId()).addTTPEdge(edge)) {
+                                            if (scenarios.get(extend.getOriginId()).addTTPEdge(edge)) {
                                                 ScoringEngine.scoreScenarioStreaming(scenarios.get(extend.getOriginId()), ttp);
                                             }
                                         }
                                     }
+
                                 }
                             }
                         }
@@ -90,20 +97,22 @@ public class HSGBuilder {
         }
     }
 
-    /**
-     * Berechnung einens neuen PF
-     * @param edge neue Kante
-     * @param currentPF aktueller PF
-     * @return currentPF++, wenn nötig. Sonst currentPF
-     */
-    private static int computeNewPFStreaming(Edge edge, int currentPF){
-        if(!(edge.getDstNode() instanceof Subject)){
-            return currentPF;
-        }
-        if(edge.getOperation().equals(EventType.Type.EVENT_FORK.toString())){
-            return currentPF;
 
+    /*
+    Berechnet den neuen PathFactor
+     */
+    private static int computeNewPFStreaming(Node dstNode, int currentPF, TTPChain chain){
+        if(!(dstNode instanceof Subject)){
+            return currentPF;
         }
+        //Wenn dstNode durch FORK entstanden ist
+
+        if(chain.isForkDescendant(dstNode.getHashId())) {
+            return currentPF;
+        }
+
+
         return currentPF +1;
     }
+
 }
