@@ -107,11 +107,9 @@ public class HSGBuilder {
 
                                     //Ketten an Nachfolger weitergeben, wenn durch Matching noch nicht geschehen
                                     if (!chainChanged) { //Chain wurde nicht erweitert, also noch nicht weitergegeben
-                                        //PF anpassen, wenn nötig
-                                        TTPChain ex = (newPF == chain.getPathFactor()) ? chain : chain.updatePF(newPF);
 
-                                        if(!dstNode.hasChain(ex)){
-                                            dstNode.addChain(ex);
+                                        if(!dstNode.hasChain(chain)){
+                                            dstNode.addChain(chain);
                                         }
 
                                     }
@@ -162,10 +160,10 @@ public class HSGBuilder {
                             if(Long.parseLong(e.getTimestampRec()) > Long.parseLong(chain.getOriginTimestamp())){
                                 if (!e.getSrcNode().getName().equals(e.getDstNode().getName())) {
                                     //Kette erweitern
-                                    TTPChain extend = chain.extendChain(ttp.getName(), newPF,e);
+                                    TTPChain extend = chain.extendChain(ttp.getName(),e);
                                     //Nur wenn (inhaltlich) gleiche Chain noch nicht existiert
                                     if (!dstNode.hasChain(extend)) {
-                                        Logger.log("[INFO] Chain erweitert auf " + dstNode.getName() + " (PF= "+extend.getPathFactor()+ ")");
+                                        Logger.log("[INFO] Chain erweitert auf " + dstNode.getName() + " (PF= "+newPF+ ")");
 
                                         dstNode.addChain(extend);
                                         chainChanged = true; //Damit nicht weitergegeben

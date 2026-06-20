@@ -12,7 +12,6 @@ import java.util.*;
  */
 public class TTPChain {
     private final Map<String, Edge> ttps;
-    private final int pathFactor;
     private final Node origin;
     private final String originTimestamp;
     private final Set<String> forks;
@@ -25,7 +24,6 @@ public class TTPChain {
     public TTPChain(String ttpName, Edge origin, String originTimestamp) {
         this.ttps = new LinkedHashMap<>();
         this.ttps.put(ttpName, origin);
-        this.pathFactor = 1;
         this.origin = origin.getDstNode();
         this.originTimestamp = originTimestamp;
         this.forks=new HashSet<>();
@@ -36,48 +34,28 @@ public class TTPChain {
      * Erweitert eine bestehende Kette
      * @param existing vorherige TTPs
      * @param newTTP   neues TTP
-     * @param newPF    neuer PF
      * @param origin   Ursprungsknoten
      */
-    private TTPChain(Map<String, Edge> existing, String newTTP, int newPF, Node origin, String originTimestamp, Edge foundAt, Set<String> forks) {
+    private TTPChain(Map<String, Edge> existing, String newTTP, Node origin, String originTimestamp, Edge foundAt, Set<String> forks) {
         this.ttps = new LinkedHashMap<>(existing);
         this.ttps.put(newTTP, foundAt);
-        this.pathFactor = newPF;
         this.origin = origin;
         this.originTimestamp = originTimestamp;
         this.forks = new HashSet<>(forks);
     }
 
-    /*
-    Passt PF an
-     */
-    private TTPChain(Map<String, Edge> existing, int newPF, Node origin, String originTimestamp, Set<String>forks) {
-        this.ttps = new LinkedHashMap<>(existing);
-        this.pathFactor = newPF;
-        this.origin = origin;
-        this.originTimestamp = originTimestamp;
-        this.forks= new HashSet<>(forks);
-    }
 
     /**
      * Gibt neue, erweiterte Kette zurück
      *
      * @param ttpName neues TTP
-     * @param newPF   neuer PF
+     * @param foundAt Kante, an der das TTP gefunden wurde
      * @return erweiterte TTPChain
      */
-    public TTPChain extendChain(String ttpName, int newPF, Edge foundAt) {
-        return new TTPChain(ttps, ttpName, newPF, origin, originTimestamp, foundAt, forks);
+    public TTPChain extendChain(String ttpName, Edge foundAt) {
+        return new TTPChain(ttps, ttpName, origin, originTimestamp, foundAt, forks);
     }
 
-    /**
-     * Gibt Kette mit aktualisierten PathFactor zurück
-     * @param newPF neuer PathFactor
-     * @return Kette
-     */
-    public TTPChain updatePF(int newPF) {
-        return new TTPChain(ttps, newPF, origin, originTimestamp, forks);
-    }
 
     /**
      * Fügt einen durch FORK entstandenen Knoten ein
@@ -131,10 +109,6 @@ public class TTPChain {
         return origin.getName();
     }
 
-    @Override
-    public String toString() {
-        return ttps.keySet() + " (PF = " + pathFactor + ")";
-    }
 
     /**
      * gibt TTP dieser Chain aus, das auf Node gefunden wurde
@@ -157,7 +131,4 @@ public class TTPChain {
         return originTimestamp;
     }
 
-    public int getPathFactor() {
-        return pathFactor;
-    }
 }
