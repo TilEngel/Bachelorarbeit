@@ -144,14 +144,18 @@ public class HSGConverter {
      */
     private static Set<Edge> findMinimalPathEdges(Scenario scenario){
         Set<Edge> minimalPathEdges = new HashSet<>();
-
-        for(TTPChain chain : scenario.getChains()){
+        Set<String> doneConnections = new HashSet<>();
+        for(TTPChain chain : scenario.getChains()){     //O(C)
             List<Edge> chainTTPEdges = new ArrayList<>(chain.getTtps().values());
-            for(int i = 0; i< chainTTPEdges.size()-1; i++){
+            for(int i = 0; i< chainTTPEdges.size()-1; i++){     //0(1)
                 String from = chainTTPEdges.get(i).getDstNode().getHashId();
                 String to = chainTTPEdges.get(i+1).getSrcNode().getHashId();
-                if(!from.equals(to)){
-                    minimalPathEdges.addAll(scenario.findShortestPath(from,to));
+                String connection = from+to;
+                if(!doneConnections.contains(connection)) {
+                    if (!from.equals(to)) {
+                        minimalPathEdges.addAll(scenario.findShortestPath(from, to));   //O(N + E)
+                        doneConnections.add(connection);
+                    }
                 }
             }
         }
