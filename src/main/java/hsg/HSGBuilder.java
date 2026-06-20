@@ -48,15 +48,17 @@ public class HSGBuilder {
 
                     }
                 }
-            } else {
+            } else { //Quellknoten hat Kette, also Szenario weiterführen
                 List<TTPChain> copy = new ArrayList<>(edge.getSrcNode().getChains());
-                for (TTPChain chain : copy) { //O(C) = O(1)
+                for (TTPChain chain : copy) {
+                    //Eintragen, wenn durch FORK entstanden
                     if(edge.getOperation().equals(EventType.Type.EVENT_FORK.toString())){
                         if(chain.isForkDescendant(edge.getSrcNode().getHashId())){
                             chain.addFork(edge.getDstNode());
 
                         }
                     }
+                    //PF-Berechnung
                     int currentPF = chain.getPathFactor();
                     int newPF = computeNewPFStreaming(edge.getDstNode(), currentPF, chain);
 
@@ -83,6 +85,7 @@ public class HSGBuilder {
                             }
                         }
                         if (!chainAdded) {
+                            //Chain auch ohne Match weitergeben
                             if (!edge.getDstNode().hasChain(chain)) {
                                 edge.getDstNode().addChain(chain.updatePF(newPF));
                                 Scenario scenario = scenarios.get(chain.getOriginId());

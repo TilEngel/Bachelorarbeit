@@ -14,7 +14,7 @@ public class Scenario {
     //Für die Bewertung relevante Scores
     private final Map<String,Integer> relevantScores = new HashMap<>();
     private double score = 1.0;
-    private String originId;
+    private final String originId;
 
 
     public Scenario( Edge startEdge){
