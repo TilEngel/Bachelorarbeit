@@ -4,6 +4,7 @@ import main.java.Logger;
 import main.java.database.graph.Edge;
 import main.java.database.graph.Node;
 import main.java.events.ttps.TTP;
+import main.java.events.ttps.TTPConfig;
 
 import java.util.*;
 import static java.lang.Math.pow;
@@ -117,18 +118,6 @@ public class ScoringEngine {
      * @return Severity-Wert
      */
     private static int getSeverityValue(TTP ttp){
-        char severity = ttp.getSeverity();
-
-        if(severity == 'L'){
-            return 2;
-        }
-        if(severity == 'M'){
-            return  6;
-        }
-        if(severity== 'H'){
-            return  8;
-        }else{
-            return 10;
-        }
+       return TTPConfig.getIntProperty("severity."+ttp.getSeverity(), 1);
     }
 }
