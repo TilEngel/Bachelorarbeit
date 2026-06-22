@@ -15,7 +15,7 @@ import java.util.List;
 
 public class Main {
     private static final boolean CREATE_GRAPHS = true; //Graphen für die Szenarien werden erstellt
-    public static final boolean SHOW_TIMESTAMPS = false; //Zeigt Timestamp der TTPs im Graphen an
+    public static final boolean SHOW_TIMESTAMPS = true; //Zeigt Timestamp der TTPs im Graphen an
     public static final boolean ROUND_THREAT_SCORES = true; //Bedrohungspunktzahl auf eine Nachkommastelle runden
     public static final int PF_THRESHOLD = 4; //Path-Factor Schwellenwert
     public static final int ALARM_THRESHOLD = 120; //Bedrohungspunktzahl, ab der Alarm gemeldet wird
@@ -65,6 +65,10 @@ public class Main {
     /*
      * setzt die Timestamps anhand eines Datums und einer Uhrzeit
      * (geschrieben von Claude.ai)
+     * Angriff 1:
+     * 6.4.2018 : 11:20 - 12:10
+     * Angriff 2:
+     * 12.6.2018 : 13:59 - 12:40
      */
     private static void setTimestamp() {
         ZonedDateTime startTime = ZonedDateTime.of(
