@@ -1,6 +1,8 @@
 package main.java.hsg;
 
 import main.java.database.graph.Edge;
+import main.java.provenanceGraph.ProvenanceGraph;
+
 import java.util.*;
 
 /**
@@ -9,15 +11,10 @@ import java.util.*;
  */
 public class Scenario {
     private final String originId;
+    private String originTimeStamp = null;
 
     //Kanten, auf denen ein TTP-Match gefunden wurde mit PathFactor
     private final Map<Edge, Integer> ttpEdges = new HashMap<>();
-
-    //Relevante kanten, an denen kein TTP direkt gefunden wurde
-    private final List<Edge> connectingEdges= new ArrayList<>();
-
-    //Ausgehende Kanten, die Teil des Szenarios sind
-    private Map<String,List<Edge>> adjOut = new HashMap<>();
 
     private double score= 1.0;
 
@@ -30,11 +27,8 @@ public class Scenario {
         if(!ttpEdges.containsKey(e) || ttpEdges.get(e)> pathFactor){
             ttpEdges.put(e, pathFactor);
         }
-    }
-
-    public void addConnectingEdge(Edge e){
-        if(!connectingEdges.contains(e)){
-            connectingEdges.add(e);
+        if(originTimeStamp == null){
+            originTimeStamp = e.getTimestampRec();
         }
     }
 
@@ -52,32 +46,17 @@ public class Scenario {
         return originId;
     }
 
-    public boolean hasEdge(Edge e){
-        return ttpEdges.containsKey(e) || connectingEdges.contains(e);
-    }
 
-    /**
-     * Key zumVergleich, ob zwei verschiedene Kanten zwischen den gleichen
-     * Knoten liegen
-     * @return String "srcName->dstName"
-     */
-    public List<Edge> getAllEdges(){
-        List<Edge> all = new ArrayList<>(ttpEdges.keySet());
-        all.addAll(connectingEdges);
-        return all;
-    }
-
-    /*
-    Befüllt einmalig adjOut
-     */
-    private void fillAdjOut(){
-        if(adjOut.keySet().isEmpty()) {
-            Map<String, List<Edge>> temp = new HashMap<>();
-            for (Edge e : getAllEdges()) {
-                temp.computeIfAbsent(e.getSrcNode().getHashId(), k -> new ArrayList<>()).add(e);
+    public Set<TTPChain> getChains(){
+        Set<TTPChain> result = new LinkedHashSet<>();
+        for(Edge e : ttpEdges.keySet()){
+            for(TTPChain chain : e.getDstNode().getChains()){
+                if(chain.getOriginId().equals(originId)){
+                    result.add(chain);
+                }
             }
-            adjOut = temp;
         }
+        return result;
     }
 
     /**
@@ -86,35 +65,34 @@ public class Scenario {
      * @param to Zielknoten
      * @return Pfad an Kanten
      */
-    public List<Edge> findShortestPath(String from, String to, String timestamp){
+    public List<Edge> findShortestPath(String from, String to){
 
-        fillAdjOut();
         if(!from.equals(to)) {
 
             Map<String, Edge> predecessor = new HashMap<>();
             Queue<String> queue = new LinkedList<>();
             Set<String> visited = new HashSet<>();
+            long originTime = Long.parseLong(originTimeStamp);
             queue.add(from);
-            long currentTime = Long.parseLong(timestamp);
             visited.add(from);
 
+            //BFS durch Szenario
             while (!queue.isEmpty()) {
                 String current = queue.poll();
-                for (Edge e : adjOut.getOrDefault(current,Collections.emptyList())) {
+                for (Edge e : ProvenanceGraph.getOutEdges(current)) {
+                    //Auf Zeit achten
+                    if(Long.parseLong(e.getTimestampRec())< originTime) continue;
                     String next = e.getDstNode().getHashId();
                     if (!visited.contains(next)) {
-                        long newTime = Long.parseLong(e.getTimestampRec());
-                        //if(currentTime< newTime) {
-                            currentTime= newTime;
-                            predecessor.put(next, e);
-                            if (next.equals(to)) {
-                                //Pfad rekonstruieren
-                                return reconstructPath(predecessor, to);
-                            }
-                            visited.add(next);
-                            queue.add(next);
-                        //}
+                        predecessor.put(next, e);
+                        if (next.equals(to)) {
+                            //Pfad rekonstruieren
+                            return reconstructPath(predecessor, to);
+                        }
+                        visited.add(next);
+                        queue.add(next);
                     }
+
                 }
             }
         }
