@@ -2,6 +2,7 @@ package main.java.hsg;
 
 import main.java.Logger;
 import main.java.events.ttps.TTP;
+import main.java.events.ttps.TTPConfig;
 
 import java.util.*;
 import static java.lang.Math.pow;
@@ -48,23 +49,9 @@ public class ScoringEngine {
      * @return Severity-Wert
      */
     private static int getSeverityValue(TTP ttp){
-        char severity = ttp.getSeverity();
+        return TTPConfig.getIntProperty("severity."+ttp.getSeverity(),1);
 
-        if(severity == 'L'){
-            return 2;
-        }
-        if(severity == 'M'){
-            return  6;
-        }
-        if(severity== 'H'){
-            return  8;
-        }else{
-            return 10;
-        }
     }
-
-
-
 
 
     /**
