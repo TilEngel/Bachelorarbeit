@@ -41,7 +41,6 @@ public class JDBCEngine {
 
     private Connection connection;
 
-    //private static final String TIMESTAMP_THRESH = "1522725000000000000"; // 675.000 Kanten
 
     /**
      * Stellt Verbindung zur Datenbank her

@@ -43,10 +43,11 @@ public class HSGBuilder {
                         match.addChain(newChain);
                         match.addTTP(ttp);
                         startNodes.add(match.getHashId());
-
+                        //Neues Szenario erstellen
                         Scenario scenario = new Scenario(match.getHashId());
                         scenario.addTTPEdge(e,1);
                         scenarios.put(match.getHashId(), scenario);
+                        //Frühster Zeitpunkt des Besuchs eintragen
                         if(!earliestVisit.containsKey(match.getHashId()) || earliestVisit.get(match.getHashId())> Long.parseLong(e.getTimestampRec())){
                             earliestVisit.put(match.getHashId(), Long.parseLong(e.getTimestampRec()));
                         }
@@ -82,7 +83,7 @@ public class HSGBuilder {
 
                             Node dstNode = e.getDstNode();
                             String dstId = dstNode.getHashId();
-                            //prüfen, ob durch FORK entstanden
+                            //prüfen, ob durch FORK entstanden (relevant für PathFactor)
                             if(e.getOperation().equals(EventType.Type.EVENT_FORK.toString())){
                                 for(TTPChain chain: currentNode.getChains()){
                                     if(chain.isForkDescendant(currentId)){
@@ -90,7 +91,7 @@ public class HSGBuilder {
                                     }
                                 }
                             }
-
+                            //TTP-Chains auf dem Knoten betrachten
                             List<TTPChain> copyNew = new ArrayList<>(currentNode.getChains());
                             for (TTPChain chain : copyNew) {
                                 //Nur TTPChains betrachten, die auch Teil des Szenarios sind
@@ -151,10 +152,12 @@ public class HSGBuilder {
     private static boolean matchOnEdge(Edge e, int newPF, Map<String,Scenario> scenarios, TTPChain chain){
         Node dstNode = e.getDstNode();
         boolean chainChanged = false;
-
+            //Für alle TTP-Typen aus allen Phasen prüfen
             for (List<TTP> phase : PHASES) {
                 for (TTP ttp : phase) {
+                    //Wenn TTP noch nicht in der Chain existiert
                     if (!chain.getTtps().containsKey(ttp.getName())) {
+                        //Wenn Vorbedingungen übereinstimmen
                         if (ttp.matches(e, chain.getOriginId())) {
                             //Zeitliche Reihenfolge beachten
                             if(Long.parseLong(e.getTimestampRec()) > Long.parseLong(chain.getOriginTimestamp())){

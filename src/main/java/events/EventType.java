@@ -18,11 +18,17 @@ public interface EventType {
         EVENT_LSEEK ,
         EVENT_MMAP ,
         EVENT_MODIFY_PROCESS ,
+       EVENT_MODIFY_FILE_ATTRIBUTE,
         EVENT_CHANGE_PRINCIPAL ,
         EVENT_RENAME,
         EVENT_SENDTO,
         EVENT_RESCVMSG,
         EVENT_RECVFROM,
-        EVENT_UNLINK
+        EVENT_UNLINK,
+        EVENT_SENDMSG,
+       EVENT_SINAL,
+       EVENT_TRUNCATE,
+       EVENT_BIND,
+       EVENT_LINK
     }
 }

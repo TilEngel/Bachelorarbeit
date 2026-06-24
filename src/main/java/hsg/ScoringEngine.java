@@ -4,6 +4,7 @@ import main.java.Logger;
 import main.java.database.graph.Edge;
 import main.java.database.graph.Node;
 import main.java.events.ttps.TTP;
+import main.java.events.ttps.TTPConfig;
 
 import java.util.*;
 import static java.lang.Math.pow;
@@ -61,6 +62,7 @@ public class ScoringEngine {
         );
 
         double score = 1.0;
+        //Höchste Werte pro Phase finden
         Map<String, Integer> ps = findRelevantScores(scenario);
         int i = 0;
         for(String phase : phaseOrder){
@@ -84,6 +86,7 @@ public class ScoringEngine {
     private static Map<String ,Integer> findRelevantScores(Scenario scenario){
         Map<String, Integer> phases = new HashMap<>();
         String originId = scenario.getOriginId();
+        //Für alle TTPs im Szenario
         for (Edge e : scenario.getTTPEdges()){
             Node n = e.getDstNode();
             Set<String> scenarioTTPs = new HashSet<>();
@@ -117,18 +120,6 @@ public class ScoringEngine {
      * @return Severity-Wert
      */
     private static int getSeverityValue(TTP ttp){
-        char severity = ttp.getSeverity();
-
-        if(severity == 'L'){
-            return 2;
-        }
-        if(severity == 'M'){
-            return  6;
-        }
-        if(severity== 'H'){
-            return  8;
-        }else{
-            return 10;
-        }
+       return TTPConfig.getIntProperty("severity."+ttp.getSeverity(), 1);
     }
 }
