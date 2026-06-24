@@ -47,6 +47,10 @@ public class Scenario {
     }
 
 
+    /**
+     * Liefert alle TTPChain-Instanzen, die zu dem Szenario gehören
+     * @return Menge an Chains
+     */
     public Set<TTPChain> getChains(){
         Set<TTPChain> result = new LinkedHashSet<>();
         for(Edge e : ttpEdges.keySet()){
@@ -105,6 +109,7 @@ public class Scenario {
     private List<Edge> reconstructPath(Map<String,Edge>predecessor, String to){
         LinkedList<Edge> path = new LinkedList<>();
         String current = to;
+        //Wenn current nicht in predecessor ist, ist current-1 der start
         while(predecessor.containsKey(current)){
             Edge e = predecessor.get(current);
             path.addFirst(e);

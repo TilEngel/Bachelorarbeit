@@ -57,7 +57,9 @@ public class HSGConverter {
     private static void drawGraph(Scenario scenario, StringBuilder dot, int count){
         Set<String> usedEdges = new HashSet<>();
 
+        //TTP-Kanten zeichnen
         for (Edge e :scenario.getTTPEdges()) {
+            //TTPs an der Kante finden
             Set<String> ttpNames = getTTPNames(e, scenario.getOriginId());
 
             if (!ttpNames.isEmpty()) {
@@ -144,15 +146,20 @@ public class HSGConverter {
      */
     private static Set<Edge> findMinimalPathEdges(Scenario scenario){
         Set<Edge> minimalPathEdges = new HashSet<>();
+        //Damit für ein Kantenpaar nicht mehrere BFSs durchgeführt werden
         Set<String> doneConnections = new HashSet<>();
+
         for(TTPChain chain : scenario.getChains()){
             List<Edge> chainTTPEdges = new ArrayList<>(chain.getTtps().values());
+            //Für alle TTP-Kanten des Szenarios (in zusammenhängender Reihenfolge)
             for(int i = 0; i< chainTTPEdges.size()-1; i++){     //0(1)
                 String from = chainTTPEdges.get(i).getDstNode().getHashId();
                 String to = chainTTPEdges.get(i+1).getSrcNode().getHashId();
                 String connection = from+to;
+                //Wenn diese Verbindung noch nicht gemacht wurde
                 if(!doneConnections.contains(connection)) {
                     if (!from.equals(to)) {
+                        //BFS von from zu to, alle Kanten dazwischen hinzufügen
                         minimalPathEdges.addAll(scenario.findShortestPath(from, to));   //O(N + E)
                         doneConnections.add(connection);
                     }

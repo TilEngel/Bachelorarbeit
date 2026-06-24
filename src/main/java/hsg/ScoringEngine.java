@@ -62,6 +62,7 @@ public class ScoringEngine {
         );
 
         double score = 1.0;
+        //Höchste Werte pro Phase finden
         Map<String, Integer> ps = findRelevantScores(scenario);
         int i = 0;
         for(String phase : phaseOrder){
@@ -85,6 +86,7 @@ public class ScoringEngine {
     private static Map<String ,Integer> findRelevantScores(Scenario scenario){
         Map<String, Integer> phases = new HashMap<>();
         String originId = scenario.getOriginId();
+        //Für alle TTPs im Szenario
         for (Edge e : scenario.getTTPEdges()){
             Node n = e.getDstNode();
             Set<String> scenarioTTPs = new HashSet<>();
