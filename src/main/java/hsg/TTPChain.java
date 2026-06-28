@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * Repräsentiert eine Liste an verketteten TTP-Instanzen.
  * Essenzieller Schritt bei Szenario-Erstellung.
- * TTPChain wird von einem Knoten an alle Nachfahren weitergegeben und eventuell. erweitert
+ * TTPChain wird von einem Knoten an alle Nachfahren weitergegeben und eventuell erweitert
  */
 public class TTPChain {
     private final Map<String, Edge> ttps;

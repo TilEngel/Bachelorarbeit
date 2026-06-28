@@ -62,19 +62,6 @@ public class ProvenanceGraph {
     }
 
     /**
-     * Liefert, welche Kanten, von einem Knoten ausgehen
-     * @param hashId ID des Knotens
-     * @return Liste mit allen ausgehenden Kanten
-     */
-    public static List<Edge> getInEdges(String hashId){
-        if (inEdges.containsKey(hashId)){
-            return inEdges.get(hashId);
-        }
-        Logger.log("[WARN] getInEdges: ungültiger Knoten, nutze Fallback");
-        return Collections.emptyList();
-    }
-
-    /**
      * Liefert Knoten mit entsprechender id
      * @param hashId ID des gesuchten Knotens
      * @return Knoten mit der ID

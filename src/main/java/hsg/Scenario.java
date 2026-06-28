@@ -10,23 +10,29 @@ import java.util.*;
  *
  */
 public class Scenario {
-    private final String originId;
-    private String originTimeStamp = null;
+    private final String originId; //Ausgangspunkt
+    private String originTimeStamp = null; //Zeitstempel des Ausgangspunktes
 
     //Kanten, auf denen ein TTP-Match gefunden wurde mit PathFactor
     private final Map<Edge, Integer> ttpEdges = new HashMap<>();
 
-    private double score= 1.0;
+    private double score= 1.0; //Bedrohungspunktzahl
 
     public Scenario(String originId){
         this.originId=originId;
     }
 
+    /**
+     * Fügt eine TTP-Kante dem Szenario hinzu
+     * @param e neue Kante
+     * @param pathFactor PF des Ereignisses
+     */
     public void addTTPEdge(Edge e, int pathFactor){
 
         if(!ttpEdges.containsKey(e) || ttpEdges.get(e)> pathFactor){
             ttpEdges.put(e, pathFactor);
         }
+        //Falls erstes Ereignis
         if(originTimeStamp == null){
             originTimeStamp = e.getTimestampRec();
         }

@@ -115,14 +115,11 @@ public class HSGBuilder {
 
                                     }
                                 }
-
-
                                 //Auch ohne Match zum nächsten Knoten traversieren
                                 //Knoten werden erneut traversiert, wenn ein kürzerer Pfad gefunden wurde
                                 if (!visitedPF.containsKey(dstId) || visitedPF.get(dstId) > newPF) {
 
                                     visitedPF.put(dstId, newPF);
-
                                     if(!earliestVisit.containsKey(dstId) ||Long.parseLong(e.getTimestampRec())< earliestVisit.get(dstId)){
                                         earliestVisit.put(dstId, Long.parseLong(e.getTimestampRec()));
                                     }
@@ -138,7 +135,6 @@ public class HSGBuilder {
                 }
             }
         }
-
         return new ArrayList<>(scenarios.values());
     }
 

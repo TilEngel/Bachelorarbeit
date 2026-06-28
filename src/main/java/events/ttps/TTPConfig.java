@@ -51,6 +51,12 @@ public class TTPConfig {
         return out;
     }
 
+    /**
+     * Gibt Wert in config-Datei als int zurück
+     * @param key Schlüssel, unter dem Wert in config-Datei liegt
+     * @param fallback Rückgabe, falls key nicht existiert
+     * @return Wert als int
+     */
     public static int getIntProperty(String key, int fallback){
         String value = scoringProperties.getProperty(key);
         if(value == null || value.isBlank()){

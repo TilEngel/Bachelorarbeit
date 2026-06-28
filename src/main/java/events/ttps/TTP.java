@@ -6,10 +6,10 @@ import main.java.events.Prerequisite;
 import java.util.List;
 
 public abstract class TTP {
-    private char severity;
+    private char severity; //Schwere des TTPs
 
-    private List<Prerequisite> prerequisites;
-    private String phase;
+    private List<Prerequisite> prerequisites; //Liste an Vorbedingungen
+    private String phase; //APT-Phase des TTPs
 
     /**
      * Prüft, ob das Geschehen an den Knoten einer Kante zu dem entsprechenden

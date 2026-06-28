@@ -21,12 +21,12 @@ public class Main {
     public static final int ALARM_THRESHOLD = 120; //Bedrohungspunktzahl, ab der Alarm gemeldet wird
     public static final int MENTION_SCENARIO_THRESHOLD = 10; //Szenarien unter diesen Wert, werden nicht erwähnt
 
-    public static String TIMESTAMP_MIN = "0";
-    public static String TIMESTAMP_MAX = "0";
+    public static String TIMESTAMP_MIN = "0"; //Minimaler Zeitstempel der zu verarbeitenden Ereignisse
+    public static String TIMESTAMP_MAX = "0"; //Maximaler Zeitstempel der zu verarbeitenden Ereignisse
 
     //Zu suchende TTP-Typen
-    private static final List<TTP> initialCompromise1 = List.of(new Untrusted_Read());
-    private static final List<TTP> initialCompromise2 = List.of(new Untrusted_File_Exec(), new Make_Mem_Exec());
+    private static final List<TTP> initialCompromise1 = List.of(new Untrusted_Read()); //Initial_Compromise, die keine vorangegangenen TTP-Instanzen benötigen
+    private static final List<TTP> initialCompromise2 = List.of(new Untrusted_File_Exec(), new Make_Mem_Exec()); //Initial_Compromise, die vorangegangene TTP-Instanzen benötigen
     private static final List<TTP> establishFoothold = List.of(new Shell_Exec(), new CnC());
     private static final List<TTP> privilegeEscalation = List.of(new Switch_SU());
     private static final List<TTP> internalRecon = List.of(new Sensitive_Command());
