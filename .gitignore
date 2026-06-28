@@ -29,4 +29,6 @@ replay_pid*
 /out/
 
 #DB Zugangsdaten
-/config.properties
+/config/config.properties
+#Graphische Ausgabe
+/hsg_output/
