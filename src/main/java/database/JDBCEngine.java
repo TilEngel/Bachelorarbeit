@@ -25,7 +25,7 @@ public class JDBCEngine {
     //Holt private Daten aus properties Datei (Erstellt mit claude.ai)
     static {
         Properties props = new Properties();
-        try(FileInputStream fis = new FileInputStream("config.properties")){
+        try(FileInputStream fis = new FileInputStream("config/config.properties")){
             props.load(fis);
         } catch(IOException e){
             throw new RuntimeException("[ERR] config.properties nicht gefunden: "+ e.getMessage());

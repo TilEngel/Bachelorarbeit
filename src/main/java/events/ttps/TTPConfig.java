@@ -19,12 +19,12 @@ public class TTPConfig {
     private static final Properties scoringProperties = new Properties();
 
     static {
-        try(FileInputStream fis = new FileInputStream("ttp_config.properties")){
+        try(FileInputStream fis = new FileInputStream("config/ttp_config.properties")){
             properties.load(fis);
         }catch (IOException e){
             throw new RuntimeException("[ERR] ttp_config.properties nicht gefunden "+ e.getMessage());
         }
-        try (FileInputStream fis = new FileInputStream("scoring.properties")){
+        try (FileInputStream fis = new FileInputStream("config/scoring.properties")){
             scoringProperties.load(fis);
         } catch (IOException e){
             throw new RuntimeException("[ERR] scoring.properties nicht gefunden: "+ e.getMessage());

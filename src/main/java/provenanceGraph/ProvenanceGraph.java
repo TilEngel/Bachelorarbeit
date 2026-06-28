@@ -1,11 +1,8 @@
 package main.java.provenanceGraph;
 
-
-import main.java.Logger;
 import main.java.database.graph.Edge;
 import main.java.database.graph.Node;
 import main.java.hsg.HSGBuilder;
-import main.java.hsg.ScoringEngine;
 
 import java.util.*;
 
@@ -34,19 +31,6 @@ public class ProvenanceGraph {
         nodes.put(hashId,node);
         outEdges.putIfAbsent(hashId,new ArrayList<>());
         inEdges.putIfAbsent(hashId,new ArrayList<>());
-    }
-
-    /**
-     * Fügt eine Kante dem Graphen als Knoten hinzu
-     * @param edge Kante die hinzugefügt werden soll
-     */
-    public void addEdge(Edge edge){
-        edges.add(edge);
-        String srcId = edge.getSrcNode().getHashId();
-        String dstId = edge.getDstNode().getHashId();
-
-        outEdges.computeIfAbsent(srcId, k -> new ArrayList<>()).add(edge);
-        inEdges.computeIfAbsent(dstId, k-> new ArrayList<>()).add(edge);
     }
 
 

@@ -21,7 +21,7 @@ public class Main {
     public static final int MENTION_SCENARIO_THRESHOLD = 10; //Szenarien unter diesen Wert, werden nicht erwähnt
 
     public static String TIMESTAMP_MIN = "0";
-    public static String TIMESTAMP_MAX = "1522706900000000000";
+    public static String TIMESTAMP_MAX = "0";
 
     //Zu suchende TTP-Typen
     private static final List<TTP> initialCompromise1 = List.of(new Untrusted_Read());
