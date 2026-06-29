@@ -109,7 +109,9 @@ public class HSGBuilder {
                                     //Ketten an Nachfolger weitergeben, wenn durch Matching noch nicht geschehen
                                     if (!chainChanged) { //Chain wurde nicht erweitert, also noch nicht weitergegeben
 
-                                        if(!dstNode.hasChain(chain)){
+                                        if (Long.parseLong(e.getTimestampRec()) >= Long.parseLong(chain.getOriginTimestamp())
+                                                && !e.getSrcNode().getName().equals(e.getDstNode().getName())
+                                                && !dstNode.hasChain(chain)) {
                                             dstNode.addChain(chain);
                                         }
 
